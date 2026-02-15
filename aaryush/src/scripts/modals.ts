@@ -9,15 +9,6 @@ document.addEventListener('click', (event) => {
         if (targetId) {
             const dialog = getDialog(targetId);
             if (dialog && typeof dialog.showModal === 'function') {
-                // Compute origin from the card position
-                const card = openTrigger.closest('.project-card, .card--link') as HTMLElement | null;
-                if (card) {
-                    const rect = card.getBoundingClientRect();
-                    const ox = rect.left + rect.width / 2;
-                    const oy = rect.top + rect.height / 3;
-                    dialog.style.setProperty('--ox', `${(ox / window.innerWidth) * 100}%`);
-                    dialog.style.setProperty('--oy', `${(oy / window.innerHeight) * 100}%`);
-                }
                 dialog.showModal();
             }
         }

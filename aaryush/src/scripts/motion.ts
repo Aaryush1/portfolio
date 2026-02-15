@@ -1,16 +1,8 @@
 const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function sectionVisibility() {
-    const sections = Array.from(document.querySelectorAll<HTMLElement>('section.section'));
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                (entry.target as HTMLElement).classList.add('is-visible');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.3 });
-    sections.forEach((s) => observer.observe(s));
+function heroEntrance() {
+    const hero = document.querySelector<HTMLElement>('.hero');
+    if (hero) hero.classList.add('is-entered');
 }
 
 function revealOnScroll() {
@@ -22,7 +14,7 @@ function revealOnScroll() {
                 const el = entry.target as HTMLElement;
                 const delay = Number(el.getAttribute('data-delay') || '0');
                 el.style.transition = `transform 520ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, opacity 520ms ${delay}ms`;
-                el.style.transform = 'translateY(0) scale(1)';
+                el.style.transform = 'translateY(0)';
                 el.style.opacity = '1';
                 observer.unobserve(el);
             }
@@ -35,20 +27,44 @@ function revealOnScroll() {
     });
 }
 
-function heroParallax() {
-    if (prefersReduced) return;
-    const layer = document.querySelector<HTMLElement>('[data-parallax]');
-    if (!layer) return;
-    const onScroll = () => {
-        const y = window.scrollY * 0.15;
-        layer.style.transform = `translate3d(0, ${y}px, 0)`;
+function scrollProgress() {
+    const bar = document.querySelector<HTMLElement>('.scroll-progress');
+    if (!bar) return;
+    const update = () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        bar.style.width = `${pct}%`;
     };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+}
+
+function stickyNav() {
+    const nav = document.querySelector<HTMLElement>('.sticky-nav');
+    const hero = document.querySelector<HTMLElement>('.hero');
+    if (!nav || !hero) return;
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            nav.classList.toggle('is-visible', !entry.isIntersecting);
+        });
+    }, { threshold: 0 });
+    observer.observe(hero);
+}
+
+function decodeContactLinks() {
+    document.querySelectorAll<HTMLAnchorElement>('[data-u][data-d]').forEach((el) => {
+        el.href = 'mailto:' + el.dataset.u + '@' + el.dataset.d;
+    });
+    document.querySelectorAll<HTMLAnchorElement>('[data-p]').forEach((el) => {
+        el.href = 'tel:+1' + el.dataset.p;
+    });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    heroParallax();
+    heroEntrance();
     revealOnScroll();
-    sectionVisibility();
+    scrollProgress();
+    stickyNav();
+    decodeContactLinks();
 });
