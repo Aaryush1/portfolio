@@ -16,22 +16,34 @@ const filterTags = [
 const uniqueStacks = Array.from(new Set(projects.flatMap((p) => p.stack))).filter((t) => filterTags.includes(t));
 ---
 
-<BaseLayout title="Aaryush Gupta — AI Engineer">
+<BaseLayout title="Aaryush Gupta — AI Strategy & Organizational Design">
 	<main>
 		<section class="hero container" style="position:relative; overflow:hidden;">
 			<div class="hero__parallax" data-parallax></div>
 			<div class="hero__text" data-reveal>
 				<h1 class="hero__title">Aaryush Gupta</h1>
-				<p class="hero__subtitle">AI Engineer building compliant, scalable products that ship.</p>
-				<p>Business-minded, technically rigorous. I design and deploy AI systems end-to-end.</p>
+				<p class="hero__subtitle">I help organizations redesign how they work around AI.</p>
+				<p>Operating models, decision architectures, and AI systems — across healthcare, finance, and tech.</p>
 				<div class="hero__actions">
-					<a class="btn btn--primary" href="#projects">View Projects</a>
+					<a class="btn btn--primary" href="#projects">See the Work</a>
 					<a class="btn" href="/Aaryush Contact Info.vcf" download>Download Contact Card</a>
 				</div>
 				<div class="hero__meta">
 					<span>Madison, WI</span>
-					<a href="mailto:aaryush@outlook.com">aaryush@outlook.com</a>
-					<a href="tel:+19493312850">(949) 331-2850</a>
+					<div class="hero__socials">
+						<a href="mailto:aaryush@outlook.com" aria-label="Email" class="hero__icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+						</a>
+						<a href="tel:+19493312850" aria-label="Phone" class="hero__icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+						</a>
+						<a href="https://www.linkedin.com/in/aaryush" aria-label="LinkedIn" class="hero__icon">
+							<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+						</a>
+						<a href="https://github.com/Aaryush1" aria-label="GitHub" class="hero__icon">
+							<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+						</a>
+					</div>
 				</div>
 			</div>
 			<img class="hero__headshot" src="/assets/HS%20Grad.jpg" alt="Headshot of Aaryush Gupta" data-reveal />
@@ -41,7 +53,9 @@ const uniqueStacks = Array.from(new Set(projects.flatMap((p) => p.stack))).filte
 			<h2 class="section__title">About</h2>
 			<div class="grid">
 				<div class="card" style="grid-column: span 12;" data-reveal>
-					<p>I’m an AI-first engineer and product leader. I’ve led architecture and delivery for HIPAA-compliant platforms processing millions monthly, shipped full-stack products from MVP to scale, and aligned teams around clear roadmaps. I balance rigorous engineering with pragmatic product instincts to move fast without breaking trust.</p>
+					<p>AI is becoming the infrastructure underneath how decisions get made, how expertise gets applied, and how teams create value. The organizations that recognize this early won't just be faster — they'll be structurally different from their competitors.</p>
+					<p>I help companies design for that shift. With a career across healthcare, finance, and tech — building products, leading teams, and redesigning how work gets done — I focus on the operating models that determine how humans and AI systems share decisions, expertise, and execution.</p>
+					<p>If you're thinking about what AI means for how your organization actually operates, that's the conversation I'm here for.</p>
 				</div>
 			</div>
 		</section>
@@ -50,49 +64,89 @@ const uniqueStacks = Array.from(new Set(projects.flatMap((p) => p.stack))).filte
 			<h2 class="section__title">Experience</h2>
 			<div class="grid">
 				<div class="card card--link" style="grid-column: span 12;" data-reveal>
-					<a class="card__overlay" href="#experience-cylerity" aria-label="Cylerity details"></a>
 					<div class="card__content">
-						<h3>Cylerity — Lead AI Engineer (Jan 2024 – Present)</h3>
-						<p>Own architecture, AI systems, and team for a fintech-healthcare startup underwriting loans on $4B+ claims data; targeted AR reduction from ~45 to 1 day.</p>
-						<ul>
-							<li>Designed HIPAA-compliant infrastructure; built scalable training/inference for PHI at ~$4MM/month throughput.</li>
-							<li>Overhauled Azure Data Factory pipelines; improved performance and maintainability.</li>
-							<li>Shipped full-stack customer web app (Next.js, Node.js, Firebase, SQL Server, Azure App Service).</li>
-							<li>Implemented Confluence/Jira workflows; supported fundraising (high 6 figures + 8-figure lending facility).</li>
-						</ul>
+						<h3>Gupta Advisory — AI Strategy & Systems (Dec 2024 – Present)</h3>
+						<p>I work with organizations to redesign how their teams operate with AI. Every engagement starts with deep understanding — what the business actually looks like, where the friction is, and what's possible. From there, targeted experiments to find value fast. If we see ROI on day one, we commit to something larger.</p>
+						<div class="project-card__actions">
+							<button class="btn btn--primary" data-open-modal="exp-advisory">More</button>
+						</div>
 					</div>
+					<dialog class="modal" id="exp-advisory" aria-labelledby="exp-advisory-title">
+						<h3 id="exp-advisory-title" class="modal__title">Gupta Advisory — AI Strategy & Systems</h3>
+						<div class="modal__section">
+							<p>The model is simple. Someone reaches out with a problem. I spend real time understanding their business — not just the symptom, but what the organization actually looks like today and where the friction is.</p>
+							<p>Then I come back with a few targeted solutions for quick experiments — ways to find value without a large upfront commitment. If we see ROI on day one, we commit to something larger. No lengthy proposals. No months of discovery before anything happens.</p>
+							<p>Engagements span healthcare, education, and innovation ecosystems. The work ranges from redesigning founder support systems to building compliance-first automation for claims processing — but the through-line is always the same: figure out where AI changes how the organization works, and design for that shift.</p>
+						</div>
+						<div class="modal__actions">
+							<button class="btn" data-close-modal>Close</button>
+						</div>
+					</dialog>
 				</div>
 				<div class="card card--link" style="grid-column: span 12;" data-reveal>
-					<a class="card__overlay" href="#experience-skale" aria-label="Skale.win details"></a>
 					<div class="card__content">
-						<h3>Skale.win — Founding Engineer/Head of Product (Jun 2024 – Present)</h3>
-						<p>Stealth platform that simulates interviews and gives instant, role‑specific feedback. I led product and engineering from MVP, building it to adapt quickly as AI tools change</p>
-						<ul>
-							<li>Stealth GenAI for interviews and upskilling; built MVP and modular architecture.</li>
-							<li>Integrated ElevenLabs, STT, reasoning models; on-demand prompt tuning for rapid iteration.</li>
-							<li>Perplexity-powered tailoring; migrated to OpenRouter for multi-vendor flexibility.</li>
-							<li>~100 beta users; GTM Q3 2025. Stack: FastAPI, Next.js, Kubernetes, Azure, OpenRouter, ElevenLabs, Perplexity.</li>
-						</ul>
+						<h3>Ready Rebound — AI & Engineering Lead (Dec 2025 – Present)</h3>
+						<p>Lead AI and engineering for a workers' comp platform helping employees return to work. Managing the full engineering team, defining technical architecture, and building Native AI Workflows that make the team operate at a fundamentally higher level.</p>
+						<div class="project-card__actions">
+							<button class="btn btn--primary" data-open-modal="exp-rebound">More</button>
+						</div>
 					</div>
+					<dialog class="modal" id="exp-rebound" aria-labelledby="exp-rebound-title">
+						<h3 id="exp-rebound-title" class="modal__title">Ready Rebound — AI & Engineering Lead</h3>
+						<div class="modal__section">
+							<p>The methodology is what matters here. I'm building what I call Native AI Workflows — a structured system where every team member has the tools and frameworks to evaluate and adopt AI capabilities independently. It's not about one person being technical. It's about making the entire team's output compound.</p>
+							<p>We shipped V1 on schedule with a spec-driven development approach that creates long-term leverage. The environment is tool-agnostic — the team works across Claude Code, Cursor, and other agentic tools seamlessly. We maintain a dedicated experiments repo for high-velocity validation before anything hits production.</p>
+							<p>The trajectory: AI-driven efficiencies in every department — not just engineering. The goal isn't to add AI to the workflow. It's to redesign the workflow around AI.</p>
+						</div>
+						<div class="modal__actions">
+							<button class="btn" data-close-modal>Close</button>
+						</div>
+					</dialog>
 				</div>
 				<div class="card card--link" style="grid-column: span 12;" data-reveal>
-					<a class="card__overlay" href="#experience-consulting" aria-label="Consulting details"></a>
 					<div class="card__content">
-						<h3>AI Engineering Consultant — Founder (Dec 2024 – Present)</h3>
-						<p>I help teams ship AI features that make a real dent—clean data in, clear value out.</p>
-						<ul>
-							<li>Advisory and builds across healthcare, education, and innovation ecosystems.</li>
-							<li>UMN Discovery Launchpad: AI ingestion + full-stack app; automated progress tracking & gap detection.</li>
-							<li>Univise: RAG chatbot; 2,000 users in first week; best pitch at Transcend.</li>
-							<li>SmartBenAI: HIPAA-compliant claims parsing using Gemini Vision.</li>
-						</ul>
+						<h3>Cylerity — AI Lead (Jan 2024 – Present)</h3>
+						<p>Lead AI for a fintech-healthcare startup that underwrites claims and advances cash to healthcare providers. Designed the decision architecture, compliance framework, and team that took us from MVP to an eight-figure lending facility.</p>
+						<div class="project-card__actions">
+							<button class="btn btn--primary" data-open-modal="exp-cylerity">More</button>
+						</div>
 					</div>
+					<dialog class="modal" id="exp-cylerity" aria-labelledby="exp-cylerity-title">
+						<h3 id="exp-cylerity-title" class="modal__title">Cylerity — AI Lead</h3>
+						<div class="modal__section">
+							<p>When I joined, Cylerity had a standard development roadmap and a traditional way of building. I redesigned the operating model. Today, every person in the company uses Claude Code and produces output independently. We built a structured system where everything flows from business-level features down to technical implementation step-by-step — no ambiguity, no gaps between what the business needs and what gets built.</p>
+							<p>The result: a company that went from early-stage to securing an eight-figure lending facility, with an underwriting operation that processes millions monthly. All the current work is happening on the front end — the core infrastructure is built, and now we're scaling what customers see and touch.</p>
+						</div>
+						<div class="modal__actions">
+							<button class="btn" data-close-modal>Close</button>
+						</div>
+					</dialog>
+				</div>
+				<div class="card card--link" style="grid-column: span 12;" data-reveal>
+					<div class="card__content">
+						<h3>Skale.win — Founding Member, Product & Strategy (Jun 2024 – Present)</h3>
+						<p>Co-founded an end-to-end career platform that helps people understand their strengths, upskill, and get matched to opportunities. Defined the product vision and business model — white-label and enterprise hiring, built on a fundamentally different model of what people are capable of.</p>
+						<div class="project-card__actions">
+							<button class="btn btn--primary" data-open-modal="exp-skale">More</button>
+						</div>
+					</div>
+					<dialog class="modal" id="exp-skale" aria-labelledby="exp-skale-title">
+						<h3 id="exp-skale-title" class="modal__title">Skale.win — Founding Member, Product & Strategy</h3>
+						<div class="modal__section">
+							<p>We're re-evaluating and reconstructing what hiring is as a whole. The resume has been the standard for decades, but it's a flat, low-resolution signal of what a person can actually do. We're using higher-dimensional embedding models to capture real capability — not keywords on a page, but what someone is genuinely able to contribute.</p>
+							<p>The platform does end-to-end everything you need for a career: understand how to be better, upskill yourself, and actually find the right opportunities. The business model is white-label and enterprise hiring — we become the infrastructure that companies use to find and evaluate talent.</p>
+							<p>The big idea: we're making meritocracy scalable. For the first time, what you're capable of matters more than how you present it.</p>
+						</div>
+						<div class="modal__actions">
+							<button class="btn" data-close-modal>Close</button>
+						</div>
+					</dialog>
 				</div>
 			</div>
 		</section>
 
 		<section class="section container" id="projects" data-accent="teal">
-			<h2 class="section__title">Selected Projects</h2>
+			<h2 class="section__title">Selected Work</h2>
 			<div class="chips" data-filters>
 				{uniqueStacks.map((tech) => (
 					<button class="chip" data-chip={tech} aria-pressed="false">{tech}</button>
@@ -118,26 +172,16 @@ const uniqueStacks = Array.from(new Set(projects.flatMap((p) => p.stack))).filte
 								<h3 id={`${p.id}-title`} class="modal__title">{p.title}</h3>
 								<p class="modal__value">{p.value}</p>
 								<div class="modal__section">
-									<p><strong>Problem</strong> — {p.problem}</p>
+									<p><strong>The challenge</strong> — {p.problem}</p>
 								</div>
 								<div class="modal__section">
-									<p><strong>What I built</strong></p>
+									<p><strong>What I designed</strong></p>
 									<ul style="margin-top: 8px;">
 										{p.details && p.details.map((d) => (<li>{d}</li>))}
 									</ul>
 								</div>
 								<div class="modal__section">
-									<p><strong>Result</strong> — {p.result}</p>
-									{p.metrics && (
-										<div class="metrics">
-											{p.metrics.map((m) => (
-												<div class="metric">
-													<div class="metric__label">{m.label}</div>
-													<div class="metric__value">{m.value}</div>
-												</div>
-											))}
-										</div>
-									)}
+									<p><strong>The outcome</strong> — {p.result}</p>
 								</div>
 								<div class="modal__actions">
 									<button class="btn" data-close-modal>Close</button>
@@ -149,50 +193,30 @@ const uniqueStacks = Array.from(new Set(projects.flatMap((p) => p.stack))).filte
 			</div>
 		</section>
 
-		<section class="section container" id="skills" data-accent="pink">
-			<h2 class="section__title">Skills</h2>
+		<section class="section container" id="focus" data-accent="pink">
+			<h2 class="section__title">Areas of Focus</h2>
 			<div class="skills-grid" data-reveal>
 				<div class="skills-col card">
-					<p class="skills-title">Product & Full‑Stack</p>
-					<div class="badges">
-						<span class="badge" data-tip="Web apps & sites">Next.js</span>
-						<span class="badge" data-tip="Frontend & tooling">TypeScript</span>
-						<span class="badge" data-tip="Services & scripts">Node.js</span>
-						<span class="badge" data-tip="APIs & services">FastAPI</span>
-						<span class="badge" data-tip="Relational DB">PostgreSQL</span>
-					</div>
+					<p class="skills-title">AI Operating Model Design</p>
+					<p>Defining how your organization makes decisions, applies expertise, and creates value with AI — built into how you operate, not layered on top.</p>
 				</div>
 				<div class="skills-col card">
-					<p class="skills-title">AI/ML & Data</p>
-					<div class="badges">
-						<span class="badge" data-tip="Research & prototyping">PyTorch</span>
-						<span class="badge" data-tip="Orchestration & tooling">LangChain</span>
-						<span class="badge" data-tip="Retrieval with sources">RAG</span>
-						<span class="badge" data-tip="Analytics & pipelines">SQL</span>
-					</div>
+					<p class="skills-title">Human-AI Workflow Architecture</p>
+					<p>Designing who does what — where AI handles the volume, where humans apply judgment, and how the handoffs actually work.</p>
 				</div>
 				<div class="skills-col card">
-					<p class="skills-title">Cloud & Infra</p>
-					<div class="badges">
-						<span class="badge" data-tip="App services, data">Azure</span>
-						<span class="badge" data-tip="Infra & services">AWS</span>
-						<span class="badge" data-tip="Containers">Docker</span>
-						<span class="badge" data-tip="Orchestration">Kubernetes</span>
-					</div>
+					<p class="skills-title">Healthcare & Compliance Systems</p>
+					<p>Platforms where privacy, accuracy, and regulatory requirements are built into the foundation — not bolted on after the fact.</p>
 				</div>
 				<div class="skills-col card">
-					<p class="skills-title">Ops & Tooling</p>
-					<div class="badges">
-						<span class="badge">OpenRouter</span>
-						<span class="badge">Perplexity</span>
-						<span class="badge">HuggingFace</span>
-					</div>
+					<p class="skills-title">Product Strategy & Delivery</p>
+					<p>From concept to scale — clear vision, aligned teams, and a bias toward shipping what matters.</p>
 				</div>
 			</div>
 		</section>
 
 		<footer class="footer container">
-			<p>© {new Date().getFullYear()} Aaryush Gupta</p>
+			<p>&copy; 2026 Aaryush Gupta</p>
 		</footer>
 	</main>
 </BaseLayout>

@@ -10,7 +10,7 @@ document.addEventListener('click', (event) => {
             const dialog = getDialog(targetId);
             if (dialog && typeof dialog.showModal === 'function') {
                 // Compute origin from the card position
-                const card = openTrigger.closest('.project-card') as HTMLElement | null;
+                const card = openTrigger.closest('.project-card, .card--link') as HTMLElement | null;
                 if (card) {
                     const rect = card.getBoundingClientRect();
                     const ox = rect.left + rect.width / 2;
