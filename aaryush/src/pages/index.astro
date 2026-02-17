@@ -14,6 +14,7 @@ import { projects } from "../data/projects";
 				<a class="sticky-nav__link" href="#experience">Experience</a>
 				<a class="sticky-nav__link" href="#projects">Work</a>
 				<a class="sticky-nav__link" href="#focus">Focus</a>
+				<a class="sticky-nav__link" href="#writing">Writing</a>
 			</div>
 		</div>
 	</nav>
@@ -261,6 +262,139 @@ import { projects } from "../data/projects";
 						</div>
 					</dialog>
 				</div>
+			</div>
+		</section>
+
+		<section class="section container" id="writing">
+			<div class="section__header" data-reveal>
+				<span class="section__num">05</span>
+				<h2 class="section__title">Writing</h2>
+			</div>
+			<div class="writing-card" data-reveal>
+				<h3 class="writing-card__title">The Quiet Singularity</h3>
+				<p class="writing-card__subtitle">Recursive Self-Improvement, Collapsing Costs, and the Feedback Loop No One Is Governing</p>
+				<span class="writing-card__date">February 2026</span>
+				<p>An observational analysis of three concurrent developments in artificial intelligence — and their implications for institutions designed around assumptions of scarcity.</p>
+				<button class="link-btn" data-open-modal="writing-quiet-singularity">Read <span class="link-btn__arrow">&rarr;</span></button>
+
+				<dialog class="modal modal--paper" id="writing-quiet-singularity" aria-labelledby="writing-qs-title">
+					<div class="paper__sticky-header">
+						<span class="paper__sticky-title">The Quiet Singularity</span>
+						<button class="btn btn--ghost btn--sm" data-close-modal>Close</button>
+					</div>
+					<article class="paper">
+						<header class="paper__header">
+							<h3 id="writing-qs-title" class="paper__title">The Quiet Singularity</h3>
+							<p class="paper__subtitle">Recursive Self-Improvement, Collapsing Costs, and the Feedback Loop No One Is Governing</p>
+							<p class="paper__meta">Aaryush Gupta &middot; February 2026</p>
+						</header>
+						<p class="paper__abstract">An observational analysis of three concurrent developments in artificial intelligence &mdash; recursive model self-improvement, the commoditization of frontier-class inference, and the compounding automation of cognitive labor &mdash; and their implications for institutions designed around assumptions of scarcity.</p>
+
+						<div class="paper__section">
+							<h4>I. The Shift</h4>
+							<p>We are entering a different phase of artificial intelligence. Not better assistants. Not faster code generation. For the first time, we are observing systems that meaningfully participate in building the next generation of themselves &mdash; not in theory, not in research papers, but in production environments at the companies creating them.<sup>[1][2]</sup></p>
+							<p>The evidence for this is no longer speculative. It is publicly stated, on the record, by the leadership of the two most prominent frontier AI laboratories in the world. And it is occurring simultaneously with a collapse in the cost of intelligence that most observers have not yet internalized.</p>
+							<p>This document examines three developments that, taken together, suggest we have entered a compounding feedback loop &mdash; one that is accelerating faster than the institutional, policy, and cultural frameworks designed to govern it.</p>
+						</div>
+
+						<div class="paper__section">
+							<h4>II. Recursive Self-Improvement</h4>
+							<h5>A. OpenAI: GPT-5.3-Codex</h5>
+							<p>On February 5, 2026, OpenAI released GPT-5.3-Codex and made an extraordinary public claim: it was the first model in the company's history that was, in their words, "instrumental in creating itself."<sup>[1]</sup> The Codex engineering team used earlier versions of the model to debug its own training runs, manage its own deployment pipelines, and diagnose its own test results and evaluations.<sup>[2]</sup></p>
+							<p>OpenAI CEO Sam Altman described this publicly as "the beginning of the intelligence explosion."<sup>[3]</sup> The model's technical report confirmed it served as the primary engineer for its own final optimization phase and deployment pipeline.<sup>[4]</sup></p>
+							<p>This is not fully autonomous recursive self-improvement in the theoretical sense. But it is the first commercial proof point that AI-assisted AI development is no longer theoretical. If a coding model can meaningfully accelerate its own development, the pace of future improvements compounds.<sup>[2]</sup></p>
+
+							<h5>B. Anthropic: Claude Writing Claude</h5>
+							<p>On February 3, 2026, Anthropic Chief Product Officer Mike Krieger stated at the Cisco AI Summit: "Right now for most products at Anthropic it's effectively 100% just Claude writing, and then what we've done is created all the right scaffolds around it to let us trust it."<sup>[5]</sup> He described engineers routinely shipping pull requests of 2,000 to 3,000 lines generated entirely by Claude.<sup>[6]</sup></p>
+							<p>Boris Cherny, head of Anthropic's Claude Code division, confirmed he has not written a single line of code by hand in over two months. In a public post, he stated: "I shipped 22 PRs yesterday and 27 the day before, each one 100% written by Claude."<sup>[7]</sup> An Anthropic spokesperson confirmed the company-wide figure is between 70% and 90%.<sup>[7]</sup></p>
+							<p>Perhaps most remarkably, approximately 90% of Claude Code's own codebase is now written by Claude Code itself.<sup>[7][8]</sup> Anthropic's Cowork product &mdash; launched January 12, 2026 &mdash; was built in ten days by four engineers, with most of the code written by Claude Code.<sup>[9][10]</sup></p>
+							<p>These are not startups exaggerating capability. These are the two leading frontier AI laboratories describing what is already happening inside their own walls.</p>
+						</div>
+
+						<div class="paper__section">
+							<h4>III. The Collapse of Cost</h4>
+							<p>Recursive improvement alone would be significant. But it is occurring alongside a dramatic and accelerating collapse in the cost of frontier-class inference.</p>
+							<h5>MiniMax M2: Near-Frontier Performance at Utility Pricing</h5>
+							<p>MiniMax, a Shanghai-based AI company, released M2 &mdash; a 230-billion parameter mixture-of-experts model that activates only 10 billion parameters per token. It ranks in the top five globally on the Artificial Analysis Intelligence Index, scoring 61 &mdash; ahead of DeepSeek-V3.2 (57) and trailing Claude Sonnet 4.5 (63) and GPT-5 (69). On agentic benchmarks including Terminal-Bench and SWE-bench Verified, it is competitive with frontier proprietary models.<sup>[11][12]</sup></p>
+							<p>Its API pricing: $0.30 per million input tokens and $1.20 per million output tokens.<sup>[13][14]</sup> This represents approximately 8% of the cost of Claude Sonnet 4.5 ($3.00 / $15.00 per million) with nearly double the inference speed.<sup>[15]</sup> The model is open-source under an MIT license, with weights freely available.</p>
+							<p>MiniMax M2.5, released days ago, is the first open-weights model to match Claude Sonnet on independent coding benchmarks.<sup>[16]</sup></p>
+							<table class="paper__table">
+								<thead>
+									<tr>
+										<th>Model</th>
+										<th>Input / 1M tokens</th>
+										<th>Output / 1M tokens</th>
+										<th>Intelligence Index</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr><td>Claude Sonnet 4.5</td><td>$3.00</td><td>$15.00</td><td>63</td></tr>
+									<tr><td>GPT-5 (thinking)</td><td>~$3.00</td><td>~$15.00</td><td>69</td></tr>
+									<tr><td>MiniMax M2</td><td>$0.30</td><td>$1.20</td><td>61</td></tr>
+								</tbody>
+							</table>
+							<p class="paper__table-note">Cost comparison across frontier-class models. Sources: Artificial Analysis, MiniMax official pricing, Perficient analysis.</p>
+						</div>
+
+						<div class="paper__section">
+							<h4>IV. The Implication</h4>
+							<p>Intelligence is no longer scarce. It is approaching the price profile of a utility &mdash; available to anyone, at any scale, for almost nothing.</p>
+							<p>I am experiencing this directly. I have not written a single line of code by hand in 2026. My speed and quality of execution are higher than at any point in my career. I am building more, shipping faster, and solving harder problems &mdash; not because I became a better engineer, but because the nature of what "engineering" means changed underneath me while I was doing it.</p>
+							<div class="paper__callout">That last sentence should sit with you for a moment.</div>
+							<p>When execution becomes abundant, leverage shifts &mdash; toward judgment, taste, intent, and meaning. The things we spent decades treating as soft skills quietly became the only skills that differentiate human contribution from machine output.</p>
+						</div>
+
+						<div class="paper__section">
+							<h4>V. The Feedback Loop</h4>
+							<p>What is striking is not a single breakthrough. It is the structure of the dynamic itself.</p>
+							<p>Better tools build better tools. Those tools lower the cost of building. Lower costs expand access. Expanded access accelerates the next cycle. Each iteration makes the subsequent one faster, cheaper, and more capable &mdash; and the humans in the loop shift from writing to directing, from executing to deciding.</p>
+							<p>This is not a metaphor. It is the operational reality at the organizations building the most advanced AI systems on the planet. OpenAI explicitly described GPT-5.3-Codex as "the first self-developing AI coding model."<sup>[2]</sup> Anthropic's CPO confirmed "Claude is being written by Claude."<sup>[6]</sup> SemiAnalysis reports that 4% of all GitHub public commits are now authored by Claude Code, projecting 20%+ by end of 2026.<sup>[8]</sup></p>
+							<div class="paper__callout">And it is compounding.</div>
+						</div>
+
+						<div class="paper__section">
+							<h4>VI. The Institutional Gap</h4>
+							<p>We are not prepared for what this implies.</p>
+							<p>We do not have language for a world where cognitive labor compounds on itself. We do not have policy for an economy where the marginal cost of expertise trends toward zero. We do not have institutions designed for a rate of capability growth that outpaces the legislative, educational, and cultural systems meant to govern it.</p>
+							<p>We are still running on frameworks built for scarcity &mdash; of knowledge, of skill, of access &mdash; and those frameworks are dissolving faster than we are building replacements.</p>
+							<p>This does not feel like an explosion. It feels like a slope that just became steeper than anything underneath us was designed for.</p>
+							<p>And the unsettling part is not the speed. It is the quiet. It is how few people have noticed that the ground shifted.</p>
+							<div class="paper__callout">We may look back on this period not as the moment AI arrived, but as the moment the assumptions underneath work, expertise, progress, and purpose began to shift &mdash; slowly at first, and then all at once.</div>
+						</div>
+
+						<div class="paper__references">
+							<h4>References</h4>
+							<ol>
+								<li>NBC News. "OpenAI says new Codex coding model helped build itself." February 5, 2026.</li>
+								<li>The New Stack. "OpenAI's GPT-5.3-Codex helped build itself." February 5, 2026.</li>
+								<li>Let's Data Science. "GPT-5.3 Codex Explained: OpenAI's Self-Developing Agent." February 2026.</li>
+								<li>Creati.ai. "OpenAI Launches GPT-5.3-Codex: Revolutionary AI Model That Helped Build Itself." February 6, 2026.</li>
+								<li>IT Pro. "Anthropic Labs chief Mike Krieger claims Claude is essentially writing itself." February 2026.</li>
+								<li>TechStory. "'Claude Writing Claude': The Code of Anthropic is Now Nearly 100% AI-Generated." February 9, 2026.</li>
+								<li>Fortune. "Top engineers at Anthropic, OpenAI say AI now writes 100% of their code." January 29, 2026.</li>
+								<li>SemiAnalysis. "Claude Code is the Inflection Point." February 2026.</li>
+								<li>Axios. "Anthropic's Claude Cowork wrote itself." January 13, 2026.</li>
+								<li>The Pragmatic Engineer. "How Claude Code is built." 2025.</li>
+								<li>DeepLearning.ai / The Batch. "MiniMax-M2's Lightweight Footprint and Low Costs Belie Its Top Performance." November 6, 2025.</li>
+								<li>Artificial Analysis. "MiniMax-M2 &mdash; Intelligence, Performance, and Pricing."</li>
+								<li>MiniMax. Official API pricing documentation.</li>
+								<li>MiniMax. M2 model release announcement.</li>
+								<li>Perficient. Cost analysis of frontier AI models. 2026.</li>
+								<li>OpenHands. "MiniMax M2.5: Open Weights Models Catch Up to Claude Sonnet." February 12, 2026.</li>
+							</ol>
+						</div>
+
+						<footer class="paper__closing">
+							<p class="paper__closing-statement">This isn't speculation.<br>These are the companies' own words.</p>
+							<p>I don't have answers. But I am increasingly worried that we are not even asking the right questions yet.</p>
+							<p class="paper__author">Aaryush Gupta</p>
+						</footer>
+					</article>
+					<div class="modal__actions paper__actions">
+						<a class="btn btn--ghost btn--sm" href="/quiet-singularity.pdf" download>Download PDF</a>
+						<button class="btn btn--ghost btn--sm" data-close-modal>Close</button>
+					</div>
+				</dialog>
 			</div>
 		</section>
 
