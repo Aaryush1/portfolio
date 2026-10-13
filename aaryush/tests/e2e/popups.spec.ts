@@ -107,3 +107,26 @@ test('Gupta Advisory has no availability language', async ({ page }) => {
   await page.goto('/work/gupta-advisory');
   await expect(dialog(page)).not.toContainText(/taking on|availability|now booking|small number/i);
 });
+
+test('direct link, Esc without clicking, then state is clean', async ({ page }) => {
+  await page.goto('/work/ready-rebound');
+  await expect(dialog(page)).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog(page)).toBeHidden();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveTitle(/AI Strategy & Organizational Design/);
+  expect(await page.evaluate(() => document.documentElement.classList.contains('locked'))).toBe(false);
+  await page.locator('#co-ready-rebound a.more').click();
+  await expect(dialog(page)).toBeVisible();
+});
+
+test('double close stays on site', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#sys-univise').click();
+  await expect(dialog(page)).toBeVisible();
+  await page.waitForTimeout(400);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await expect(dialog(page)).toBeHidden();
+  await expect(page).toHaveURL('http://localhost:4322/');
+});

@@ -16,6 +16,7 @@ function init(dialog: HTMLDialogElement) {
   let currentParent: string | null = null;
   let trigger: HTMLElement | null = null;
   let openedAt = 0;
+  let closing = false;
 
   const template = (slug: string) => document.getElementById(`popup-${slug}`) as HTMLTemplateElement | null;
   const state = (): PopupState | null => {
@@ -55,6 +56,7 @@ function init(dialog: HTMLDialogElement) {
   }
 
   function hide() {
+    closing = false;
     stopDiagrams();
     dialog.classList.remove('is-in');
     if (dialog.open) dialog.close();
@@ -82,8 +84,9 @@ function init(dialog: HTMLDialogElement) {
   }
 
   function requestClose() {
+    if (closing) return;
     const s = state();
-    if (s && s.depth > 0) history.go(-s.depth);
+    if (s && s.depth > 0) { closing = true; history.go(-s.depth); }
     else { history.replaceState(null, '', '/'); hide(); }
   }
 
@@ -98,6 +101,8 @@ function init(dialog: HTMLDialogElement) {
     open(slug, a.closest('dialog') ? null : a);
   });
 
+  // The browser may close the dialog natively (Esc without user activation): resync our state.
+  dialog.addEventListener('close', () => { if (current && !dialog.open) requestClose(); });
   dialog.addEventListener('cancel', (e) => { e.preventDefault(); requestClose(); });
   // Ignore the second half of a double-click landing on the freshly opened backdrop.
   dialog.addEventListener('click', (e) => { if (e.target === dialog && performance.now() - openedAt > 350) requestClose(); });
@@ -115,6 +120,7 @@ function init(dialog: HTMLDialogElement) {
 
   window.addEventListener('popstate', () => {
     const slug = parseWorkPath(location.pathname);
+    closing = false;
     if (!slug) { if (current) hide(); return; }
     const direction: Direction = !current ? 'none' : slug === currentParent ? 'back' : 'forward';
     if (render(slug, direction)) show();
