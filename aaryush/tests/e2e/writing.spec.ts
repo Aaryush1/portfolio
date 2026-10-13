@@ -12,7 +12,7 @@ test('essay page renders the full letter with reading progress', async ({ page }
   await expect(page.locator('article')).toContainText(/Don.t let them grow up in a world we were too quiet to shape./);
   const bar = page.locator('[data-reading-progress]');
   const start = Number(await bar.evaluate((el) => getComputedStyle(el).getPropertyValue('--progress') || '0'));
-  await page.mouse.wheel(0, 4000);
+  await page.evaluate(() => window.scrollBy(0, 4000)); // mouse.wheel is unsupported on mobile WebKit
   await page.waitForTimeout(300);
   const later = Number(await bar.evaluate((el) => getComputedStyle(el).getPropertyValue('--progress')));
   expect(later).toBeGreaterThan(start);

@@ -47,9 +47,22 @@ test('level meter fills step by step on hover and drains on leave', async ({ pag
   await page.goto('/');
   const level = page.locator('li.level[data-level="3"]');
   await level.scrollIntoViewIfNeeded();
+  // Record every change of the fill count in-page (MutationObserver), so the 100ms stagger can't race the assertion.
+  await level.evaluate((el) => {
+    const w = window as unknown as { __fills: number[] };
+    w.__fills = [];
+    const record = () => {
+      const n = el.querySelectorAll('.meter i.fill').length;
+      if (w.__fills[w.__fills.length - 1] !== n) w.__fills.push(n);
+    };
+    new MutationObserver(record).observe(el, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  });
   await level.hover();
-  await expect(level.locator('.meter i.fill')).toHaveCount(1, { timeout: 150 });
   await expect(level.locator('.meter i.fill')).toHaveCount(3, { timeout: 1000 });
+  const seen = await page.evaluate(() => (window as unknown as { __fills: number[] }).__fills);
+  // Filled progressively (never jumped straight 0 -> 3), and monotonically.
+  expect(seen[seen.length - 1]).toBe(3);
+  expect(seen, 'fills one segment at a time, in order').toEqual([1, 2, 3]);
   await page.mouse.move(0, 0);
   await expect(level.locator('.meter i.fill')).toHaveCount(0, { timeout: 1500 });
 });

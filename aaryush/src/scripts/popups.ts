@@ -44,8 +44,12 @@ function init(dialog: HTMLDialogElement) {
     currentParent = parent;
     dialog.scrollTop = 0;
     mountDiagrams(body);
-    view.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
     return true;
+  }
+
+  // Focus must move after showModal(), which otherwise focuses the first control (close link).
+  function focusTitle() {
+    body.querySelector<HTMLElement>('.view h2')?.focus({ preventScroll: true });
   }
 
   function show() {
@@ -75,12 +79,12 @@ function init(dialog: HTMLDialogElement) {
       const s = state();
       if (s?.parent === slug) { history.back(); return; }
       history.pushState({ popup: slug, depth: (s?.depth ?? 0) + 1, parent: current } satisfies PopupState, '', `/work/${slug}`);
-      render(slug, 'forward');
+      if (render(slug, 'forward')) focusTitle();
       return;
     }
     trigger = from;
     history.pushState({ popup: slug, depth: 1 } satisfies PopupState, '', `/work/${slug}`);
-    if (render(slug, 'none')) show();
+    if (render(slug, 'none')) { show(); focusTitle(); }
   }
 
   function requestClose() {
@@ -112,10 +116,18 @@ function init(dialog: HTMLDialogElement) {
     if (e.key !== 'Tab') return;
     const focusables = [...dialog.querySelectorAll<HTMLElement>('a[href]:not([hidden]), button:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter((el) => el.offsetParent !== null);
     if (focusables.length === 0) return;
-    const first = focusables[0], last = focusables[focusables.length - 1];
+    // Manage Tab ourselves: WebKit sends focus to the dialog itself (then the page) from a non-tabbable heading.
     const active = document.activeElement as HTMLElement | null;
-    if (e.shiftKey && (active === first || !dialog.contains(active))) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && (active === last || !dialog.contains(active))) { e.preventDefault(); first.focus(); }
+    const follows = (el: HTMLElement) => !!active && !!(active.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+    let next: HTMLElement;
+    if (e.shiftKey) {
+      const before = focusables.filter((el) => el !== active && !follows(el));
+      next = before[before.length - 1] ?? focusables[focusables.length - 1];
+    } else {
+      next = focusables.find((el) => el !== active && follows(el)) ?? focusables[0];
+    }
+    e.preventDefault();
+    next.focus();
   });
 
   window.addEventListener('popstate', () => {
@@ -123,7 +135,7 @@ function init(dialog: HTMLDialogElement) {
     closing = false;
     if (!slug) { if (current) hide(); return; }
     const direction: Direction = !current ? 'none' : slug === currentParent ? 'back' : 'forward';
-    if (render(slug, direction)) show();
+    if (render(slug, direction)) { show(); focusTitle(); }
   });
 
   // Direct load of /work/<slug>: put the homepage underneath in history so Back stays on the site.
@@ -133,5 +145,6 @@ function init(dialog: HTMLDialogElement) {
     history.pushState({ popup: initial, depth: 1 } satisfies PopupState, '', `/work/${initial}`);
     render(initial, 'none');
     show();
+    focusTitle();
   }
 }

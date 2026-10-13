@@ -48,7 +48,7 @@ function mount(svg: SVGSVGElement): () => void {
 
   const frame = (now: number) => {
     if (stopped) return;
-    const dt = last ? Math.min(50, now - last) : 0;
+    const dt = last ? Math.min(120, now - last) : 0;
     last = now;
     if (!document.hidden) {
       t += dt;

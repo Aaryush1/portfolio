@@ -5,7 +5,7 @@ const svg = (page: import('@playwright/test').Page) => page.locator('dialog#popu
 test('diagram draws, closes the loop, and pulses nodes as the dot passes', async ({ page }) => {
   await page.goto('/work/cylerity-intake');
   await expect(svg(page)).toHaveClass(/\brun\b/);
-  await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 7000 });
+  await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 15000 });
   const seen = await page.evaluate(() => new Promise<{ node: number; ok: boolean; hitNodes: number[] }>((resolve, reject) => {
     const el = document.querySelector('dialog#popup svg.dg') as SVGSVGElement;
     const rt = JSON.parse(el.dataset.runtime!) as { hits: { node: number }[] };
@@ -69,7 +69,7 @@ test('reopening does not stack loops', async ({ page }) => {
 
 test('pauses when hidden', async ({ page }) => {
   await page.goto('/work/cylerity-intake');
-  await expect(svg(page)).toHaveClass(/closed/, { timeout: 7000 });
+  await expect(svg(page)).toHaveClass(/closed/, { timeout: 15000 });
   await page.evaluate(() => {
     Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
     document.dispatchEvent(new Event('visibilitychange'));

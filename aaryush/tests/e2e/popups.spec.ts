@@ -13,7 +13,8 @@ test('direct link opens the pop-up over the homepage', async ({ page }) => {
 test('direct link then back stays on site', async ({ page }) => {
   await page.goto('/work/ready-rebound');
   await expect(dialog(page)).toBeVisible();
-  await page.goBack();
+  // page.goBack() is a no-op for same-document entries in Playwright's Firefox; history.back() is what the Back button runs.
+  await page.evaluate(() => history.back());
   await expect(page).toHaveURL(/\/$/);
   await expect(dialog(page)).toBeHidden();
   await expect(page).toHaveTitle(/AI Strategy & Organizational Design/);
@@ -40,8 +41,14 @@ test('backdrop click and close button both close', async ({ page }) => {
   await page.locator('#sys-univise').click();
   await expect(dialog(page)).toBeVisible();
   await page.waitForTimeout(400); // backdrop clicks are ignored for 350ms after opening
-  await page.mouse.click(5, 5);
-  await expect(dialog(page)).toBeHidden();
+  // The sheet is full-screen below 640px, so there is no backdrop to click on phones.
+  if ((page.viewportSize()?.width ?? 0) >= 640) {
+    await page.mouse.click(5, 5);
+    await expect(dialog(page)).toBeHidden();
+  } else {
+    await dialog(page).locator('[data-popup-close]').click();
+    await expect(dialog(page)).toBeHidden();
+  }
   await page.locator('#sys-univise').click();
   await dialog(page).locator('[data-popup-close]').click();
   await expect(dialog(page)).toBeHidden();
@@ -66,7 +73,8 @@ test('double click opens once', async ({ page }) => {
   await page.goto('/');
   await page.locator('#sys-smartbenai').dblclick();
   await expect(dialog(page)).toBeVisible();
-  await page.goBack();
+  // page.goBack() is a no-op for same-document entries in Playwright's Firefox; history.back() is what the Back button runs.
+  await page.evaluate(() => history.back());
   await expect(page).toHaveURL(/\/$/);
   await expect(dialog(page)).toBeHidden();
 });
@@ -129,4 +137,16 @@ test('double close stays on site', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toBeHidden();
   await expect(page).toHaveURL('http://localhost:4322/');
+});
+
+test('opening a pop-up focuses its title, and closing restores focus to the trigger', async ({ page }) => {
+  await page.goto('/');
+  const trigger = page.locator('#sys-univise');
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  await expect(dialog(page)).toBeVisible();
+  await expect(dialog(page).getByRole('heading', { level: 2 })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog(page)).toBeHidden();
+  await expect(trigger).toBeFocused();
 });

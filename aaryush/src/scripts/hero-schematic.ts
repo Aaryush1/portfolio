@@ -198,8 +198,9 @@ if (hero && cv && ctx) {
     const dt = last ? Math.min(0.05, (t - last) / 1000) : 0;
     last = t; step(dt); render();
   }
+  let ready = false;
   function start() {
-    if (raf || reduced() || !visible || document.hidden || locked()) return;
+    if (!ready || raf || reduced() || !visible || document.hidden || locked()) return;
     last = 0; raf = requestAnimationFrame(loop);
     cv!.dataset.running = 'true';
   }
@@ -209,12 +210,16 @@ if (hero && cv && ctx) {
     cv!.dataset.running = 'false';
   }
   function refresh() {
+    ready = true;
     build();
     if (reduced()) { stop(); staticFrame(); } else { render(); start(); }
   }
 
-  refresh();
-  if (document.fonts?.ready) document.fonts.ready.then(() => { build(); if (reduced()) staticFrame(); else render(); });
+  // Start after first paint so the canvas never competes with LCP.
+  if (reduced()) refresh();
+  else if ('requestIdleCallback' in window) requestIdleCallback(refresh, { timeout: 500 });
+  else setTimeout(refresh, 200);
+  if (document.fonts?.ready) document.fonts.ready.then(() => { if (!ready) return; build(); if (reduced()) staticFrame(); else render(); });
   let rt = 0;
   window.addEventListener('resize', () => {
     clearTimeout(rt);
