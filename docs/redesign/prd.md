@@ -163,7 +163,7 @@ Copy marked *existing* comes from the live site. Everything else is drafted from
 - **"More about [company]" link:** the wording changes, because it reads awkwardly. It gets emphasis through weight or treatment, not an underline.
 - **Logo:** the top-left mark is replaced. The current amber square inside a white square is out. Options are still open (see Open questions).
 - **Smooth page transitions** between Home, Writing and essay pages.
-- **Dark mode is primary.** A light theme isn't required. Whether to offer one is an open question.
+- **Dark only.** No light theme or toggle at launch.
 
 ## 7. User stories
 
@@ -208,7 +208,11 @@ Copy marked *existing* comes from the live site. Everything else is drafted from
 - **A pop-up as a standalone page** (opened with no JavaScript, or by some crawlers) won't have the same overlay feel.
 - **Search engines:** the site is optimized for share previews and basic indexing. Ranking in search is not a goal.
 
-## 10. Open questions
+## 10. Optional cleanup (end of project)
+
+- Remove the legacy HTML, CSS and vCard files at the repo root. They appear unused, but first confirm in the Vercel dashboard that the site builds from `aaryush/`.
+
+## 11. Open questions
 
 1. **Hero rotation subjects.** These should be general rather than specific to his projects, for example "how decisions get made / how work moves / how teams build / how products get made". To iterate during the build.
 2. **Logo or mark.** Options to explore:
@@ -218,7 +222,5 @@ Copy marked *existing* comes from the live site. Everything else is drafted from
    - a wordmark only.
    I'll mock up 3–4 options during the build.
 3. **Wording for the "More about [company]" link**, for example "Inside Cylerity →" or "The role →".
-4. **Light theme:** offer a toggle, or ship dark only? (Dark only is recommended for launch.)
-5. **Essay page styling:** how editorial or Stripe Press-like should essay pages be compared with the homepage? This will be settled with a mockup during the build.
-6. **Root legacy files.** The old HTML, CSS and vCard files at the repo root appear unused. The live site matches the Astro build in `aaryush/`, so Vercel most likely builds that folder; this needs confirming in the Vercel dashboard. Delete them as part of this project?
-7. **Rewrite of the About copy**, plus the "How AI fits" explanations. Both need drafting and review.
+4. **Essay page styling:** how editorial or Stripe Press-like should essay pages be compared with the homepage? This will be settled with a mockup during the build.
+5. **Rewrite of the About copy**, plus the "How AI fits" explanations. Both need drafting and review.
