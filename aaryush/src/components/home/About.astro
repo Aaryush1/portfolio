@@ -1,0 +1,19 @@
+---
+import { site } from '../../data/site';
+---
+<section class="sec" id="about" aria-labelledby="about-title">
+  <div class="wrap">
+    <div class="sec-head mono rv"><span class="n">§ 02</span><span>About</span><span class="f">Sheet 02 / 06</span></div>
+    <div class="about rv">
+      <h2 class="sr-only" id="about-title">About</h2>
+      <p class="about-lead">{site.about[0]}</p>
+      {site.about.slice(1).map((p) => <p>{p}</p>)}
+    </div>
+  </div>
+</section>
+<style>
+  .about { margin-top: 44px; max-width: 46rem; display: grid; gap: 18px; }
+  .about-lead { font-size: clamp(22px, 2.6vw, 30px); line-height: 1.35; letter-spacing: -.02em; color: var(--text); }
+  .about p:not(.about-lead) { color: var(--text-2); font-size: 17px; line-height: 1.7; max-width: 38rem; }
+  @media (min-width: 960px) { .about { margin-top: 56px; } }
+</style>

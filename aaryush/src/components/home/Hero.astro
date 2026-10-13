@@ -1,0 +1,118 @@
+---
+import ContactActions from '../ContactActions.astro';
+import { site } from '../../data/site';
+const { lead, subjects, settled, lede } = site.hero;
+---
+<section class="hero" id="hero" aria-labelledby="hero-name">
+  <canvas id="field" aria-hidden="true"></canvas>
+  <span class="reg reg-tl" aria-hidden="true"></span><span class="reg reg-tr" aria-hidden="true"></span>
+  <span class="reg reg-bl" aria-hidden="true"></span><span class="reg reg-br" aria-hidden="true"></span>
+  <div class="wrap">
+    <div class="hero-inner">
+      <p class="eyebrow-hero enter"><span class="tick" aria-hidden="true"></span>{site.eyebrow}</p>
+      <h1 class="name enter d1" id="hero-name">{site.name}</h1>
+      <p class="rot enter d2" id="rot" data-subjects={JSON.stringify(subjects)}>
+        <span class="sr-only">{lead} {settled.before}{settled.em}{settled.after}.</span>
+        <span aria-hidden="true">
+          <span class="rot-1">{lead}</span>
+          <span class="rot-2"><span class="slot" id="slot"><span class="slot-w">{settled.before}<em>{settled.em}</em>{settled.after}</span></span><span class="rot-pd">.</span></span>
+          <span class="meas" id="meas"></span>
+        </span>
+      </p>
+      <script is:inline>
+        (function () {
+          var rot = document.getElementById('rot'), slot = document.getElementById('slot');
+          if (!rot || !slot || !document.documentElement.classList.contains('rot-pre')) return;
+          var first = JSON.parse(rot.dataset.subjects || '[]')[0];
+          if (first) slot.innerHTML = '<span class="slot-w">' + first + '</span>';
+        })();
+      </script>
+      <p class="lede enter d3">{lede}</p>
+      <ContactActions variant="hero" />
+    </div>
+  </div>
+  <div class="wrap hero-foot enter d5" aria-hidden="true">
+    <p class="mono fig-cap"><b>Fig. 1</b> — A system at rest. Each pulse is a piece of work moving through it.</p>
+    <dl class="tblock">
+      <div><dt>Drawn by</dt><dd>A. Gupta</dd></div>
+      <div><dt>Sheet</dt><dd>01 / 06</dd></div>
+      <div><dt>Rev.</dt><dd>2026.10</dd></div>
+      <div><dt>Scale</dt><dd>1 : company</dd></div>
+    </dl>
+  </div>
+  <div class="ruler" aria-hidden="true"></div>
+</section>
+<!-- Global on purpose: the rotating line (Task 8) creates .slot-w nodes at runtime, which scoped styles would miss. -->
+<style is:global>
+.hero{position:relative;isolation:isolate;overflow:hidden}
+.hero::before{
+  content:"";position:absolute;z-index:-2;inset:0;pointer-events:none;
+  background:radial-gradient(50% 60% at 78% 40%, rgba(132,150,196,.07), transparent 70%);
+}
+#field{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none}
+@media (min-width:960px){
+  #field{-webkit-mask-image:linear-gradient(90deg, transparent 44%, #000 62%);mask-image:linear-gradient(90deg, transparent 44%, #000 62%)}
+}
+@media (max-width:959px){
+  #field{opacity:.5;-webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,.4), #000 35%, #000 70%, rgba(0,0,0,.25));mask-image:linear-gradient(to bottom, rgba(0,0,0,.4), #000 35%, #000 70%, rgba(0,0,0,.25))}
+}
+.hero-inner{
+  min-height:min(900px, calc(100svh - var(--header)));
+  display:flex;flex-direction:column;justify-content:center;
+  padding:80px 0 150px;
+}
+.eyebrow-hero{display:inline-flex;align-items:center;gap:10px;font:500 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
+.eyebrow-hero .tick{width:16px;height:1px;background:var(--accent)}
+.name{
+  margin-top:26px;font-weight:500;
+  font-size:clamp(42px, 7.4vw, 88px);line-height:.98;letter-spacing:-.045em;
+}
+.rot{
+  position:relative;margin-top:26px;max-width:20em;
+  font-size:clamp(23px, 3.1vw, 38px);line-height:1.2;letter-spacing:-.022em;font-weight:400;
+}
+.rot-1,.rot-2{display:block}
+.rot-1{color:var(--text-2)}
+.rot-2{white-space:nowrap;color:var(--text)}
+.slot{
+  position:relative;display:inline-block;white-space:nowrap;vertical-align:baseline;
+  -webkit-clip-path:inset(-.5em -.1em -.5em 0);clip-path:inset(-.5em -.1em -.5em 0);
+  transition:width .6s var(--ease-out);
+}
+.slot-w{display:inline-block}
+.slot-w.leave{position:absolute;left:0;top:0}
+.rot em{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.1em;line-height:1;letter-spacing:-.005em}
+.rot-pd{transition:color 1.2s var(--ease)}
+.is-settled .rot-pd{color:var(--accent)}
+.meas{position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0;pointer-events:none}
+.lede{margin-top:22px;max-width:31rem;color:var(--text-2);font-size:17px;line-height:1.65}
+@media (max-width:719px){
+  .hero-inner{min-height:0;padding:28px 0 40px}
+  .name{margin-top:16px}
+  .rot{margin-top:16px}
+  .lede{margin-top:14px;font-size:16px;line-height:1.6}
+}
+/* drawing-sheet furniture */
+.hero-foot{display:none}
+.hero .reg{display:none}
+@media (min-width:960px){
+  .hero .reg{display:block}
+  .reg-tl{top:20px;left:18px}.reg-tr{top:20px;right:18px}
+  .reg-bl{bottom:24px;left:18px}.reg-br{bottom:24px;right:18px}
+  .hero-foot{display:flex;position:absolute;left:0;right:0;bottom:54px;align-items:flex-end;justify-content:space-between;gap:24px}
+}
+.fig-cap{color:var(--text-3);max-width:30em}
+.fig-cap b{color:var(--text);font-weight:500}
+.tblock{display:grid;grid-template-columns:repeat(4,auto);border:1px solid var(--line-2);background:rgba(10,11,14,.85)}
+.tblock > div{padding:7px 12px 8px;border-left:1px solid var(--line-2)}
+.tblock > div:first-child{border-left:0}
+.tblock dt{font:400 10.5px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.tblock dd{font:400 12px/1.3 var(--mono);color:var(--text);letter-spacing:.02em;margin-top:3px}
+.ruler{
+  position:absolute;left:0;right:0;bottom:0;height:10px;pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.2) 1px, transparent 1px) 0 100% / 96px 10px repeat-x,
+    linear-gradient(90deg, rgba(255,255,255,.09) 1px, transparent 1px) 0 100% / 24px 5px repeat-x;
+  border-bottom:1px solid var(--line);
+}
+</style>

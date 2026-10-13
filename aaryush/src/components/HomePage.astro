@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from './home/Hero.astro';
+import About from './home/About.astro';
+import Levels from './home/Levels.astro';
+import Timeline from './home/Timeline.astro';
+import WritingTeaser from './home/WritingTeaser.astro';
+interface Props { openSlug?: string; title?: string; description?: string; ogImage?: string; path?: string }
+const { openSlug, ...seo } = Astro.props;
+---
+<BaseLayout {...seo}>
+  <main>
+    <Hero />
+    <About />
+    <Levels />
+    <Timeline />
+    <WritingTeaser />
+  </main>
+</BaseLayout>

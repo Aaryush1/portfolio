@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from '../Icon.astro';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const posts = (await getCollection('writing', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+const label = (d: Date) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+---
+<section class="sec" id="writing" aria-labelledby="writing-title">
+  <div class="wrap">
+    <div class="sec-head mono rv"><span class="n">§ 05</span><span>Writing</span><span class="f">Sheet 05 / 06</span></div>
+    <div class="sec-intro rv">
+      <h2 class="h2" id="writing-title">Notes on where this is going.</h2>
+    </div>
+    <div class="posts rv">
+      {posts.map((p) => (
+        <a class="post" href={`/writing/${p.id}`}>
+          <time datetime={p.data.date.toISOString().slice(0, 7)}>{label(p.data.date)}</time>
+          <div><h3>{p.data.title}</h3><p>{p.data.summary}</p></div>
+          <Icon class="arr" name="arrow-up-right" />
+        </a>
+      ))}
+    </div>
+    <a class="more rv" href="/writing">All writing<Icon name="arrow-right" /></a>
+  </div>
+</section>
+<style>
+.posts{margin-top:44px}
+.post{position:relative;display:grid;gap:6px;padding:26px 0;transition:background-color .25s var(--ease)}
+.post time{font:400 12.5px/1.4 var(--mono);color:var(--text-3)}
+.post h3{font-size:20px;font-weight:500;letter-spacing:-.018em;line-height:1.35;transition:color .2s}
+.post p{color:var(--text-2);font-size:15px;line-height:1.6}
+.post :global(.arr){display:none}
+@media (min-width:720px){
+  .post{grid-template-columns:140px minmax(0,1fr) 24px;gap:32px;align-items:baseline;padding:30px 16px;margin:0 -16px;border-radius:12px}
+  .post:hover{background:var(--s1)}
+  .post :global(.arr){display:block;width:16px;height:16px;color:var(--text-3);align-self:center;transition:transform .3s var(--ease),color .2s}
+  .post:hover :global(.arr){transform:translate(3px,-3px);color:var(--accent)}
+}
+.post:hover h3{color:#fff}
+.more{margin-top:16px;display:inline-flex;align-items:center;gap:10px;min-height:36px;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--text);transition:color .2s var(--ease)}
+.more :global(svg){width:14px;height:14px;color:var(--accent);transition:transform .3s var(--ease)}
+.more:hover{color:#fff}
+.more:hover :global(svg){transform:translateX(4px)}
+</style>

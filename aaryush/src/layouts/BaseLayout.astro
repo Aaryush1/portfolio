@@ -23,7 +23,7 @@ const { title = site.title, description = site.description, ogImage = '/og/home.
     <meta name="color-scheme" content="dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <Seo title={title} description={description} ogImage={ogImage} path={path} />
-    <script is:inline>document.documentElement.classList.add('js');</script>
+    <script is:inline>document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {}</script>
     <slot name="head" />
   </head>
   <body class={bodyClass} data-home-title={site.title}>
