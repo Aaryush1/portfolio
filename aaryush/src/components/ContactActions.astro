@@ -1,0 +1,69 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+interface Props { variant: 'hero' | 'footer' }
+const { variant } = Astro.props;
+const c = site.contact;
+// Email and phone: parts are reversed and joined with "|", so neither the address nor the number appears in HTML.
+const enc = (parts: readonly string[]) => [...parts].reverse().join('|');
+const links = [
+  { label: 'Email', href: undefined, icon: 'mail', obf: 'mail', v: enc(c.emailParts) },
+  { label: 'Call', href: undefined, icon: 'phone', obf: 'tel', v: enc(c.phoneParts) },
+  { label: 'LinkedIn', href: c.linkedin, icon: 'linkedin', obf: undefined, v: undefined },
+  { label: 'GitHub', href: c.github, icon: 'github', obf: undefined, v: undefined },
+] as const;
+---
+<div class="cta" data-contact={variant}>
+  <a class="btn btn-primary" href={c.vcard} download="Aaryush Gupta.vcf"><Icon name="card" />Save contact</a>
+  <span class="sep-v" aria-hidden="true"></span>
+  <div class="icons">
+    {links.map((l) => (
+      <a class="ico" href={l.href} aria-label={l.label} rel={l.href ? 'noopener' : undefined} data-obf={l.obf} data-v={l.v}>
+        <Icon name={l.icon} /><span class="lbl" aria-hidden="true">{l.label}</span>
+      </a>
+    ))}
+  </div>
+</div>
+<style>
+.cta{margin-top:34px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;height:44px;padding:0 18px 0 16px;
+  border-radius:10px;font-size:15px;font-weight:500;letter-spacing:-.005em;white-space:nowrap;
+  transition:background-color .2s var(--ease),transform .2s var(--ease);
+}
+.btn :global(svg){width:17px;height:17px}
+.btn-primary{background:var(--text);color:#0A0B0E}
+.btn-primary:hover{background:#fff}
+.btn-primary:active{transform:translateY(1px)}
+.icons{display:flex;gap:8px}
+.ico{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:44px;min-width:44px;padding:0 12px;border-radius:10px;
+  border:1px solid var(--line-2);background:rgba(10,11,14,.6);color:var(--text-2);
+  transition:border-color .2s var(--ease),background-color .2s var(--ease),color .2s var(--ease);
+}
+.ico :global(svg){width:16px;height:16px;flex:none}
+.ico:hover{border-color:rgba(242,181,68,.45);background:rgba(255,255,255,.04);color:var(--text)}
+.ico .lbl{font-size:12px}
+@media (min-width:720px){
+  .ico{padding:0}
+  .ico .lbl{
+    position:absolute;bottom:calc(100% + 8px);left:50%;transform:translate(-50%,4px);
+    font:500 11.5px/1 var(--mono);letter-spacing:.02em;color:var(--text);white-space:nowrap;
+    background:var(--s3);border:1px solid var(--line-2);border-radius:6px;padding:6px 8px;
+    opacity:0;pointer-events:none;transition:opacity .18s var(--ease),transform .18s var(--ease);
+  }
+  .ico:hover .lbl,.ico:focus-visible .lbl{opacity:1;transform:translate(-50%,0)}
+  .cta .sep-v{width:1px;height:24px;background:var(--line-2);margin:0 6px}
+}
+@media (max-width:719px){
+  .cta{margin-top:22px;display:grid;grid-template-columns:1fr;gap:8px}
+  .cta .btn-primary{height:48px;width:100%}
+  .cta .sep-v{display:none}
+  .icons{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:8px}
+  .ico{flex-direction:column;gap:4px;height:56px;padding:0 4px}
+  .ico .lbl{font:400 12px/1 var(--mono);color:var(--text-2)}
+}
+:global(html:not(.js)) .ico[data-obf]{display:none}
+@media (max-width:719px){:global(html:not(.js)) .icons{--n:2}}
+</style>

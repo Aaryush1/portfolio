@@ -1,0 +1,24 @@
+---
+import ContactActions from './ContactActions.astro';
+import { site } from '../data/site';
+---
+<footer class="foot" id="contact" aria-labelledby="contact-title">
+  <div class="wrap">
+    <div class="sec-head mono"><span class="n">§ 05</span><span>Contact</span></div>
+    <h2 id="contact-title">{site.footer.heading}</h2>
+    <p class="lead">{site.footer.lead}</p>
+    <ContactActions variant="footer" />
+    <div class="foot-bar mono" data-footer-meta>
+      <span>© {new Date().getFullYear()} Aaryush Gupta</span>
+      <span>{site.location} · {site.education}</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+<style>
+.foot{position:relative;padding:clamp(72px, 10vw, 136px) 0 40px}
+.foot h2{font-weight:500;font-size:clamp(40px, 6vw, 72px);line-height:1;letter-spacing:-.045em;margin-top:44px}
+.foot :global(.cta){margin-top:36px}
+.foot-bar{margin-top:clamp(56px, 8vw, 96px);padding-top:20px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 24px;font:400 12px/1.4 var(--mono);color:var(--text-3)}
+.foot-bar a:hover{color:var(--text)}
+</style>

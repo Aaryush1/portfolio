@@ -1,12 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-
-const productionUrl = Astro.site ?? '/';
 ---
 
 <BaseLayout title="QR — Aaryush Gupta">
-	<main class="container" style="display:flex; flex-direction:column; align-items:center; gap: 24px; padding: 96px 0;">
-		<img src="/assets/QR.png" alt="QR code" style="width: 320px; height: 320px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); padding: 8px;" />
-		<a class="btn btn--primary" href={productionUrl}>Continue to site</a>
-	</main>
+	<main class="wrap"><img src="/assets/QR.png" alt="QR code for aaryush.com" width="320" height="320" /><a href="/">Continue to site</a></main>
 </BaseLayout>
