@@ -2,6 +2,7 @@
 import ContactActions from '../ContactActions.astro';
 import { site } from '../../data/site';
 const { lead, subjects, settled, lede } = site.hero;
+const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em>${settled.after}</span>`;
 ---
 <section class="hero" id="hero" aria-labelledby="hero-name">
   <canvas id="field" aria-hidden="true"></canvas>
@@ -15,7 +16,7 @@ const { lead, subjects, settled, lede } = site.hero;
         <span class="sr-only">{lead} {settled.before}{settled.em}{settled.after}.</span>
         <span aria-hidden="true">
           <span class="rot-1">{lead}</span>
-          <span class="rot-2"><span class="slot" id="slot"><span class="slot-w">{settled.before}<em>{settled.em}</em>{settled.after}</span></span><span class="rot-pd">.</span></span>
+          <span class="rot-2"><span class="slot" id="slot" data-settled={settledHTML}><span class="slot-w">{settled.before}<em>{settled.em}</em>{settled.after}</span></span><span class="rot-pd">.</span></span>
           <span class="meas" id="meas"></span>
         </span>
       </p>
@@ -42,8 +43,12 @@ const { lead, subjects, settled, lede } = site.hero;
   </div>
   <div class="ruler" aria-hidden="true"></div>
 </section>
-<!-- Global on purpose: the rotating line (Task 8) creates .slot-w nodes at runtime, which scoped styles would miss. -->
-<style is:global>
+<!-- Scoped; :global() only for nodes the rotator creates at runtime and for ancestor/runtime state classes. -->
+<script>
+  import '../../scripts/hero-rotator';
+  import '../../scripts/hero-schematic';
+</script>
+<style>
 .hero{position:relative;isolation:isolate;overflow:hidden}
 .hero::before{
   content:"";position:absolute;z-index:-2;inset:0;pointer-events:none;
@@ -79,11 +84,11 @@ const { lead, subjects, settled, lede } = site.hero;
   -webkit-clip-path:inset(-.5em -.1em -.5em 0);clip-path:inset(-.5em -.1em -.5em 0);
   transition:width .6s var(--ease-out);
 }
-.slot-w{display:inline-block}
-.slot-w.leave{position:absolute;left:0;top:0}
-.rot em{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.1em;line-height:1;letter-spacing:-.005em}
+.slot :global(.slot-w){display:inline-block}
+.slot :global(.slot-w.leave){position:absolute;left:0;top:0}
+.rot :global(em){font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.1em;line-height:1;letter-spacing:-.005em}
 .rot-pd{transition:color 1.2s var(--ease)}
-.is-settled .rot-pd{color:var(--accent)}
+.rot:global(.is-settled) .rot-pd{color:var(--accent)}
 .meas{position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0;pointer-events:none}
 .lede{margin-top:22px;max-width:31rem;color:var(--text-2);font-size:17px;line-height:1.65}
 @media (max-width:719px){

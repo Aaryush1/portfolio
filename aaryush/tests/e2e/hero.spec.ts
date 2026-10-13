@@ -16,6 +16,42 @@ test('hero reads correctly without JavaScript', async ({ browser }) => {
   const page = await context.newPage();
   await page.goto('/');
   await expect(page.locator('#rot')).toContainText('I build the systems behind');
-  await expect(page.locator('#rot')).toContainText('how organizations work.');
+  await expect(page.locator('#slot')).toHaveText('how organizations work');
+  await expect(page.locator('#slot')).toBeVisible();
   await context.close();
+});
+
+test('rotating line cycles subjects, then settles', async ({ page }) => {
+  await page.goto('/');
+  const slot = page.locator('#slot');
+  await expect(slot).toHaveText('how decisions get made');
+  await expect(slot).toHaveText('how organizations work', { timeout: 15000 });
+  await expect(page.locator('#rot')).toHaveClass(/is-settled/);
+});
+
+test('reduced motion shows the settled line immediately', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  await page.goto('/');
+  await expect(page.locator('#slot')).toHaveText('how organizations work');
+  await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'false');
+  await context.close();
+});
+
+test('hero schematic pauses while a pop-up is open', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'true');
+  // DOM click so the page does not scroll: the hero stays in view and only html.locked can pause it
+  await page.locator('#sys-univise').evaluate((el) => (el as HTMLElement).click());
+  await expect(page.locator('html')).toHaveClass(/locked/);
+  await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'false');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'true');
+});
+
+test('hero schematic pauses when scrolled away', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'true');
+  await page.locator('#writing').scrollIntoViewIfNeeded();
+  await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'false');
 });

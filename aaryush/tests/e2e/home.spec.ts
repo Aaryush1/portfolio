@@ -42,3 +42,20 @@ test.describe('home structure', () => {
     await expect(page.locator('a.more', { hasText: /^More/ })).toHaveCount(0);
   });
 });
+
+test('level meter fills step by step on hover and drains on leave', async ({ page }) => {
+  await page.goto('/');
+  const level = page.locator('li.level[data-level="3"]');
+  await level.scrollIntoViewIfNeeded();
+  await level.hover();
+  await expect(level.locator('.meter i.fill')).toHaveCount(1, { timeout: 150 });
+  await expect(level.locator('.meter i.fill')).toHaveCount(3, { timeout: 1000 });
+  await page.mouse.move(0, 0);
+  await expect(level.locator('.meter i.fill')).toHaveCount(0, { timeout: 1500 });
+});
+
+test('level meter fills on keyboard focus', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('li.level[data-level="2"] a.chip').first().focus();
+  await expect(page.locator('li.level[data-level="2"] .meter i.fill')).toHaveCount(2, { timeout: 1000 });
+});

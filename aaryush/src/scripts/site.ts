@@ -15,7 +15,7 @@ document.querySelectorAll<HTMLAnchorElement>('a[data-obf][data-v]').forEach((a) 
 // ---------- Homepage: reveal, pointer glow, depth meters, index chips ----------
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const revealTargets = document.querySelectorAll<HTMLElement>('.rv');
+const revealTargets = document.querySelectorAll<HTMLElement>('.rv, .frag');
 if ('IntersectionObserver' in window && !reduced) {
   const io = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
@@ -36,18 +36,6 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
     });
   });
 }
-
-// Level rows light the matching square of the concentric figure.
-const lvfig = document.getElementById('lvfig');
-document.querySelectorAll<HTMLElement>('.level').forEach((row) => {
-  const depth = row.dataset.level ?? '';
-  const on = () => lvfig?.setAttribute('data-on', depth);
-  const off = () => { if (lvfig?.getAttribute('data-on') === depth) lvfig.removeAttribute('data-on'); };
-  row.addEventListener('mouseenter', on);
-  row.addEventListener('mouseleave', off);
-  row.addEventListener('focusin', on);
-  row.addEventListener('focusout', (e) => { if (!row.contains(e.relatedTarget as Node | null)) off(); });
-});
 
 document.querySelectorAll<HTMLAnchorElement>('a.chip[href^="#"]').forEach((a) => {
   a.addEventListener('click', (e) => {
