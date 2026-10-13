@@ -1,7 +1,13 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-
-<BaseLayout title="QR — Aaryush Gupta">
-	<main class="wrap"><img src="/assets/QR.png" alt="QR code for aaryush.com" width="320" height="320" /><a href="/">Continue to site</a></main>
+<BaseLayout title="QR — Aaryush Gupta" description="Scan to open aaryush.com." ogImage="/og/home.png" path="/qr">
+  <main class="wrap qr">
+    <img src="/assets/QR.png" alt="QR code for aaryush.com" width="320" height="320" />
+    <a class="more" href="/">Continue to site</a>
+  </main>
 </BaseLayout>
+<style>
+  .qr { min-height: calc(100svh - var(--header) - 240px); display: grid; place-content: center; justify-items: center; gap: 28px; padding: 64px 0; }
+  .qr img { width: min(320px, 80vw); height: auto; padding: 14px; border-radius: 14px; background: #fff; border: 1px solid var(--line-2); }
+</style>

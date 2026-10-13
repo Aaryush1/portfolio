@@ -26,9 +26,3 @@ const label = (d: Date) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
     <a class="more rv" href="/writing">All writing<Icon name="arrow-right" /></a>
   </div>
 </section>
-<style>
-.more{margin-top:16px;display:inline-flex;align-items:center;gap:10px;min-height:36px;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--text);transition:color .2s var(--ease)}
-.more :global(svg){width:14px;height:14px;color:var(--accent);transition:transform .3s var(--ease)}
-.more:hover{color:#fff}
-.more:hover :global(svg){transform:translateX(4px)}
-</style>

@@ -99,3 +99,7 @@ svg{display:block}
   .post:hover .arr{transform:translate(3px,-3px);color:var(--accent)}
 }
 .post:hover :is(h2,h3){color:#fff}
+.more{margin-top:16px;display:inline-flex;align-items:center;gap:10px;min-height:36px;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--text);transition:color .2s var(--ease)}
+.more svg{width:14px;height:14px;color:var(--accent);transition:transform .3s var(--ease)}
+.more:hover{color:#fff}
+.more:hover svg{transform:translateX(4px)}
