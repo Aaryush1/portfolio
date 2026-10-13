@@ -29,3 +29,18 @@ test('footer shows location and school without years', async ({ page }) => {
   await expect(bar).toContainText('UW–Madison');
   await expect(bar).not.toContainText(/UW–Madison[^·]*\d{4}/);
 });
+
+test('header mark links home and has an accessible name', async ({ page }) => {
+  await page.goto('/writing');
+  const mark = page.locator('header .mark');
+  await expect(mark).toHaveAttribute('href', '/');
+  await expect(mark).toHaveAccessibleName(/Aaryush Gupta/);
+  await expect(mark.locator('.mark-sq')).toHaveCount(0);
+  await expect(mark.locator('svg')).toHaveCount(1);
+});
+
+test('favicon is served', async ({ request }) => {
+  const res = await request.get('/favicon.svg');
+  expect(res.status()).toBe(200);
+  expect(await res.text()).toContain('<svg');
+});
