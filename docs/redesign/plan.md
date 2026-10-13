@@ -39,7 +39,8 @@
 - **Drafts:** copy that Claude wrote or changed ships as `draft: true` until Aaryush approves it in Task 13. Copy carried over unchanged from the live site is `draft: false`.
 - **Diagrams** appear only for `cylerity-intake`, `ready-rebound-loop` and `umn-launchpad`, and are always vertical.
 - **Reduced motion:** with `prefers-reduced-motion: reduce`, nothing loops or reveals; every animated element shows its final frame.
-- **Progressive enhancement:** without JavaScript, all content is readable, links to `/work/<slug>` load standalone pages, and the contact links work.
+- **Progressive enhancement:** without JavaScript, all content is readable, links to `/work/<slug>` load standalone pages, and Save contact, LinkedIn and GitHub work.
+- **Scraper protection (intentional; keep it):** the email address and phone number never appear in served HTML. They're stored in split parts and assembled into `mailto:` and `tel:` links by JavaScript at runtime. Without JS, the Email and Call links are hidden; the vCard carries the same details.
 - **Layout:** no horizontal scroll at any width from 320px up. Diagram labels are at least 12px on a 375px screen.
 - **`/qr`** keeps its URL.
 - **Accounts:** commits use the repo's local identity, which is already set to `Aaryush1 <aaryush@outlook.com>`. Push only in Task 16, using the Aaryush1 token (see the global CLAUDE.md).
@@ -318,16 +319,34 @@ test('vCard downloads and contains contact details', async ({ request }) => {
   expect(body).toContain('URL:https://aaryush.com');
 });
 
-test('contact links work without JavaScript', async ({ browser }) => {
-  const context = await browser.newContext({ javaScriptEnabled: false });
-  const page = await context.newPage();
+test('served HTML never contains the email address or phone number', async ({ request }) => {
+  for (const path of ['/', '/work/gupta-advisory', '/qr']) {
+    const res = await request.get(path);
+    if (res.status() === 404) continue; // route not built yet in early tasks
+    const html = await res.text();
+    for (const secret of ['aaryush@outlook.com', '9493312850', '949) 331-2850', '949-331-2850', 'mailto:', 'tel:']) {
+      expect(html.includes(secret), `${path} leaks ${secret}`).toBe(false);
+    }
+  }
+});
+
+test('with JavaScript, Email and Call become working links', async ({ page }) => {
   await page.goto('/');
   const footer = page.locator('footer');
   await expect(footer.getByRole('link', { name: 'Email' })).toHaveAttribute('href', 'mailto:aaryush@outlook.com');
   await expect(footer.getByRole('link', { name: 'Call' })).toHaveAttribute('href', 'tel:+19493312850');
+});
+
+test('without JavaScript, the vCard, LinkedIn and GitHub work and Email/Call are hidden', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto('/');
+  const footer = page.locator('footer');
+  await expect(footer.getByRole('link', { name: 'Save contact' })).toHaveAttribute('href', '/Aaryush%20Contact%20Info.vcf');
   await expect(footer.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', 'https://www.linkedin.com/in/aaryush');
   await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/Aaryush1');
-  await expect(footer.getByRole('link', { name: 'Save contact' })).toHaveAttribute('href', '/Aaryush%20Contact%20Info.vcf');
+  await expect(footer.locator('[data-obf]')).toHaveCount(2);
+  for (const el of await footer.locator('[data-obf]').all()) await expect(el).toBeHidden();
   await context.close();
 });
 ```
@@ -359,8 +378,9 @@ export const site = {
     'If you’re thinking about what AI means for how your organization actually works, I’d like to hear about it.',
   ],
   contact: {
-    email: 'aaryush@outlook.com',
-    phone: '+19493312850',
+    /** Split on purpose: never render the joined address or number into HTML (scraper protection). */
+    emailParts: ['aaryush', 'outlook.com'],
+    phoneParts: ['+1', '949', '331', '2850'],
     linkedin: 'https://www.linkedin.com/in/aaryush',
     github: 'https://github.com/Aaryush1',
     vcard: '/Aaryush%20Contact%20Info.vcf',
@@ -444,11 +464,13 @@ import { site } from '../data/site';
 interface Props { variant: 'hero' | 'footer' }
 const { variant } = Astro.props;
 const c = site.contact;
+// Email and phone: parts are reversed and joined with "|", so neither the address nor the number appears in HTML.
+const enc = (parts: readonly string[]) => [...parts].reverse().join('|');
 const links = [
-  { label: 'Email', href: `mailto:${c.email}`, icon: 'mail' },
-  { label: 'Call', href: `tel:${c.phone}`, icon: 'phone' },
-  { label: 'LinkedIn', href: c.linkedin, icon: 'linkedin' },
-  { label: 'GitHub', href: c.github, icon: 'github' },
+  { label: 'Email', href: undefined, icon: 'mail', obf: 'mail', v: enc(c.emailParts) },
+  { label: 'Call', href: undefined, icon: 'phone', obf: 'tel', v: enc(c.phoneParts) },
+  { label: 'LinkedIn', href: c.linkedin, icon: 'linkedin', obf: undefined, v: undefined },
+  { label: 'GitHub', href: c.github, icon: 'github', obf: undefined, v: undefined },
 ] as const;
 ---
 <div class="cta" data-contact={variant}>
@@ -456,7 +478,7 @@ const links = [
   <span class="sep-v" aria-hidden="true"></span>
   <div class="icons">
     {links.map((l) => (
-      <a class="ico" href={l.href} aria-label={l.label} rel={l.href.startsWith('http') ? 'noopener' : undefined}>
+      <a class="ico" href={l.href} aria-label={l.label} rel={l.href ? 'noopener' : undefined} data-obf={l.obf} data-v={l.v}>
         <Icon name={l.icon} /><span class="lbl" aria-hidden="true">{l.label}</span>
       </a>
     ))}
@@ -467,7 +489,19 @@ const links = [
 </style>
 ```
 
-Paste lines 146–188 into the `<style>` block; the comment is not the content. Use `:global(svg)` where the rules target the SVG children rendered by `Icon`.
+Paste lines 146–188 into the `<style>` block; the comment is not the content. Use `:global(svg)` where the rules target the SVG children rendered by `Icon`. Also:
+- Add `:global(html:not(.js)) .ico[data-obf]{display:none}`, so the Email and Call buttons are hidden without JavaScript.
+- In the mobile rule, set `.icons` to `grid-template-columns:repeat(var(--n,4),minmax(0,1fr))`, and add `:global(html:not(.js)) .icons{--n:2}`.
+
+Add this to `src/scripts/site.ts` (Step 7 creates the file):
+
+```ts
+// Assemble obfuscated contact links at runtime (scraper protection: never in HTML).
+document.querySelectorAll<HTMLAnchorElement>('a[data-obf][data-v]').forEach((a) => {
+  const parts = (a.dataset.v ?? '').split('|').reverse();
+  a.href = a.dataset.obf === 'mail' ? `mailto:${parts[0]}@${parts[1]}` : `tel:${parts.join('')}`;
+});
+```
 
 - [ ] **Step 7: Create `SiteHeader.astro`, `SiteFooter.astro` and `Seo.astro`, and rewrite `BaseLayout.astro`**
 
@@ -3491,5 +3525,5 @@ Update `CLAUDE.md`'s Project paragraph to drop the legacy-files note.
 
 (Record checkpoint decisions here as they happen: essay style (Task 9), logo choice (Task 12), copy approvals (Task 13), manual test results (Task 14).)
 
-- Contact links are plain `mailto:` and `tel:` links, not the old JS-assembled obfuscation, because the spec requires contact to work without JavaScript. The same details are already public in the vCard.
+- Email and phone stay JS-assembled on purpose (Aaryush's decision, 2026-10-13), so scrapers can't find them in HTML. Without JavaScript, the vCard, LinkedIn and GitHub still work.
 - The "How AI fits" level → work references live in `src/data/levels.ts` (one source of truth). Level tags on cards and pop-ups are derived from it with `levelsFor()`, so the frontmatter has no `levels` field.

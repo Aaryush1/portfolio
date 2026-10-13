@@ -190,11 +190,12 @@ Copy marked *existing* comes from the live site. Everything else is drafted from
 8. **QR page:** `/qr` still works at the same URL.
 9. **Performance:** Lighthouse on mobile scores at least 90 for Performance, 95 for Accessibility, 95 for Best Practices and 95 for SEO, on Home and on one essay page.
 10. **Confidentiality:** nothing on the site names the Ready Rebound engineering tool or the city product.
+   -  **Scraper protection:** no page's served HTML contains the email address or the phone number in any form (`aaryush@outlook.com`, `9493312850`, `(949) 331-2850`). With JavaScript on, the Email and Call links become working `mailto:` and `tel:` links.
 
 ### Failure handling
 
 11. **Reduced motion:** with `prefers-reduced-motion: reduce`, there are no loops or animated reveals. Every animation shows its final, meaningful frame. The hero line shows the settled sentence.
-12. **No JavaScript:** with JavaScript off, all content is still readable. Job and system URLs load as standalone pages instead of pop-ups, and contact links work.
+12. **No JavaScript:** with JavaScript off, all content is still readable. Job and system URLs load as standalone pages instead of pop-ups, and Save contact, LinkedIn and GitHub work. Email and phone are assembled by JavaScript on purpose so scrapers can't harvest them; without JavaScript those two links are hidden and the vCard carries the same details.
 13. **Bad URLs:** an unknown slug such as `/work/does-not-exist` or `/writing/nope` shows a 404 page that matches the site's design and links back home. It must not show a blank pop-up.
 14. **Small screens:** there's no horizontal scrolling at any width from 320px up. Diagram labels are at least 12px on phones.
 15. **Hidden tab:** background animations pause when they are scrolled off screen or the tab is hidden, so they don't keep using CPU.
