@@ -27,19 +27,6 @@ const label = (d: Date) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
   </div>
 </section>
 <style>
-.posts{margin-top:44px}
-.post{position:relative;display:grid;gap:6px;padding:26px 0;transition:background-color .25s var(--ease)}
-.post time{font:400 12.5px/1.4 var(--mono);color:var(--text-3)}
-.post h3{font-size:20px;font-weight:500;letter-spacing:-.018em;line-height:1.35;transition:color .2s}
-.post p{color:var(--text-2);font-size:15px;line-height:1.6}
-.post :global(.arr){display:none}
-@media (min-width:720px){
-  .post{grid-template-columns:140px minmax(0,1fr) 24px;gap:32px;align-items:baseline;padding:30px 16px;margin:0 -16px;border-radius:12px}
-  .post:hover{background:var(--s1)}
-  .post :global(.arr){display:block;width:16px;height:16px;color:var(--text-3);align-self:center;transition:transform .3s var(--ease),color .2s}
-  .post:hover :global(.arr){transform:translate(3px,-3px);color:var(--accent)}
-}
-.post:hover h3{color:#fff}
 .more{margin-top:16px;display:inline-flex;align-items:center;gap:10px;min-height:36px;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--text);transition:color .2s var(--ease)}
 .more :global(svg){width:14px;height:14px;color:var(--accent);transition:transform .3s var(--ease)}
 .more:hover{color:#fff}

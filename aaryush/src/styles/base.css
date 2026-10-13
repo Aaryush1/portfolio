@@ -84,3 +84,18 @@ svg{display:block}
   *, *::before, *::after { transition-duration: .01ms !important; transition-delay: 0ms !important; animation: none !important; }
   @view-transition { navigation: none; }
 }
+
+/* ---------- Writing list (home teaser + /writing) ---------- */
+.posts{margin-top:44px}
+.post{position:relative;display:grid;gap:6px;padding:26px 0;transition:background-color .25s var(--ease)}
+.post time{font:400 12.5px/1.4 var(--mono);color:var(--text-3)}
+.post :is(h2,h3){font-size:20px;font-weight:500;letter-spacing:-.018em;line-height:1.35;transition:color .2s}
+.post p{color:var(--text-2);font-size:15px;line-height:1.6}
+.post .arr{display:none}
+@media (min-width:720px){
+  .post{grid-template-columns:140px minmax(0,1fr) 24px;gap:32px;align-items:baseline;padding:30px 16px;margin:0 -16px;border-radius:12px}
+  .post:hover{background:var(--s1)}
+  .post .arr{display:block;width:16px;height:16px;color:var(--text-3);align-self:center;transition:transform .3s var(--ease),color .2s}
+  .post:hover .arr{transform:translate(3px,-3px);color:var(--accent)}
+}
+.post:hover :is(h2,h3){color:#fff}

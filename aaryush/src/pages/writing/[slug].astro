@@ -1,0 +1,17 @@
+---
+import { getCollection, render } from 'astro:content';
+import EssayLayout from '../../layouts/EssayLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('writing', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const words = (post.body ?? '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+const minutes = Math.max(1, Math.round(words / 230));
+---
+<EssayLayout title={post.data.title} subtitle={post.data.subtitle} date={post.data.date} summary={post.data.summary} slug={post.id} pdf={post.data.pdf} minutes={minutes}>
+  <Content />
+</EssayLayout>

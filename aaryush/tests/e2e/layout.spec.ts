@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const widths = [320, 375, 768, 1280];
-const paths = ['/'];
+const paths = ['/', '/writing', '/writing/bigger-than-electricity', '/writing/quiet-singularity'];
 
 for (const path of paths) {
   for (const width of widths) {
