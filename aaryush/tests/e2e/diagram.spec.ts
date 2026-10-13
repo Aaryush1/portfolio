@@ -6,7 +6,26 @@ test('diagram draws, closes the loop, and pulses nodes as the dot passes', async
   await page.goto('/work/cylerity-intake');
   await expect(svg(page)).toHaveClass(/\brun\b/);
   await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 7000 });
-  await expect(page.locator('dialog#popup g.node.hit').first()).toBeAttached({ timeout: 10000 });
+  const seen = await page.evaluate(() => new Promise<{ node: number; ok: boolean; hitNodes: number[] }>((resolve, reject) => {
+    const el = document.querySelector('dialog#popup svg.dg') as SVGSVGElement;
+    const rt = JSON.parse(el.dataset.runtime!) as { hits: { node: number }[] };
+    const hitNodes = rt.hits.map((h) => h.node);
+    const t0 = performance.now();
+    const poll = () => {
+      const g = el.querySelector('g.node.hit') as SVGGElement | null;
+      if (g) {
+        const b = g.getBoundingClientRect();
+        const d = el.querySelector('.pulse')!.getBoundingClientRect();
+        const cx = d.x + d.width / 2, cy = d.y + d.height / 2, m = 8;
+        return resolve({ node: Number(g.dataset.node), hitNodes, ok: cx >= b.left - m && cx <= b.right + m && cy >= b.top - m && cy <= b.bottom + m });
+      }
+      if (performance.now() - t0 > 10000) return reject(new Error('no hit'));
+      requestAnimationFrame(poll);
+    };
+    poll();
+  }));
+  expect(seen.hitNodes).toContain(seen.node);
+  expect(seen.ok).toBe(true);
   const pos = () => page.locator('dialog#popup .pulse').evaluate((c) => `${c.getAttribute('cx')},${c.getAttribute('cy')}`);
   const first = await pos();
   await page.waitForTimeout(400);
@@ -61,9 +80,23 @@ test('pauses when hidden', async ({ page }) => {
   expect(b).toBe(a);
 });
 
-test('diagram labels are at least 12px on a phone', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('/work/cylerity-intake');
-  const sizes = await page.locator('dialog#popup svg.dg text').evaluateAll((els) => els.map((t) => (t as SVGTextElement).getBoundingClientRect().height));
-  for (const h of sizes) expect(h).toBeGreaterThanOrEqual(11.5);
-});
+for (const slug of ['cylerity-intake', 'ready-rebound-loop', 'umn-launchpad']) {
+  test(`diagram labels are legible and input labels are spaced on a phone: ${slug}`, async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(`/work/${slug}`);
+    const r = await page.locator('dialog#popup svg.dg').evaluate((svg: SVGSVGElement) => {
+      const scale = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+      const texts = [...svg.querySelectorAll('text')].map((t) => ({
+        eff: parseFloat(getComputedStyle(t).fontSize) * scale,
+        h: t.getBoundingClientRect().height,
+      }));
+      const inputs = JSON.parse(svg.dataset.runtime!).inputs.length as number;
+      const boxes = [...svg.querySelectorAll('text.lb')].slice(0, inputs).map((t) => t.getBoundingClientRect()).sort((a, b) => a.left - b.left);
+      const gaps = boxes.slice(1).map((b, i) => b.left - boxes[i].right);
+      return { texts, gaps };
+    });
+    expect(r.texts.length).toBeGreaterThan(0);
+    for (const t of r.texts) { expect(t.eff).toBeGreaterThanOrEqual(12); expect(t.h).toBeGreaterThanOrEqual(11.5); }
+    for (const g of r.gaps) expect(g).toBeGreaterThanOrEqual(6);
+  });
+}

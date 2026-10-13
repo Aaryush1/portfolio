@@ -58,7 +58,7 @@ export const diagrams: Record<DiagramKey, DiagramSpec> = {
     vb: [320, 452],
     title: 'UMN Discovery Launchpad system diagram',
     desc: 'Founders upload their documents and materials. The system builds rubrics, structure and documentation of where each company stands. The Launchpad team uses that picture to bring in the right people and support, and progress feeds back into the profile so nothing is relearned.',
-    inputs: [[110, 26, 54, 'DOCS', 0], [150, 26, 54, 'DECKS', 110], [190, 26, 54, 'NOTES', 220]],
+    inputs: [[92, 26, 54, 'DOCS', 0], [150, 26, 54, 'DECKS', 110], [208, 26, 54, 'NOTES', 220]],
     nodes: [
       { x: 75, y: 54, w: 150, h: 50, t: 'Founder materials', s: 'UPLOADED', d: 380 },
       { x: 50, y: 140, w: 200, h: 54, t: 'Structure built', s: 'RUBRICS · DOCS', d: 900 },

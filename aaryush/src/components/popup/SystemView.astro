@@ -27,7 +27,7 @@ const crumb = `${company.data.name} · ${number}`;
           <div class="dg-host"><SystemDiagram name={s.diagram} /></div>
         </div>
         <figcaption>
-          <span>Fig. {number} — {s.caption}</span>
+          <span>Fig. {number.replace(/^SYS\./, "")} — {s.caption}</span>
           <span class="lgd">{s.legend.map((l) => <span><i class:list={['lg', legendClass[l.kind]]} aria-hidden="true"></i>{l.label}</span>)}</span>
         </figcaption>
       </figure>
