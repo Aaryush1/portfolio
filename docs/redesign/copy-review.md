@@ -1,0 +1,728 @@
+# Copy review: aaryush.com redesign
+
+> Edit anything directly in this file. Replace an option list with the chosen wording. Delete nothing you want kept.
+
+How to use this file: every block below has a **Source** (where the text lives), the **Current** text in full, and, where there are choices, a checklist. Tick one option (`[x]`) or write your own wording under "Own wording". Edit the Current text in place if you only want tweaks. When you are done, tell me and I will apply your wording to the source files exactly as written, then flip the draft flags.
+
+Voice reminders (from the project notes): operator, not engineer; confident but not salesy; no "leverage AI", "unlock", "digital transformation"; no personal workflow details; no outbound content links; story over metrics.
+
+Contents
+
+- Part A: Draft blocks (the brief's list): 1 Hero, 2 About, 3 How AI fits, 4 Inside-link label, 5 Work intro lead, 6 Content files with `draft: true`
+- Part B: New copy written during the build (not from the old live site): 7 Diagram titles and descriptions, 8 Hero figure caption and title block, 9 Section intros and headings, 10 Footer, 11 "Next" line, 12 404 page, 13 Other small UI labels
+
+---
+
+# Part A: Draft blocks
+
+## 1. Hero
+
+**Source:** `aaryush/src/data/site.ts` (`site.hero`)
+
+### 1a. Lead (fixed phrase before the rotating subject)
+
+Current:
+
+> I build the systems behind
+
+### 1b. Rotating subjects (the `subjects` list)
+
+Current (four phrases, each completes "I build the systems behind ___."):
+
+```
+how decisions get made
+how work moves
+how teams build
+how products get made
+```
+
+Options:
+
+- [ ] **Keep current** (as above)
+- [ ] **A:** `how decisions get made / how work moves / how teams build / how products get made`
+- [ ] **B:** `how companies decide / how work flows / how software gets built / how teams scale`
+- [ ] **C: own wording** (write one phrase per line):
+
+```
+(your four subjects here)
+```
+
+Note: option A is identical to the current list. Say so if you want it kept. The first subject is what the page shows before the rotator starts, and an e2e test (`hero.spec.ts`) checks it, so I will update that test to match whatever you pick.
+
+### 1c. Settled line (where the rotator comes to rest)
+
+Current: "I build the systems behind **how organizations work**." Stored as three parts: before `how `, emphasized word `organizations`, after ` work`.
+
+```
+before: "how "
+em:     "organizations"
+after:  " work"
+```
+
+Edit here if you want different wording:
+
+```
+(settled line, with the italic word marked *like this*)
+```
+
+### 1d. Lede (paragraph under the rotator)
+
+Current:
+
+> I look for the system underneath how a company works, then rebuild it with AI, so it handles a whole class of problems on its own, not just the one in front of it.
+
+### 1e. Eyebrow, site title and meta description (also in `site.ts`)
+
+Current eyebrow (small line above the name):
+
+> AI Strategy & Organizational Design
+
+Current page title:
+
+> Aaryush Gupta — AI Strategy & Organizational Design
+
+Current meta description (search results and link previews):
+
+> I build the systems behind how organizations work: operating models, decision architectures and AI systems across healthcare, finance and tech.
+
+---
+
+## 2. About
+
+**Source:** `aaryush/src/data/site.ts` (`site.about`, three paragraphs; the first is shown larger)
+
+Current paragraph 1:
+
+> AI is becoming the infrastructure underneath how decisions get made, how expertise gets applied, and how teams create value. The organizations that see this early won’t just be faster. They’ll be built differently.
+
+Current paragraph 2:
+
+> That’s the work I do: finding the system underneath how an organization runs, then rebuilding it around AI so it handles a whole class of problems on its own. I’ve done it across healthcare, finance, hiring and education, inside companies and as an advisor.
+
+Current paragraph 3:
+
+> If you’re thinking about what AI means for how your organization actually works, I’d like to hear about it.
+
+Edited version (leave blank to keep the current text):
+
+```
+(paragraph 1)
+
+(paragraph 2)
+
+(paragraph 3)
+```
+
+---
+
+## 3. How AI fits
+
+### 3a. Section intro
+
+**Source:** `aaryush/src/components/home/Levels.astro` (the `h2` and `lead` in `.levels-head`)
+
+Current heading:
+
+> Four levels where AI changes an organization.
+
+Current lead:
+
+> Most problems show up at one level but are caused at another. I start by finding which level a problem actually lives at, then build there. Each level links to the work below that sits at it.
+
+Edited version (leave blank to keep):
+
+```
+Heading:
+Lead:
+```
+
+### 3b. The four levels
+
+**Source:** `aaryush/src/data/levels.ts` (`title` + italic `em` form the heading; `body` is the paragraph)
+
+**L.01** heading: *How the organization* **runs** (title "How the organization ", em "runs")
+
+> Operating models and decision rights: who decides what, and which decisions a system can carry so people don’t have to.
+
+**L.02** heading: *How work* **moves** (title "How work ", em "moves")
+
+> The handoffs between people and AI: where judgment is needed, and where volume can be absorbed without anyone touching it.
+
+**L.03** heading: *How things get* **built** (title "How things get ", em "built")
+
+> Engineering and product processes rebuilt around AI, so more people can build and fewer steps wait on a specialist.
+
+**L.04** heading: *What gets* **built** (title "What gets ", em "built")
+
+> Products that only exist because AI does.
+
+Note: L.03 and L.04 both end in the word "built" (how things get built / what gets built). Worth a glance on whether that reads as intended.
+
+Edited version (leave blank to keep):
+
+```
+L.01 heading:
+L.01 body:
+
+L.02 heading:
+L.02 body:
+
+L.03 heading:
+L.03 body:
+
+L.04 heading:
+L.04 body:
+```
+
+### 3c. "Seen in" chip labels (small)
+
+**Source:** `aaryush/src/components/home/Levels.astro` (`chipLabels` and the "Seen in" label)
+
+Current: the label "Seen in" precedes each level's links. Company chips read "Operating model" (Cylerity) and "Advisory" (Gupta Advisory); any other company chip reads "Overview". System chips use the system's title.
+
+---
+
+## 4. Inside-link label
+
+**Source:** `aaryush/src/data/site.ts` (`companyLinkLabel`), used in `aaryush/src/components/home/Timeline.astro`. It is the link under each company's one-liner that opens the company pop-up.
+
+Current: `Inside {name}` (example: "Inside Cylerity")
+
+Options:
+
+- [ ] **Inside {name}** (current)
+- [ ] **The role** (same label for every company)
+- [ ] **{name} in detail**
+- [ ] **Own wording** (use `{name}` where the company name goes):
+
+```
+(your label)
+```
+
+---
+
+## 5. Work intro lead
+
+**Source:** `aaryush/src/components/home/Timeline.astro` (the `lead` under the "Work" heading)
+
+Current heading (see also section 9):
+
+> Companies, and the systems inside them.
+
+Current lead:
+
+> Each company in a sentence, then its systems, each one built to handle a whole class of work rather than a single case.
+
+Edited version (leave blank to keep):
+
+```
+Lead:
+```
+
+---
+
+## 6. Content files with `draft: true`
+
+Nine files are drafts. Each shows the frontmatter text fields (everything that renders as copy) and the body in full. Fields like `name`, `role`, `start`, `end`, `order`, `company`, `diagram`, `legend` kinds and `ogDescription` are listed where they affect what a visitor reads. Edit the quoted text in place.
+
+Not drafts (already approved, no action): `systems/skale-platform.md`, `systems/smartbenai.md`, `systems/univise.md`, `writing/bigger-than-electricity.md`, `writing/quiet-singularity.md`.
+
+### 6.1 Gupta Advisory
+
+**Source:** `aaryush/src/content/companies/gupta-advisory.md`
+
+- name: Gupta Advisory
+- role: AI strategy & systems advisory
+- dates: Dec 2024 – present
+
+**summary** (shown as a pull-quote on the timeline and as "The practice" in the pop-up):
+
+> I work with organizations on how they should operate with AI, starting with how the business actually works, then targeted experiments that prove value fast.
+
+**facts:**
+
+- Role: Advisor
+- Since: Dec 2024
+
+**ogDescription** (link-preview text):
+
+> How Aaryush Gupta works with organizations on what AI means for how they operate.
+
+**Body** (shown under "How I work"):
+
+> The model is simple. Someone reaches out with a problem. I spend real time understanding their business: not just the symptom, but what the organization actually looks like today and where the friction is.
+>
+> Then I come back with a few targeted solutions for quick experiments, ways to find value without a large upfront commitment. If we see ROI on day one, we commit to something larger. No lengthy proposals. No months of discovery before anything happens.
+>
+> The through-line is always the same: figure out where AI changes how the organization works, and design for that shift.
+>
+> I do my best work where decisions can move quickly. That's usually smaller teams, sometimes a focused group inside a larger company.
+>
+> The best first message is a rough picture of what you're trying to solve and how it's handled today.
+
+Note: the last paragraph repeats the footer lead (section 10) almost word for word. Keep both, or change one.
+
+### 6.2 Ready Rebound
+
+**Source:** `aaryush/src/content/companies/ready-rebound.md`
+
+- name: Ready Rebound
+- role: AI & Engineering Lead
+- dates: Dec 2025 – present
+
+**summary:**
+
+> A workers' comp platform that helps injured employees get back to work.
+
+**owns** (title, then detail; shown as the numbered list under "What I own"):
+
+1. **AI in every department:** The goal I care most about isn't in engineering at all. It's AI-driven efficiency across the whole company, with workflows redesigned around AI rather than AI added to old ones.
+2. **Engineering:** I lead AI and engineering, manage the engineering team, and set the technical architecture.
+3. **A new product:** I shaped a new product that cities are now adopting, built the system that builds it, and led the team that shipped it.
+
+**facts:**
+
+- Role: AI & Engineering Lead
+- Since: Dec 2025
+
+**ogDescription:**
+
+> Aaryush Gupta's work as AI & Engineering Lead at Ready Rebound.
+
+**Body:**
+
+> The goal isn't to add AI to the workflow. It's to redesign the workflow around AI, in every department, not just engineering.
+
+### 6.3 Cylerity
+
+**Source:** `aaryush/src/content/companies/cylerity.md`
+
+- name: Cylerity
+- role: AI Lead
+- dates: Jan 2024 – present
+
+**summary:**
+
+> A fintech-healthcare company that underwrites insurance claims and advances cash to healthcare providers, so they aren't waiting weeks to get paid.
+
+**problem** (shown as "The problem space"):
+
+> Providers can wait weeks for a claim to pay out. Advancing that cash means every funding decision has to be fast, explainable and compliant. A weeks-long claims cycle has to become a same-day decision without cutting corners on risk.
+
+**owns:**
+
+1. **Decision architecture:** How funding decisions get made, which ones a system makes on its own, and where a person decides.
+2. **Compliance framework:** Designed so risk and compliance run in parallel with each decision, not after it.
+3. **Operating model:** Redesigned so everyone in the company uses Claude Code and produces output independently, not just the engineers.
+4. **Business-to-technical pipeline:** A structured path from a business need to something an engineer can build.
+
+**facts:**
+
+- Role: AI Lead
+- Since: Jan 2024
+- Arc: MVP → eight-figure lending facility
+
+**ogDescription:**
+
+> Aaryush Gupta's work as AI Lead at Cylerity, from MVP to an eight-figure lending facility.
+
+**Body:**
+
+> When I joined, Cylerity had a standard roadmap and a traditional way of building. I redesigned the operating model. Today everyone in the company uses Claude Code and produces output independently, and everything flows from business-level features down to technical implementation, step by step.
+>
+> That operating model took the company from MVP to an eight-figure lending facility.
+
+### 6.4 Skale.win
+
+**Source:** `aaryush/src/content/companies/skale.md`
+
+- name: Skale.win
+- role: Founding member, Product & Strategy
+- dates: Jun 2024 – Feb 2026
+
+**summary:**
+
+> Co-founded an end-to-end career platform that helps people understand their strengths, upskill, and get matched to opportunities.
+
+**facts:**
+
+- Role: Founding member, Product & Strategy
+- When: Jun 2024 – Feb 2026
+
+**ogDescription:**
+
+> Aaryush Gupta's work as a founding member of Skale.win.
+
+**Body:**
+
+> We set out to reconstruct what hiring is as a whole. The resume has been the standard for decades, but it's a flat, low-resolution signal of what a person can actually do. We used higher-dimensional embedding models to capture real capability: not keywords on a page, but what someone is genuinely able to contribute.
+>
+> The platform covered everything a career needs: understand how to be better, upskill, and find the right opportunities. The business model was white-label and enterprise hiring.
+>
+> It was the first AI product I took end to end, from infrastructure to deployment, and it was received exceptionally well by the people using it to prepare for interviews.
+
+### 6.5 Earlier (group)
+
+**Source:** `aaryush/src/content/companies/earlier.md`
+
+- name: Earlier (group heading on the timeline, labelled "Earlier work")
+- dates: Mar 2023 – Jul 2024
+- No body, no facts; it has no pop-up of its own. It groups the earlier systems (currently 6.9).
+
+**summary:**
+
+> The first products I built with AI, from the release of GPT-4 onward.
+
+### 6.6 Cylerity: Claims underwriting
+
+**Source:** `aaryush/src/content/systems/cylerity-underwriting.md`
+
+- title: Claims underwriting
+- company: Cylerity
+
+**summary** (card on the timeline):
+
+> Turns a weeks-long claims cycle into same-day funding decisions. Risk and compliance run in parallel, and providers see what was approved and why.
+
+**outcome** (the "→" line on the card):
+
+> Backs an eight-figure lending facility
+
+**facts:**
+
+- Input: Healthcare claims data
+- Output: A same-day funding decision
+- Result: Eight-figure lending facility
+
+**Body:**
+
+> Insurance claims took weeks to pay out, forcing healthcare providers into cash crunches that stalled operations and growth. No underwriting process existed to fix it.
+>
+> I designed the operating model end to end: how claims data enters, gets assessed, and produces a funding decision. Risk assessment and compliance run in parallel, which collapses weeks into hours, and a transparency layer shows providers exactly what was approved and why.
+>
+> The result is same-day decisions for providers, an underwriting operation that runs end to end, and an eight-figure lending facility.
+
+### 6.7 Cylerity: Engineering intake
+
+**Source:** `aaryush/src/content/systems/cylerity-intake.md` (has a diagram, see section 7)
+
+- title: Engineering intake
+- company: Cylerity
+
+**summary:**
+
+> Anyone in the company drops an idea into a shared Claude project. A conversation draws out what's needed and classifies it as an idea, tracked, or a scope, ready to build.
+
+**outcome:**
+
+> Retired a sprawling spreadsheet
+
+**caption** (the "Fig." line under the diagram):
+
+> Every request enters the same conversation; classification decides where it waits.
+
+**legend** (labels under the diagram):
+
+- Flow
+- Revisited
+- Feedback loop
+
+**facts:**
+
+- Input: Anyone in the company
+- Interface: A shared Claude project
+- Output: Idea (tracked) · Scope (ready to build)
+- Replaced: A sprawling spreadsheet
+
+**Body:**
+
+> Engineering requests used to live in a sprawling spreadsheet. Half-formed ideas sat next to work that was ready to build, and scoping an idea depended on someone already knowing what it needed.
+>
+> Now anyone in the company drops an idea into a shared Claude project. A proactive conversation draws out what's actually needed, then classifies it: an idea, vague but tracked, or a scope, defined enough for an engineer to build. People focus on the ideas; the system handles the definition, and what ships feeds the next conversation.
+
+### 6.8 Ready Rebound: Engineering loop
+
+**Source:** `aaryush/src/content/systems/ready-rebound-loop.md` (has a diagram, see section 7)
+
+- title: Engineering loop
+- company: Ready Rebound
+
+**summary:**
+
+> An engineer hands it a ticket; it runs the full engineering process, from implementation and review passes to a documentation tree it keeps current, the PR, and QA in a real browser, pulling a person in only for decisions, specs and architecture.
+
+**outcome:**
+
+> Two people now ship what four did
+
+**caption:**
+
+> A ticket runs the whole process; a person is pulled back in only where judgment matters.
+
+**legend:**
+
+- A person
+- Builds from the docs
+- Back to a person
+
+**facts:**
+
+- Input: A ticket from an engineer
+- A person: Decisions, specs, architecture
+- Output: A reviewed PR, QA-tested in a real browser
+- Result: Two people ship what four did
+
+**Body:**
+
+> An engineer hands the loop a ticket. From there it runs the full engineering process: implementation and review passes, a documentation tree it keeps current and builds from, the pull request, and QA in a real browser.
+>
+> A person is pulled in only where judgment matters: decisions, specs and architecture. Two people now ship what four did, and for smaller features that don't need architecture work, non-technical teammates open their own PRs.
+
+### 6.9 Earlier: UMN Discovery Launchpad
+
+**Source:** `aaryush/src/content/systems/umn-launchpad.md` (has a diagram, see section 7)
+
+- title: UMN Discovery Launchpad
+- company: Earlier (group)
+
+**summary:**
+
+> Replaced ad-hoc startup mentorship with a system that structures what each founder has already done, so the right people can help without relearning it.
+
+**outcome:** none (no outcome line on this card)
+
+**caption:**
+
+> Founder materials become structure once, so nobody relearns what's already been done.
+
+**legend:**
+
+- Flow
+- The Launchpad team
+- Progress updates the profile
+
+**facts:** none
+
+**Body:**
+
+> Founders and mentors were drowning in scattered information with no way to identify gaps or prioritize. Mentorship was ad-hoc, and the most useful help often arrived too late.
+>
+> Founders upload their documents and materials. The system builds the rubrics, structure and documentation of where that company actually stands, work that used to fall on people. Launchpad, the University of Minnesota's tech-transfer office, uses that picture to bring in the right people and the right support, without spending time relearning what's already been done.
+
+---
+
+# Part B: New copy written during the build
+
+None of the text in Part B came from the old live site. It was written while building the redesign, so it needs your eye too. Same rule: edit in place.
+
+## 7. Diagram titles, descriptions and labels
+
+**Source:** `aaryush/src/data/diagrams.ts`. The `title` and `desc` are read aloud by screen readers (not visible on screen). Node and edge labels are drawn inside the diagram (shown in the table in capitals).
+
+### 7a. Launchpad (UMN Discovery Launchpad), full detail
+
+**title:**
+
+> UMN Discovery Launchpad system diagram
+
+**desc:**
+
+> Founders upload their documents and materials. The system builds rubrics, structure and documentation of where each company stands. The Launchpad team uses that picture to bring in the right people and support, and progress feeds back into the profile so nothing is relearned.
+
+**Input chips** (small tags above the first box): `DOCS`, `DECKS`, `NOTES`
+
+**Boxes** (label, then sub-label):
+
+| # | Label | Sub-label | Style |
+| - | ----- | --------- | ----- |
+| 1 | Founder materials | UPLOADED | normal |
+| 2 | Structure built | RUBRICS · DOCS | normal |
+| 3 | Where it stands | COMPANY PROFILE | normal |
+| 4 | Launchpad team | RIGHT PEOPLE · SUPPORT | person (amber) |
+
+**Arrows:** 1 → 2 → 3 → 4, then a feedback loop from 4 back up to 2, labelled `PROGRESS UPDATES THE PROFILE` (two lines in the drawing).
+
+Edit labels here if you want changes:
+
+```
+Title:
+Desc:
+Input chips:
+Box 1 / sub:
+Box 2 / sub:
+Box 3 / sub:
+Box 4 / sub:
+Feedback label:
+```
+
+### 7b. Intake (Engineering intake), brief
+
+**title:**
+
+> Engineering intake system diagram
+
+**desc:**
+
+> Anyone in the company starts a conversation in a shared Claude project. The conversation is classified as an idea, which is tracked and revisited as it sharpens, or a scope, which is ready to build and goes to an engineer. Shipped work feeds back to the people who asked.
+
+Labels drawn: chips `OPS`, `FIN`, `SALES`; boxes "Anyone / IN THE COMPANY", "Conversation / SHARED CLAUDE PROJECT", decision "Classify", "Idea / TRACKED", "Scope / READY TO BUILD", "Engineer builds / SHIPS IT"; arrow labels `VAGUE`, `DEFINED`, `SHIPPED WORK FEEDS BACK`, `REVISITED AS IT SHARPENS`.
+
+### 7c. Loop (Engineering loop), brief
+
+**title:**
+
+> Engineering loop system diagram
+
+**desc:**
+
+> An engineer hands over a ticket. A person sets the spec and decisions. The loop then implements and reviews in repeated passes, keeps the documentation tree current and builds from it, opens a pull request and QA-tests it in a real browser. It comes back to a person only for decisions, specs and architecture.
+
+Labels drawn: chip `ENGINEER`; boxes "Ticket / FROM AN ENGINEER", "Spec & decisions / HUMAN", "Implement", "Review", "Docs tree updated / KEPT CURRENT", "PR opened", "Browser QA / REAL BROWSER"; arrow labels `PASSES`, `BACK TO A PERSON ONLY FOR DECISIONS & ARCHITECTURE`.
+
+---
+
+## 8. Hero figure caption and title block
+
+**Source:** `aaryush/src/components/home/Hero.astro` (bottom strip of the hero, `.hero-foot`)
+
+Current caption:
+
+> **Fig. 1** — A system at rest. Each pulse is a piece of work moving through it.
+
+Current title block (drawing-sheet style):
+
+| Label | Value |
+| ----- | ----- |
+| Drawn by | A. Gupta |
+| Sheet | 01 / 06 |
+| Rev. | 2026.10 |
+| Scale | 1 : company |
+
+Edited version (leave blank to keep):
+
+```
+Caption:
+Title block (label: value, one per line):
+```
+
+---
+
+## 9. Section intros and headings
+
+The small header strip on each section (a "§" number, a name and a "Sheet" note) is part of the drafting-sheet look. The big headings and leads are copy.
+
+| Section | Strip | Heading | Lead | Source |
+| ------- | ----- | ------- | ---- | ------ |
+| Hero | none | (name) | see section 1 | `components/home/Hero.astro` |
+| About | § 02 · About · Sheet 02 / 06 | (hidden "About") | see section 2 | `components/home/About.astro` |
+| How AI fits | § 03 · How AI fits · Sheet 03 / 06 | Four levels where AI changes an organization. | see section 3a | `components/home/Levels.astro` |
+| Work | § 04 · Work · Fig. 4.1 — Timeline, newest first | Companies, and the systems inside them. | see section 5 | `components/home/Timeline.astro` |
+| Writing | § 05 · Writing · Sheet 05 / 06 | Notes on where this is going. | none | `components/home/WritingTeaser.astro` |
+| Contact | § 06 · Contact · Sheet 06 / 06 | see section 10 | see section 10 | `components/SiteFooter.astro` |
+
+Also: the levels diagram caption in the How AI fits section reads "**Fig. 3.1** — Four levels, outside in", and the Writing section has a link reading "All writing".
+
+Edited headings (leave blank to keep):
+
+```
+How AI fits heading:
+Work heading:
+Writing heading:
+```
+
+---
+
+## 10. Footer
+
+**Source:** `aaryush/src/data/site.ts` (`site.footer`), rendered by `aaryush/src/components/SiteFooter.astro`. This block has its own draft flag (`site.drafts.footer`), currently `false`, so it is not blocking the release gate, but it is new copy.
+
+Current heading:
+
+> Let’s talk.
+
+Current lead:
+
+> The best first message is a rough picture of what you’re trying to solve and how it’s handled today.
+
+Current drawing caption beside the footer graphic:
+
+> **Fig. 5.1** — The loop, closed. Your turn.
+
+Current bottom bar: "© {year} Aaryush Gupta", "Madison, WI · UW–Madison", "Back to top ↑" (location and school come from `site.location` and `site.education`).
+
+Edited version (leave blank to keep):
+
+```
+Heading:
+Lead:
+Caption:
+```
+
+---
+
+## 11. "Next" line on the timeline
+
+**Source:** `aaryush/src/data/site.ts` (`site.next`), rendered at the top of the timeline in `aaryush/src/components/home/Timeline.astro`
+
+Current (as shown):
+
+> **Next** — contextOS. Coming soon.
+
+Stored as `name: 'contextOS'` and `note: 'Coming soon.'`. The word "Next" is in the template.
+
+Edited version (leave blank to keep; or write "remove" to drop the line):
+
+```
+Next line:
+```
+
+---
+
+## 12. 404 page
+
+**Source:** `aaryush/src/pages/404.astro`
+
+Current:
+
+- Strip: § 404 · Not found · Sheet — / —
+- Heading: This one’s not here.
+- Lead: The link may be old, or the page may have moved.
+- Link: Back to home
+- Browser tab title: Not found — Aaryush Gupta
+- Meta description: This page doesn't exist.
+
+Edited version (leave blank to keep):
+
+```
+Heading:
+Lead:
+Link:
+```
+
+---
+
+## 13. Other small UI labels
+
+**Source:** `aaryush/src/components/popup/JobView.astro`, `SystemView.astro`, `PopupShell.astro`, `Timeline.astro`
+
+These are short labels inside the pop-ups and cards. Listed so nothing is a surprise; change only if one bothers you.
+
+- Company pop-up section labels: "The company" (Gupta Advisory: "The practice"); "The problem space"; "What I own" (Gupta Advisory: "How I work"); "Systems built here"
+- System rows and cards: "Open schematic" (has a diagram) or "Read" (no diagram)
+- Timeline: the role column shows "Earlier work" for the Earlier group; breadcrumb reads "Work · {date range}"
+- Pop-up chrome: "Back" (defaults to the parent company name), "Esc", "Close"
+- Level tags on cards and pop-ups: `L1`–`L4`; in pop-ups they read e.g. "L1 — How the organization runs"
+
+Edits:
+
+```
+(any label changes)
+```
+
+---
+
+## Sign-off
+
+- [ ] I have reviewed every block above.
+- [ ] Blocks I want left exactly as they are: (list the section numbers)
+- [ ] Anything I want to cut entirely: (list)
