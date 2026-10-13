@@ -1,0 +1,68 @@
+/* ---------- Diagram figure ---------- */
+.sys-body{display:grid;gap:32px;padding:28px 20px 44px}
+@media (min-width:860px){.sys-body{grid-template-columns:400px minmax(0,1fr);column-gap:48px;padding:36px 36px 52px;align-items:start}}
+.dg-frame{
+  position:relative;border:1px solid var(--line-2);border-radius:12px;padding:22px 0 18px;
+  background:
+    linear-gradient(var(--g-maj) 1px, transparent 1px) 0 0/12px 12px,
+    linear-gradient(90deg, var(--g-maj) 1px, transparent 1px) 0 0/12px 12px,
+    var(--bg);
+}
+.dg-frame .reg{opacity:.8}
+.dg-frame .reg-tl{top:6px;left:6px}.dg-frame .reg-tr{top:6px;right:6px}
+.dg-frame .reg-bl{bottom:6px;left:6px}.dg-frame .reg-br{bottom:6px;right:6px}
+.dg-host{max-width:360px;margin:0 auto;padding:0 6px}
+.dg-fig figcaption{margin-top:12px;display:grid;gap:8px;color:var(--text-3);font:400 12px/1.5 var(--mono);letter-spacing:.02em}
+.dg-fig figcaption .lgd{display:flex;flex-wrap:wrap;gap:6px 16px}
+.dg-fig figcaption .lgd span{display:inline-flex;align-items:center;gap:8px}
+.lg{display:inline-block;width:18px;height:0;border-top:1px solid rgba(255,255,255,.45)}
+.lg.d{border-top-style:dashed}
+.lg.a{border-top-color:rgba(242,181,68,.8)}
+.lg.h{width:8px;height:8px;border:1px solid rgba(242,181,68,.8)}
+.story p{color:var(--text-2);font-size:16px;line-height:1.72;max-width:36em}
+.story p + p{margin-top:16px}
+.story p:first-child{color:var(--text)}
+.story .spec{margin-top:28px}
+
+/* ---------- Diagram ---------- */
+.dg{display:block;width:100%;height:auto;overflow:visible}
+.dg .ln{fill:none;stroke:rgba(255,255,255,.36);stroke-width:1}
+.dg .ln.dash{stroke:rgba(255,255,255,.3);stroke-dasharray:3 4}
+.dg .ln.fb{transition:stroke 1s var(--ease)}
+.dg.closed .ln.fb{stroke:rgba(242,181,68,.62)}
+.dg .ah{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1;stroke-linecap:round;stroke-linejoin:round}
+.dg.closed .ah.fb{stroke:rgba(242,181,68,.8);transition:stroke 1s var(--ease)}
+.dg .box{fill:none;stroke:rgba(255,255,255,.46);stroke-width:1}
+.dg .box.dbox{stroke-dasharray:4 3}
+.dg .box.hum{stroke:rgba(242,181,68,.6)}
+.dg .fill{fill:var(--s2);stroke:none}
+.dg .lit{fill:rgba(242,181,68,.08);stroke:rgba(242,181,68,.75);stroke-width:1.2}
+.dg .flash{fill:none;stroke:var(--accent);stroke-width:1.2;opacity:0}
+.dg .hm{fill:var(--accent)}
+.dg .nt{font-family:var(--font);font-size:15.5px;font-weight:500;fill:var(--text);letter-spacing:-.01em}
+.dg .ns{font-family:var(--mono);font-size:12.5px;fill:var(--text-3);letter-spacing:.05em}
+.dg .ns.hum{fill:rgba(242,181,68,.9)}
+.dg .lb{font-family:var(--mono);font-size:12px;fill:var(--text-2);letter-spacing:.05em}
+.dg .id{font-family:var(--mono);font-size:12px;fill:rgba(255,255,255,.32);letter-spacing:.04em}
+.dg .in-dot{fill:var(--accent)}
+.dg .pulse{fill:var(--accent);opacity:0;transition:opacity .8s var(--ease)}
+.dg .halo{fill:var(--accent);opacity:0;transition:opacity .8s var(--ease)}
+.dg .pulse.on{opacity:1}.dg .halo.on{opacity:.16}
+/* Fully visible without JS; the draw-in state only applies once the page is marked .js and the run has not started. */
+.dg .draw{stroke-dasharray:1 1;stroke-dashoffset:0;transition:stroke-dashoffset var(--dur,.5s) var(--ease-d) var(--d,0ms)}
+.js .dg:not(.run) .draw{stroke-dashoffset:1}
+.dg .fade{opacity:1;transition:opacity .5s var(--ease) var(--d,0ms)}
+.js .dg:not(.run) .fade{opacity:0}
+.dg.run .flash{animation:flash 1s var(--ease) var(--d,0ms) both}
+@keyframes flash{0%{opacity:0}25%{opacity:.9}100%{opacity:0}}
+.dg .ln.fb{stroke:rgba(242,181,68,.62)}
+.js .dg:not(.closed) .ln.fb{stroke:rgba(255,255,255,.36)}
+.dg.instant,.dg.instant *{transition:none !important;animation:none !important}
+
+/* Node highlight + pulse when the travelling dot arrives (spec 6.6) */
+.dg .node .hl{fill:rgba(242,181,68,.1);stroke:var(--accent);stroke-width:1.2;opacity:0}
+.dg .node .ring{fill:none;stroke:var(--accent);stroke-width:1;opacity:0;transform-box:fill-box;transform-origin:center}
+.dg .node.hit .hl{animation:node-hl .9s var(--ease) both}
+.dg .node.hit .ring{animation:node-ring .9s var(--ease-out) both}
+@keyframes node-hl{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+@keyframes node-ring{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.12)}}

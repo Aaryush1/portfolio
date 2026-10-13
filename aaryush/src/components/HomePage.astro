@@ -1,12 +1,39 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from './home/Hero.astro';
 import About from './home/About.astro';
 import Levels from './home/Levels.astro';
 import Timeline from './home/Timeline.astro';
 import WritingTeaser from './home/WritingTeaser.astro';
+import PopupShell from './popup/PopupShell.astro';
+import JobView from './popup/JobView.astro';
+import SystemView from './popup/SystemView.astro';
+import '../styles/diagram.css';
+import { buildTimeline, numberSystems, workSlugs } from '../lib/timeline';
 interface Props { openSlug?: string; title?: string; description?: string; ogImage?: string; path?: string }
 const { openSlug, ...seo } = Astro.props;
+
+const companies = await getCollection('companies');
+const systems = await getCollection('systems');
+const timeline = buildTimeline(companies, systems);
+const numbers = numberSystems(timeline);
+const slugs = workSlugs(companies, systems);
+const companyById = new Map(companies.map((c) => [c.id, c]));
+const systemById = new Map(systems.map((s) => [s.id, s]));
+const openSystem = openSlug ? systemById.get(openSlug) : undefined;
+const openParent = openSystem ? companyById.get(openSystem.data.company.id) : undefined;
+const backHref = openParent?.data.kind === 'company' ? `/work/${openParent.id}` : undefined;
+const backName = backHref ? openParent!.data.name : undefined;
+const entries = timeline.map((t) => [t.company.id, t] as const);
+const byCompany = new Map(entries);
+
+const views = slugs.map((slug) => {
+  const company = companyById.get(slug);
+  if (company) return { slug, company, systems: byCompany.get(slug)!.systems };
+  const system = systemById.get(slug)!;
+  return { slug, system, company: companyById.get(system.data.company.id)! };
+});
 ---
 <BaseLayout {...seo}>
   <main>
@@ -16,4 +43,17 @@ const { openSlug, ...seo } = Astro.props;
     <Timeline />
     <WritingTeaser />
   </main>
+  <PopupShell openSlug={openSlug} backHref={backHref} backName={backName}>
+    {views.filter((v) => v.slug === openSlug).map((v) => (
+      <Fragment slot="open">
+        {'system' in v ? <SystemView system={v.system} company={v.company} number={numbers.get(v.slug)!} /> : <JobView company={v.company} systems={v.systems} numbers={numbers} />}
+      </Fragment>
+    ))}
+  </PopupShell>
+  {views.map((v) => (
+    <template id={`popup-${v.slug}`}>
+      {'system' in v ? <SystemView system={v.system} company={v.company} number={numbers.get(v.slug)!} /> : <JobView company={v.company} systems={v.systems} numbers={numbers} />}
+    </template>
+  ))}
+  <script>import '../scripts/popups';</script>
 </BaseLayout>

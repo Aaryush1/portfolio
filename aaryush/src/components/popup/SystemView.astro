@@ -1,0 +1,47 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import SystemDiagram from '../SystemDiagram.astro';
+import { levels } from '../../data/levels';
+import { levelsFor } from '../../lib/levels';
+interface Props { system: CollectionEntry<'systems'>; company: CollectionEntry<'companies'>; number: string }
+const { system, company, number } = Astro.props;
+const s = system.data;
+const { Content } = await render(system);
+const isCompany = company.data.kind === 'company';
+const tagLevels = levelsFor(system.id, levels);
+const legendClass: Record<string, string> = { flow: '', dashed: 'd', feedback: 'a', human: 'h' };
+const crumb = `${company.data.name} · ${number}`;
+---
+<article class="view" data-title={s.title} data-crumb={crumb} data-parent={isCompany ? company.id : undefined} data-parent-name={isCompany ? company.data.name : undefined}>
+  <header class="v-head">
+    <p class="mono crumbs">{company.data.name}{isCompany && company.data.role ? ` · ${company.data.role}` : ''} · {number}</p>
+    <h2 id="popup-title" tabindex="-1">{s.title}</h2>
+    {tagLevels.length > 0 && <ul class="tags">{tagLevels.map((l) => <li class="lv">{`L${l.n} — ${l.title}${l.em}`}</li>)}</ul>}
+  </header>
+  {s.diagram ? (
+    <div class="sys-body">
+      <figure class="dg-fig">
+        <div class="dg-frame">
+          <span class="reg reg-tl" aria-hidden="true"></span><span class="reg reg-tr" aria-hidden="true"></span>
+          <span class="reg reg-bl" aria-hidden="true"></span><span class="reg reg-br" aria-hidden="true"></span>
+          <div class="dg-host"><SystemDiagram name={s.diagram} /></div>
+        </div>
+        <figcaption>
+          <span>Fig. {number} — {s.caption}</span>
+          <span class="lgd">{s.legend.map((l) => <span><i class:list={['lg', legendClass[l.kind]]} aria-hidden="true"></i>{l.label}</span>)}</span>
+        </figcaption>
+      </figure>
+      <div class="story">
+        <Content />
+        {s.facts.length > 0 && <dl class="spec">{s.facts.map((f) => <div><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl>}
+      </div>
+    </div>
+  ) : (
+    <div class="v-body">
+      <div class="story"><Content /></div>
+      <aside>
+        {s.facts.length > 0 && <dl class="spec">{s.facts.map((f) => <div><dt>{f.label}</dt><dd>{f.value}</dd></div>)}</dl>}
+      </aside>
+    </div>
+  )}
+</article>
