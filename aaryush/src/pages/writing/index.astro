@@ -3,17 +3,24 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Piece from '../../components/writing/Piece.astro';
 import { toPieceView } from '../../lib/writing';
+import { layoutDesk } from '../../lib/writing-layout';
 import '../../styles/writing-room.css';
-const pieces = (await getCollection('writing', ({ data }) => !data.draft))
+const views = (await getCollection('writing', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .map(toPieceView);
+const layout = layoutDesk(views);
+// DOM order is visual reading order, so keyboard focus follows what the eye sees.
+const ordered = layout.placements.map((place) => ({ piece: views.find((v) => v.slug === place.slug)!, place }));
 ---
 <BaseLayout title="Writing — Aaryush Gupta" description="Essays by Aaryush Gupta on AI and how organizations work." ogImage="/og/writing.png" path="/writing">
   <main class="sec room"><div class="wrap">
-    <div class="sec-head mono"><span class="n">§</span><span>Writing</span><span class="f">{pieces.length} entries</span></div>
+    <div class="sec-head mono"><span class="n">§</span><span>Writing</span><span class="f">{views.length} entries</span></div>
     <h1 class="h2" style="margin-top:44px">Notes on where this is going.</h1>
-    <ul class="pieces" data-writing-list>
-      {pieces.map((p) => <Piece piece={p} />)}
-    </ul>
+    <div class="desk-wrap">
+      <ul class="pieces desk" data-writing-list data-cols={layout.cols} style={`--cols:${layout.cols}`}>
+        {ordered.map(({ piece, place }) => <Piece piece={piece} place={place} />)}
+      </ul>
+    </div>
   </div></main>
+  <script>import '../../scripts/writing-desk';</script>
 </BaseLayout>
