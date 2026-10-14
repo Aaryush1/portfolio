@@ -63,9 +63,9 @@ function download(url: string, filename: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-// Bare pages (/qr) never read, keep or act on the contact context.
-if (!document.body.hasAttribute('data-bare')) {
-  capture();
+// Bare pages (/qr) never read the URL for context and never write storage; Save contact still works there (plain, dated).
+{
+  if (!document.body.hasAttribute('data-bare')) capture();
   document.addEventListener('click', (e) => {
     if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || !(e.target instanceof Element)) return;
     const a = e.target.closest<HTMLAnchorElement>('a[data-vcard]');

@@ -19,21 +19,33 @@ const DOTS = new RegExp('[' + String.fromCharCode(0x3002, 0xff0e, 0xff61) + ']',
 // Links are never kept. Matching is token by token (split on whitespace) with simple anchored tests, so the cost is
 // linear and no pattern backtracks across the input. The input is capped before any of it runs.
 const RAW_CAP = 1000; // UTF-16 units read from a value, however long it is
-const SCHEME = /^(?:javascript|data|vbscript|mailto|tel|sms|file|blob):/i;
-const HOST = /^(?:[\p{L}\p{N}-]+\.)+(?:\p{L}{2,24}|xn--[a-z0-9-]{2,20})$/iu;
-const ALNUM_END = /[\p{L}\p{N}]$/u;
+// A scheme name anywhere in a token, but not as the tail of a longer word ("Hotel:" is not "tel:").
+const SCHEME = /(?<![\p{L}\p{N}])(?:javascript|data|vbscript|mailto|tel|sms|file|blob|https?|ftp):/iu;
+const HOST = /^(?:[\p{L}\p{N}_-]+\.)+(?:\p{L}{2,24}|xn--[a-z0-9-]{2,20})$/iu;
+// Separators and brackets that can sit in front of, between or after the parts of a link.
+const SEPARATORS = /[,;:()[\]{}"'*|\\/<>?#&=“”‘’–—]+/u;
+const ALNUM = /[\p{L}\p{N}]/u;
 
+const trimEdges = (s: string) => {
+  let a = 0;
+  let b = s.length;
+  while (a < b && !ALNUM.test(s[a])) a++;
+  while (b > a && !ALNUM.test(s[b - 1])) b--;
+  return s.slice(a, b);
+};
+
+// Over-strips on purpose: anything shaped like label.label with a letters-only TLD is dropped, so "Mr.Smith" and "Node.js"
+// go too. A missed link in someone's saved contact is worse than a lost word.
 function isLink(token: string): boolean {
-  if (token.includes('://') || token.includes('@') || SCHEME.test(token) || /^www\./i.test(token)) return true;
-  // label.label with a letters-only TLD of 2-24 characters, optionally followed by a port, path, query or fragment
-  let end = token.search(/[/?#:]/);
-  if (end < 0) end = token.length;
-  let host = token.slice(0, end);
-  while (host && !ALNUM_END.test(host)) host = host.slice(0, -1);
-  return HOST.test(host);
+  if (token.includes('://') || token.includes('@') || SCHEME.test(token)) return true;
+  for (const piece of token.split(SEPARATORS)) {
+    const p = trimEdges(piece);
+    if (p && (/^www\./i.test(p) || HOST.test(p))) return true;
+  }
+  return false;
 }
 
-/** Cap the raw value, NFKC-normalise, drop control/bidi characters, angle brackets and links, collapse whitespace, cap by character. */
+/** Cap the raw value, NFKC-normalise (catches full-width lookalike links; side effect: the ellipsis character becomes three dots), drop control/bidi characters, angle brackets and links, collapse whitespace, cap by character. */
 export function clean(raw: unknown, max: number): string {
   if (typeof raw !== 'string') return '';
   let head = raw.slice(0, RAW_CAP);

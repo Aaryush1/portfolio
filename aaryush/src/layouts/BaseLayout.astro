@@ -18,7 +18,7 @@ const topics = await getTopics();
 const topicsJson = JSON.stringify(Object.fromEntries(topics.map((t) => [t.slug, t.name]))).replace(/</g, '\\u003c');
 interface Props { title?: string; description?: string; ogImage?: string; path?: string; bodyClass?: string; bare?: boolean }
 const { title = site.title, description = site.description, ogImage = '/og/home.png', path = Astro.url.pathname, bodyClass, bare = false } = Astro.props;
-// `bare` pages (the /qr tool) touch no storage and never read or keep the contact context, so they skip the mark-played flag, and scripts/contact-card.ts does nothing when body has data-bare.
+// `bare` pages (the /qr tool) touch no storage and never read or keep the contact context, so they skip the mark-played flag, and scripts/contact-card.ts skips capture() when body has data-bare.
 const markPart = bare ? '' : " try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { var f = 0; try { f = sessionStorage.getItem('mark-played'); sessionStorage.setItem('mark-played', '1'); } catch (e) {} if (!f) document.documentElement.classList.add('mark-first'); } } catch (e) {}";
 const boot = "document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {}" + markPart;
 ---

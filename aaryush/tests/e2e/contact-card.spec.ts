@@ -415,4 +415,33 @@ test.describe('E6 hardening', () => {
     });
     expect(notPrevented).toEqual({ ctrl: true, meta: true, shift: true, alt: true, plain: false });
   });
+
+  test('when the card cannot be built the click is not prevented and the static .vcf downloads', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('[data-contact="hero"] a[data-obf="mail"]').evaluate((e) => e.remove()); // vcardFor() now returns null
+    const notPrevented = await page.locator('[data-contact="hero"] [data-vcard]').evaluate((a) => {
+      let ok = false;
+      const probe = (e: Event) => { ok = !e.defaultPrevented; e.preventDefault(); }; // runs after our handler (bubble, document first)
+      document.addEventListener('click', probe, { once: true });
+      a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+      return ok;
+    });
+    expect(notPrevented).toBe(true);
+    // a real click goes to the browser's own download of the static file
+    const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('[data-contact="hero"] [data-vcard]').click()]);
+    expect(dl.suggestedFilename()).toBe('Aaryush Gupta.vcf');
+    const text = (await (async () => { const c: Buffer[] = []; for await (const x of await dl.createReadStream()) c.push(x as Buffer); return Buffer.concat(c).toString('utf8'); })());
+    expect(text).toContain('REV:'); // only the static file has it
+    expect(text).not.toContain('NOTE');
+  });
+
+  test('on /qr the footer Save contact still works (plain, dated) and the URL params are ignored', async ({ page }) => {
+    await page.goto('/qr?met=Dinner&note=y&about=writing');
+    const v = await saveContact(page, 'footer');
+    expect(v.noteText).toBe(`Saved ${SAVED}`);
+    expect(v.fields.get('EMAIL')).toBe('aaryush@outlook.com');
+    const stored = await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }));
+    expect(stored).toEqual({ local: 0, session: 0 });
+    expect(new URL(page.url()).search).toContain('met=Dinner'); // /qr leaves its own URL alone
+  });
 });
