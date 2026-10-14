@@ -89,9 +89,14 @@ const hexPoints = [0, 1, 2, 3, 4, 5].map((v) => `${(C + hexR * Math.cos((v * Mat
 .lvfig{
   position:sticky;top:calc(var(--header) + 8px);z-index:5;
   display:flex;align-items:center;justify-content:center;gap:18px;
-  margin:28px 0 0;padding:4px 0 6px;background:var(--bg);--lvfs:11px;--lvband:114px;
+  margin:28px 0 0;padding:4px 0 6px;--lvfs:11px;--lvband:114px;
+  /* translucent card surface (--s1) with blur; rows scrolling underneath stay soft, never crisp text */
+  background:rgba(14,16,21,.94);
 }
-.lvfig::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(var(--bg),transparent);pointer-events:none}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .lvfig{background:rgba(14,16,21,.72);-webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1)}
+}
+.lvfig::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(rgba(14,16,21,.72),transparent);pointer-events:none}
 .lvfig svg{display:block;flex:none;width:104px;height:auto;overflow:visible}
 .lvfig .ring{fill:none;stroke:color-mix(in srgb,var(--text-2) 38%,transparent)}
 .lvfig .hex{fill:none;stroke:color-mix(in srgb,var(--text-2) 12%,transparent);stroke-width:1;stroke-linejoin:round}
@@ -105,7 +110,7 @@ const hexPoints = [0, 1, 2, 3, 4, 5].map((v) => `${(C + hexR * Math.cos((v * Mat
 .lvfig figcaption b{color:var(--text-2);font-weight:400}
 .lvfig .nw{white-space:nowrap}
 @media (min-width:960px){
-  .lvfig{position:static;display:block;z-index:auto;margin:44px 0 0;width:280px;padding:0;background:none}
+  .lvfig{position:static;display:block;z-index:auto;margin:44px 0 0;width:280px;padding:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
   .lvfig::after{display:none}
   .lvfig svg{width:100%}
   .lvfig text{display:block}

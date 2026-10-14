@@ -7,6 +7,11 @@
    (older Firefox and Safari) ignore the name and use their default margin; the sheet still fits, since its height is the page's. */
 @page{size:auto}
 @page home{margin:.3in}
+/* The page name must start at the root element. If only <body> were named, the unnamed <html> box and the named
+   <body> box sit on different named pages, and a real browser print (Ctrl+P) forces a page break between them:
+   page 1 comes out blank and the sheet lands on page 2. Chromium's page.pdf() / --print-to-pdf do not force that
+   break, so the PDF page-budget tests never saw it. Naming <html> too keeps the sheet on page 1. */
+html:has(body.home){page:home}
 
 @media print{
   .print-only{display:block}

@@ -39,6 +39,11 @@ export interface FieldParams {
   levelCount: number;
   /** Multiplier on the drift clock. */
   drift: number;
+  /** Centre of the amber contour's oscillation (default 0.03) and its stroke width in px. */
+  amberBase: number;
+  amberWidth: number;
+  /** An optional extra contour at a fixed level, drawn in a warm colour (evening only). */
+  warmLevel: { level: number; color: Rgba } | null;
 }
 
 const BASE: FieldParams = {
@@ -48,12 +53,22 @@ const BASE: FieldParams = {
   levelStep: 0.1,
   levelCount: 15,
   drift: 1,
+  amberBase: 0.03,
+  amberWidth: 1.2,
+  warmLevel: null,
 };
 
 const PARAMS: Record<Daypart, FieldParams> = {
-  morning: { ...BASE, minor: [136, 158, 190, 0.12], major: [140, 160, 190, 0.24] },
+  // Morning: cool and airy. A clear blue-grey cast on the lines, the amber contour a little lower, a quicker drift.
+  morning: { ...BASE, minor: [84, 146, 232, 0.14], major: [96, 158, 240, 0.26], levelStep: 0.085, levelCount: 18, amberBase: -0.03, drift: 1.3 },
   afternoon: BASE,
-  evening: { ...BASE, amber: [246, 174, 58, 0.74] },
+  // Evening: warm. Faint warm tint on the lines, a brighter and thicker amber contour, one extra contour warmed toward amber.
+  evening: {
+    ...BASE,
+    minor: [206, 170, 130, 0.14], major: [214, 168, 112, 0.26],
+    amber: [250, 170, 50, 0.78], amberWidth: 1.9,
+    warmLevel: { level: -0.2, color: [244, 160, 60, 0.4] },
+  },
   night: { ...BASE, amber: [242, 181, 68, 0.46], levelStep: 0.175, levelCount: 9, drift: 0.6 },
 };
 

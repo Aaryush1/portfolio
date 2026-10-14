@@ -329,7 +329,8 @@ test.describe('E5 hero topography follows the clock', () => {
     expect(seen.night.drift).toBeCloseTo(0.6, 5);
     expect(seen.night.amber).toBeLessThan(seen.afternoon.amber);
     expect(seen.evening.amber).toBeGreaterThan(seen.afternoon.amber);
-    expect(seen.morning.levels).toBe(15);
+    expect(seen.morning.levels).toBe(18);
+    expect(seen.morning.drift).toBeGreaterThan(1);
   });
 
   test('an invalid data-daypart is ignored', async ({ page }) => {

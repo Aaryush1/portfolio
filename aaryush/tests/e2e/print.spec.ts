@@ -226,6 +226,26 @@ test.describe('E4 print sheet: page breaks and page margin', () => {
     expect(n).toBe(2);
   });
 
+  // Task 28 regression: real Ctrl+P printed a blank page 1 and the sheet on page 2. A named page on <body> alone differs
+  // from the unnamed <html> page, and a browser print forces a break at that boundary. page.pdf() and --print-to-pdf do not
+  // force it, which is why the PDF page-count tests above passed. The invariant that does catch it: every box from <html>
+  // down to the sheet carries the same page name, so there is no page-name transition before the sheet.
+  test('no page-name change between <html> and the sheet (no forced blank first page)', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'named pages (the page property) are Chromium-only; the blank-page bug is a Chrome print behaviour');
+    const names = async (path: string) => {
+      await printed(page, path);
+      return page.evaluate(() => {
+        const pg = (e: Element) => { const s = getComputedStyle(e) as CSSStyleDeclaration & { page?: string }; return s.page || s.getPropertyValue('page') || 'auto'; };
+        return { html: pg(document.documentElement), body: pg(document.body) };
+      });
+    };
+    const home = await names('/');
+    expect(home.body).toBe('home');
+    expect(home.html).toBe(home.body);
+    const essay = await names('/writing/quiet-singularity');
+    expect(essay.html).toBe(essay.body);
+  });
+
   test('the narrow .3in margin belongs to the home sheet only (named @page)', async ({ page }) => {
     const rules = async (path: string) => {
       await printed(page, path);

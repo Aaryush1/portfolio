@@ -57,13 +57,23 @@ describe('fieldParams', () => {
   it('afternoon is the default look', () => {
     expect(p('afternoon')).toMatchObject({ levelStep: 0.1, levelCount: 15, drift: 1, amber: [242, 181, 68, 0.62] });
   });
-  it('morning only cools the minor lines', () => {
+  it('morning is cool and airy: blue-grey lines, a lower amber contour, a faster drift', () => {
     const m = p('morning'), a = p('afternoon');
-    expect(m.minor).not.toEqual(a.minor);
-    expect(m.minor[2]).toBeGreaterThan(m.minor[0]); // bluer than red
-    expect({ ...m, minor: 0, major: 0 }).toEqual({ ...a, minor: 0, major: 0 });
+    expect(m.minor[2] - m.minor[0]).toBeGreaterThanOrEqual(60); // clearly blue (afternoon is 14)
+    expect(m.amberBase).toBeLessThan(a.amberBase);
+    expect(m.drift).toBeGreaterThan(a.drift);
+    expect(m.drift).toBeLessThanOrEqual(1.5);
+    expect(m.amber).toEqual(a.amber);
   });
-  it('evening warms and brightens the amber contour a little', () => {
+  it('evening warms the lines and adds one warm contour', () => {
+    const e = p('evening'), a = p('afternoon');
+    expect(e.minor[0]).toBeGreaterThan(e.minor[2]); // red over blue = warm tint
+    expect(e.amberWidth).toBeGreaterThan(a.amberWidth);
+    expect(e.warmLevel).not.toBeNull();
+    expect(a.warmLevel).toBeNull();
+    expect(p('night').warmLevel).toBeNull();
+  });
+  it('evening brightens the amber contour a little', () => {
     const e = p('evening'), a = p('afternoon');
     expect(e.amber[3]).toBeGreaterThan(a.amber[3]);
     expect(e.amber[3] - a.amber[3]).toBeLessThanOrEqual(0.2);
@@ -82,6 +92,7 @@ describe('fieldParams', () => {
       expect(q.minor[3]).toBeLessThanOrEqual(0.14);
       expect(q.major[3]).toBeLessThanOrEqual(0.26);
       expect(q.amber[3]).toBeLessThanOrEqual(0.8);
+      if (q.warmLevel) expect(q.warmLevel.color[3]).toBeLessThanOrEqual(0.4);
     }
   });
 });

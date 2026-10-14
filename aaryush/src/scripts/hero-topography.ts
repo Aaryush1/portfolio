@@ -87,7 +87,7 @@ if (hero && cv && ctx) {
   let preview: Daypart | null = null;
   let part: Daypart | null = null;
   let params: FieldParams = fieldParams('afternoon');
-  let minorStroke = '', majorStroke = '', amberStroke = '';
+  let minorStroke = '', majorStroke = '', amberStroke = '', warmStroke = '';
   let minorLevels: number[] = [], majorLevels: number[] = [];
   let tag: HTMLElement | null = null, tagTimer = 0;
 
@@ -108,7 +108,7 @@ if (hero && cv && ctx) {
     if (next === part) return;
     part = next;
     params = fieldParams(next);
-    minorStroke = rgba(params.minor); majorStroke = rgba(params.major); amberStroke = rgba(params.amber);
+    minorStroke = rgba(params.minor); majorStroke = rgba(params.major); amberStroke = rgba(params.amber); warmStroke = params.warmLevel ? rgba(params.warmLevel.color) : '';
     minorLevels = []; majorLevels = [];
     for (let i = 0; i < params.levelCount; i++) (i % 4 === 0 ? majorLevels : minorLevels).push(-0.7 + i * params.levelStep);
     cv!.dataset.daypart = next;
@@ -205,8 +205,9 @@ if (hero && cv && ctx) {
     c.lineWidth = 1;
     c.beginPath(); minorLevels.forEach((l) => contour(c, l)); c.strokeStyle = minorStroke; c.stroke();
     c.beginPath(); majorLevels.forEach((l) => contour(c, l)); c.strokeStyle = majorStroke; c.stroke();
-    c.beginPath(); contour(c, 0.03 + 0.07 * Math.sin(t * 0.06));
-    c.strokeStyle = amberStroke; c.lineWidth = 1.2; c.stroke();
+    if (params.warmLevel) { c.beginPath(); contour(c, params.warmLevel.level); c.strokeStyle = warmStroke; c.stroke(); }
+    c.beginPath(); contour(c, params.amberBase + 0.07 * Math.sin(t * 0.06));
+    c.strokeStyle = amberStroke; c.lineWidth = params.amberWidth; c.stroke();
   }
 
   function loop(now: number) {
