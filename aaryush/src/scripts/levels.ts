@@ -1,32 +1,88 @@
-const STEP = 100; // ms between segments
+import { createLens } from './lens';
+
+const STEP = 100; // ms between meter segments
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fig = document.getElementById('lvfig');
+const lens = fig ? createLens(fig) : null;
+const section = document.getElementById('levels');
 
-document.querySelectorAll<HTMLElement>('li.level[data-level]').forEach((level) => {
-  const depth = Number(level.dataset.level);
-  const segs = [...level.querySelectorAll<HTMLElement>('.meter i')].slice(0, depth);
+type Row = { el: HTMLElement; depth: number; fill(): void; drain(): void };
+
+// The active level comes from three row sources (pointer hover, keyboard focus, a touch tap
+// that stays pinned) and one figure source (hovering a ring lights its row but does not zoom).
+let hover: number | null = null;
+let focus: number | null = null;
+let pinned: number | null = null;
+let ring: number | null = null;
+let lit: number | null = null;
+
+function buildRow(el: HTMLElement): Row {
+  const depth = Number(el.dataset.level);
+  const segs = [...el.querySelectorAll<HTMLElement>('.meter i')].slice(0, depth);
   let timers: number[] = [];
   const clear = () => { timers.forEach(clearTimeout); timers = []; };
-
-  const fill = () => {
-    clear();
-    fig?.setAttribute('data-on', String(depth));
-    segs.forEach((seg, i) => {
-      if (reduced) seg.classList.add('fill');
-      else timers.push(window.setTimeout(() => seg.classList.add('fill'), i * STEP));
-    });
+  return {
+    el, depth,
+    fill() {
+      clear();
+      segs.forEach((seg, i) => {
+        if (reduced) seg.classList.add('fill');
+        else timers.push(window.setTimeout(() => seg.classList.add('fill'), i * STEP));
+      });
+    },
+    drain() {
+      clear();
+      [...segs].reverse().forEach((seg, i) => {
+        if (reduced) seg.classList.remove('fill');
+        else timers.push(window.setTimeout(() => seg.classList.remove('fill'), i * STEP));
+      });
+    },
   };
-  const drain = () => {
-    clear();
-    if (fig?.getAttribute('data-on') === String(depth)) fig.removeAttribute('data-on');
-    [...segs].reverse().forEach((seg, i) => {
-      if (reduced) seg.classList.remove('fill');
-      else timers.push(window.setTimeout(() => seg.classList.remove('fill'), i * STEP));
-    });
-  };
+}
 
-  level.addEventListener('pointerenter', fill);
-  level.addEventListener('pointerleave', drain);
-  level.addEventListener('focusin', fill);
-  level.addEventListener('focusout', (e) => { if (!level.contains(e.relatedTarget as Node | null)) drain(); });
+const rows = [...document.querySelectorAll<HTMLElement>('li.level[data-level]')].map(buildRow);
+
+function update() {
+  const rowLevel = hover ?? focus ?? pinned;
+  const next = rowLevel ?? ring;
+  if (next !== lit) {
+    rows.forEach((r) => {
+      const on = r.depth === next;
+      if (on !== (r.depth === lit)) (on ? r.fill() : r.drain());
+      r.el.classList.toggle('is-lit', on && rowLevel === null);
+    });
+    lit = next;
+  }
+  // Zoom follows the row (L1 is the full picture); a ring hover only highlights.
+  lens?.set(next, rowLevel === null ? 0 : rowLevel - 1);
+}
+
+rows.forEach(({ el, depth }) => {
+  el.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') { hover = depth; update(); } });
+  el.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && hover === depth) { hover = null; update(); } });
+  el.addEventListener('focusin', () => { focus = depth; update(); });
+  el.addEventListener('focusout', (e) => {
+    if (!el.contains(e.relatedTarget as Node | null) && focus === depth) { focus = null; update(); }
+  });
+  // Touch has no hover: a tap on a row pins its level, tapping it again lets go.
+  el.addEventListener('pointerup', (e) => {
+    if (e.pointerType !== 'touch' || (e.target as Element).closest('a')) return;
+    pinned = pinned === depth ? null : depth;
+    update();
+  });
 });
+
+fig?.querySelectorAll<SVGElement>('[data-hit]').forEach((hit) => {
+  const level = Number(hit.dataset.hit) + 1;
+  hit.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') { ring = level; update(); } });
+  hit.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && ring === level) { ring = null; update(); } });
+});
+
+// Leaving the section always returns to the full picture.
+if (section && 'IntersectionObserver' in window) {
+  new IntersectionObserver((en) => {
+    if (en[0].isIntersecting) return;
+    hover = focus = pinned = ring = null;
+    update();
+  }).observe(section);
+}
