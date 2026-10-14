@@ -51,7 +51,15 @@ if (rot && slot) {
       let word: HTMLElement | null = null;
       for (const [t, em] of runs) {
         for (const ch of t) {
-          if (ch === ' ') { slot.append(' '); word = null; continue; }
+          if (ch === ' ') {
+            // the word space is its own fixed-width element: never collapsed, never matched or animated (not tracked in `chars`)
+            const sp = document.createElement('span');
+            sp.className = 'mc sp';
+            sp.textContent = ' ';
+            slot.append(sp);
+            word = null;
+            continue;
+          }
           if (!word) { word = document.createElement('span'); word.className = 'mw'; slot.append(word); }
           const el = document.createElement('span');
           el.className = em ? 'mc em' : 'mc';
@@ -111,10 +119,11 @@ if (rot && slot) {
         } else {
           c.el.animate([
             { opacity: 0, transform: 'translateY(.34em)', color: accent, easing: EASE_OUT },
-            { opacity: 1, transform: 'translateY(0)', color: accent, offset: final ? 0.34 : 0.42, easing: 'linear' },
-            { opacity: 1, transform: 'translateY(0)', color: accent, offset: final ? 0.52 : 0.58 },
+            // lands, holds the amber a beat, then settles to the text colour about 0.6s after arriving
+            { opacity: 1, transform: 'translateY(0)', color: accent, offset: final ? 0.3 : 0.36, easing: 'linear' },
+            { opacity: 1, transform: 'translateY(0)', color: textColor, offset: final ? 0.75 : 0.75 },
             { opacity: 1, transform: 'translateY(0)', color: textColor },
-          ], { duration: final ? 1500 : 980, delay: 290 + Math.min(rank, 14) * 14 + frac * 50, fill: 'backwards' });
+          ], { duration: final ? 1400 : 900, delay: 290 + Math.min(rank, 14) * 14 + frac * 50, fill: 'backwards' });
           rank++;
         }
       });

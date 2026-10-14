@@ -55,3 +55,29 @@ test('hero canvas pauses when scrolled away', async ({ page }) => {
   await page.locator('#writing').scrollIntoViewIfNeeded();
   await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'false');
 });
+
+test('morph keeps the word spaces: every subject reads correctly once it lands', async ({ page }) => {
+  await page.goto('/');
+  const slot = page.locator('#slot');
+  const subjects: string[] = JSON.parse((await page.locator('#rot').getAttribute('data-subjects')) ?? '[]');
+  const seen: string[] = [];
+  for (const expected of [...subjects, 'how organizations work']) {
+    // textContent (not innerText) on purpose: ghosts are gone once the transition has finished
+    await expect
+      .poll(
+        async () =>
+          slot.evaluate((el) => el.getAnimations({ subtree: true }).length === 0 ? el.textContent : null),
+        { timeout: 15000, intervals: [50] },
+      )
+      .toBe(expected);
+    seen.push(expected);
+    // letters really are spaced: no two word boxes touch
+    const gaps = await slot.evaluate((el) => {
+      const w = [...el.querySelectorAll('.mw')].map((n) => n.getBoundingClientRect());
+      return w.slice(1).map((r, i) => r.left - w[i].right);
+    });
+    for (const g of gaps) expect(g).toBeGreaterThan(2);
+    if (expected !== 'how organizations work') await page.waitForTimeout(300);
+  }
+  expect(seen.length).toBe(subjects.length + 1);
+});
