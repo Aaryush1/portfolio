@@ -7,7 +7,7 @@ export type DiagramInput = [x: number, y1: number, y2: number, label: string, de
 export type DiagramSpec = { vb: [number, number]; title: string; desc: string; inputs: DiagramInput[]; nodes: DiagramNode[]; edges: DiagramEdge[]; pulse: Pt[]; loopStart: number };
 export type Hit = { node: number; at: number };
 export type DiagramRuntime = { pulse: Pt[]; inputs: DiagramInput[]; loopStart: number; hits: Hit[] };
-export type DiagramKey = 'intake' | 'loop' | 'launchpad';
+export type DiagramKey = 'intake' | 'loop' | 'launchpad' | 'skale';
 
 export const isDiamond = (n: DiagramNode): n is DiamondNode => 'diamond' in n;
 

@@ -30,7 +30,7 @@ const systems = defineCollection({
     order: z.number().int(),
     summary: z.string(),
     outcome: z.string().optional(),
-    diagram: z.enum(['intake', 'loop', 'launchpad']).optional(),
+    diagram: z.enum(['intake', 'loop', 'launchpad', 'skale']).optional(),
     caption: z.string().optional(),
     legend: z.array(z.object({ kind: z.enum(['flow', 'dashed', 'feedback', 'human']), label: z.string() })).default([]),
     facts: z.array(fact).default([]),

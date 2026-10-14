@@ -2,12 +2,19 @@
 title: Career platform
 company: skale
 order: 1
-summary: End-to-end career platform. Understand your strengths, upskill, and get matched to opportunities based on what you're actually capable of.
+summary: AI interviews tailored to the job you want, feedback after every one, and a skills model that recommends jobs and aims the next interview at where you need the most help.
+diagram: skale
+caption: Every interview sharpens the profile, and the person.
+legend:
+  - { kind: flow, label: Flow }
+  - { kind: feedback, label: Next interview, tailored }
 facts:
   - { label: Approach, value: Higher-dimensional embedding models }
   - { label: Model, value: White-label & enterprise hiring }
-draft: false
+draft: true
 ---
-Hiring has been stuck on the same model for decades: resumes, keyword matching, and surface-level signals. Candidates can't show what they're actually capable of, and employers can't see it.
+Hiring runs on resumes: a flat, low-resolution signal of what someone can actually do.
 
-The platform captured capability at a higher dimension than a resume ever could. It was built to be model-agnostic, so it evolves with AI capabilities without rebuilds, and designed for white-label and enterprise hiring, so the platform becomes the hiring infrastructure. Making meritocracy scalable.
+The platform started with an AI interview, a quick five minutes or a full thirty. Candidates could paste a link to the job they wanted, name an industry, or skip both, then set the difficulty, and the interview was tailored to match. Every interview ended with specific, actionable feedback and fed a skills model of what the person could actually do and where they needed the most help.
+
+That model recommended jobs and aimed the next interview at the weak spots. The more someone used it, the sharper their profile got, and the better they got.

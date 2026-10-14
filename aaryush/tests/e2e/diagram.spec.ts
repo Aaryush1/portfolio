@@ -80,7 +80,7 @@ test('pauses when hidden', async ({ page }) => {
   expect(b).toBe(a);
 });
 
-for (const slug of ['cylerity-intake', 'ready-rebound-loop', 'umn-launchpad']) {
+for (const slug of ['cylerity-intake', 'ready-rebound-loop', 'umn-launchpad', 'skale-platform']) {
   test(`diagram labels are legible and input labels are spaced on a phone: ${slug}`, async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(`/work/${slug}`);
@@ -100,3 +100,13 @@ for (const slug of ['cylerity-intake', 'ready-rebound-loop', 'umn-launchpad']) {
     for (const g of r.gaps) expect(g).toBeGreaterThanOrEqual(6);
   });
 }
+
+test('skale platform page and home pop-up render the diagram with its title', async ({ page }) => {
+  await page.goto('/work/skale-platform');
+  await expect(svg(page)).toHaveClass(/\brun\b/);
+  await expect(svg(page).locator('title')).toHaveText('Skale.win career platform system diagram');
+  await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 15000 });
+  await page.goto('/');
+  await page.locator('#sys-skale-platform').click();
+  await expect(svg(page).locator('title')).toHaveText('Skale.win career platform system diagram');
+});

@@ -74,4 +74,26 @@ export const diagrams: Record<DiagramKey, DiagramSpec> = {
     pulse: [[150, 167], [150, 402], [310, 402], [310, 167]],
     loopStart: 3900,
   },
+  skale: {
+    vb: [320, 524],
+    title: 'Skale.win career platform system diagram',
+    desc: 'A candidate sets up an AI interview, five or thirty minutes, optionally from a job link or an industry, at a chosen difficulty. Every interview ends with specific, actionable feedback and updates a skills model of what they can do and where they need the most help. The model recommends jobs and tailors the next interview to the weak spots, so the profile sharpens and the person improves.',
+    inputs: [[62, 26, 54, 'JOB LINK', 0], [150, 26, 54, 'INDUSTRY', 110], [248, 26, 54, 'DIFFICULTY', 220]],
+    nodes: [
+      { x: 45, y: 54, w: 210, h: 50, t: 'Interview set up', s: 'TAILORED TO THE JOB', d: 380 },
+      { x: 50, y: 140, w: 200, h: 54, t: 'AI interview', s: '5 MIN · 30 MIN', d: 900 },
+      { x: 50, y: 230, w: 200, h: 54, t: 'Feedback', s: 'SPECIFIC · ACTIONABLE', d: 1400 },
+      { x: 50, y: 320, w: 200, h: 54, t: 'Skills model', s: 'WHERE THEY NEED HELP', d: 1900 },
+      { x: 18, y: 456, w: 150, h: 52, t: 'Job matches', s: 'RECOMMENDED ROLES', d: 2500 },
+    ],
+    edges: [
+      { p: [[150, 104], [150, 140]], d: 700, dur: 360 },
+      { p: [[150, 194], [150, 230]], d: 1200, dur: 360 },
+      { p: [[150, 284], [150, 320]], d: 1700, dur: 360 },
+      { p: [[83, 374], [83, 456]], d: 2300, dur: 360 },
+      { p: [[228, 374], [228, 402], [310, 402], [310, 79], [255, 79]], d: 2400, dur: 1400, fb: true, l: [['NEXT INTERVIEW TARGETS', 306, 428, 'end'], ['THE WEAK SPOTS', 306, 444, 'end']] },
+    ],
+    pulse: [[150, 79], [150, 347], [228, 347], [228, 402], [310, 402], [310, 79]],
+    loopStart: 4000,
+  },
 };
