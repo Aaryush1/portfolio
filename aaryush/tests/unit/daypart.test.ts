@@ -96,3 +96,21 @@ describe('fieldParams', () => {
     }
   });
 });
+
+import { currentDaypart } from '../../src/lib/daypart';
+describe('currentDaypart', () => {
+  const root = (attr?: string) => ({ getAttribute: () => attr ?? null }) as unknown as Element;
+  it('prefers a valid data-daypart over the clock', () => {
+    expect(currentDaypart(root('night'), new Date(2026, 9, 14, 13))).toBe('night');
+  });
+  it('ignores an invalid data-daypart and uses the clock', () => {
+    expect(currentDaypart(root('noon'), new Date(2026, 9, 14, 13))).toBe('afternoon');
+  });
+  it('uses the clock at the boundary hours', () => {
+    const at = (h: number) => currentDaypart(root(), new Date(2026, 9, 14, h, 0));
+    expect([at(20), at(21), at(6), at(7)]).toEqual(['evening', 'night', 'night', 'morning']);
+  });
+  it('gives the default look for a non-finite hour', () => {
+    expect(currentDaypart(root(), new Date(NaN))).toBe('afternoon');
+  });
+});

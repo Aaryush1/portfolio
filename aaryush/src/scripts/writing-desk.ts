@@ -3,23 +3,54 @@
  * Everything visual is CSS; this only sets classes, a little pointer tilt, and announces piece:lit / piece:unlit.
  * CSS hover/:has(:focus-visible) already covers the case where this script never runs.
  */
+import { nearestToCenter } from '../lib/room-light';
+
 const pieces = Array.from(document.querySelectorAll<HTMLElement>('[data-piece]'));
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const phone = () => matchMedia('(hover: none)').matches || innerWidth <= 700;
 
-function light(el: HTMLElement) {
-  if (el.classList.contains('is-lit')) return;
-  for (const p of pieces) if (p !== el && p.classList.contains('is-lit')) unlight(p);
-  el.classList.add('is-lit', 'is-open');
-  document.dispatchEvent(new CustomEvent('piece:lit', { detail: { el } }));
+const isLit = (p: HTMLElement) => p.classList.contains('is-lit');
+// Reduced motion: the room is static and lit. Every piece stays lit; hover and focus only open or close one.
+function light(el: HTMLElement, open = true) {
+  const wasLit = isLit(el), wasOpen = el.classList.contains('is-open');
+  for (const p of pieces) {
+    if (p === el) continue;
+    if (reduce.matches) p.classList.remove('is-open'); else unlight(p);
+  }
+  el.classList.add('is-lit');
+  if (open) el.classList.add('is-open');
+  if (!wasLit || (open && !wasOpen)) document.dispatchEvent(new CustomEvent('piece:lit', { detail: { el } }));
 }
 function unlight(el: HTMLElement) {
-  if (!el.classList.contains('is-lit')) return;
-  el.classList.remove('is-lit', 'is-open');
+  if (!isLit(el) && !el.classList.contains('is-open')) return;
+  el.classList.remove('is-open');
+  if (!reduce.matches) el.classList.remove('is-lit');
   el.style.removeProperty('--tx');
   el.style.removeProperty('--ty');
   document.dispatchEvent(new CustomEvent('piece:unlit'));
 }
+
+function settleStatic() {
+  if (reduce.matches) for (const p of pieces) p.classList.add('is-lit');
+}
+settleStatic();
+reduce.addEventListener('change', () => {
+  if (reduce.matches) settleStatic();
+  else for (const p of pieces) if (!p.classList.contains('is-open') && !p.matches(':hover, :has(:focus-visible)')) p.classList.remove('is-lit');
+});
+
+// Phones: no hover, so the light follows the piece nearest the middle of the screen (unless one is open).
+let following = 0;
+function follow() {
+  following = 0;
+  if (!phone() || reduce.matches || pieces.some((p) => p.classList.contains('is-open'))) return;
+  const best = pieces[nearestToCenter(pieces.map((p) => p.getBoundingClientRect()), innerHeight)];
+  if (best && !isLit(best)) light(best, false);
+}
+const queueFollow = () => { if (!following) following = requestAnimationFrame(follow); };
+addEventListener('scroll', queueFollow, { passive: true });
+addEventListener('resize', queueFollow);
+queueFollow();
 
 for (const el of pieces) {
   el.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch' && !phone()) light(el); });
@@ -45,5 +76,5 @@ for (const el of pieces) {
 }
 document.addEventListener('click', (e) => {
   if (!phone()) return;
-  if (!(e.target as Element).closest('[data-piece]')) for (const p of pieces) unlight(p);
+  if (!(e.target as Element).closest('[data-piece]')) { for (const p of pieces) unlight(p); queueFollow(); }
 });

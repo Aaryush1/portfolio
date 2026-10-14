@@ -75,3 +75,12 @@ const PARAMS: Record<Daypart, FieldParams> = {
 export function fieldParams(d: Daypart): FieldParams {
   return PARAMS[d];
 }
+
+/**
+ * The period the room should show: a valid `data-daypart` attribute on the root (the test and preview hook)
+ * wins, otherwise the visitor's clock. Non-finite clocks give the default look.
+ */
+export function currentDaypart(root: Element, now: Date = new Date()): Daypart {
+  const attr = root.getAttribute('data-daypart');
+  return isDaypart(attr) ? attr : daypartFor(now.getHours());
+}

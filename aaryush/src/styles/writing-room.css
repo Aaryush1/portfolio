@@ -25,16 +25,35 @@
 @property --lit { syntax: '<number>'; inherits: true; initial-value: 0; }
 
 html.js .room { overflow-x: clip; }
-/* the room's own light, still: a warm pool over the desk and a dark rim. Grain belongs to the room (.bg .grain), never to objects. */
-html.js .room::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(48% 46% at 50% 62%, rgba(255, 198, 120, .115), rgba(255, 176, 96, .05) 48%, transparent 74%),
-    radial-gradient(22% 22% at 50% 62%, rgba(242, 181, 68, .06), transparent 100%);
+/* the room's light: a window of pale shafts and a warm pool that moves (light-pool.ts), plus a dark rim. Grain belongs to the room (.bg .grain), never to objects. */
+@property --pool-x { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --pool-y { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --pool-s { syntax: '<number>'; inherits: false; initial-value: 1.15; }
+@property --pool-i { syntax: '<number>'; inherits: false; initial-value: 0; }
+.light { display: none; }
+html.js .room { position: relative; }
+html.js .light { display: block; position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.light .window {
+  position: absolute; inset: -4% 0 0 0; filter: blur(20px);
+  -webkit-mask-image: linear-gradient(180deg, #000 25%, transparent 92%); mask-image: linear-gradient(180deg, #000 25%, transparent 92%);
 }
+.light .window i { position: absolute; inset: 0; background: rgba(var(--window-rgb, 0, 0, 0), var(--window-alpha, 0)); clip-path: polygon(0 0, 0 0, 0 0); }
+.room[data-daypart="morning"] .window i:nth-child(1) { clip-path: polygon(2% 0, 28% 0, 66% 100%, 40% 100%); }
+.room[data-daypart="morning"] .window i:nth-child(2) { clip-path: polygon(34% 0, 58% 0, 98% 100%, 72% 100%); }
+.room[data-daypart="afternoon"] .window i:nth-child(1) { clip-path: polygon(14% 0, 46% 0, 76% 100%, 44% 100%); }
+.room[data-daypart="afternoon"] .window i:nth-child(2) { clip-path: polygon(54% 0, 88% 0, 100% 100%, 84% 100%); }
+.room[data-daypart="evening"] .window i:nth-child(1) { clip-path: polygon(30% 0, 56% 0, 66% 100%, 42% 100%); }
+.room[data-daypart="evening"] .window i:nth-child(2) { clip-path: polygon(62% 0, 88% 0, 96% 100%, 74% 100%); }
+.light .pool { position: absolute; left: 0; top: 0; width: 900px; height: 900px; margin: -450px 0 0 -450px; opacity: 0; will-change: transform, opacity; }
+.light .pool i {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 206, 140, calc(.32 * var(--pool-peak, 1))), rgba(255, 190, 110, calc(.14 * var(--pool-peak, 1))) 38%, rgba(255, 170, 90, calc(.045 * var(--pool-peak, 1))) 68%, transparent);
+}
+.light .pool i + i { inset: 30%; background: radial-gradient(closest-side, rgba(242, 181, 68, calc(.16 * var(--pool-peak, 1))), transparent); }
+.light canvas.dust { position: absolute; left: 0; top: 0; }
 html.js .room::after {
   content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  box-shadow: inset 0 0 220px 40px rgba(0, 0, 0, .55);
+  box-shadow: inset 0 0 220px 40px rgba(0, 0, 0, .5);
 }
 html.js .room > .wrap { position: relative; z-index: 1; }
 
@@ -104,13 +123,13 @@ html.js .piece.is-open .skin, html.js .piece:has(:focus-visible) .skin, html.js 
 /* shadow on the desk: deepens and spreads as the piece comes up */
 html.js .cast {
   display: block; position: absolute; inset: 8% 5% 0; z-index: -1; border-radius: 6px; background: #000;
-  filter: blur(26px); opacity: .55; transform: translate(10px, 16px);
+  filter: blur(calc(var(--shadow-blur, 24px) + 2px)); opacity: .55; transform: translate(calc(10px + var(--shadow-x, 0px)), calc(16px + var(--shadow-y, 0px)));
   transition: transform 1.6s var(--slow), opacity 1.2s ease, filter 1.6s ease;
 }
 html.js .piece[data-shape="paper"] .cast { inset: 14% 5% 0; }
-html.js .piece.is-lit .cast, html.js .piece:has(:focus-visible) .cast { opacity: .85; transform: translate(14px, 30px); filter: blur(34px); }
+html.js .piece.is-lit .cast, html.js .piece:has(:focus-visible) .cast { opacity: .85; transform: translate(calc(14px + var(--shadow-x, 0px)), calc(30px + var(--shadow-y, 0px))); filter: blur(calc(var(--shadow-blur, 24px) + 10px)); }
 @media (hover: hover) and (pointer: fine) {
-  html.js .piece:hover .cast { opacity: .85; transform: translate(14px, 30px); filter: blur(34px); }
+  html.js .piece:hover .cast { opacity: .85; transform: translate(calc(14px + var(--shadow-x, 0px)), calc(30px + var(--shadow-y, 0px))); filter: blur(calc(var(--shadow-blur, 24px) + 10px)); }
 }
 
 /* the surface. Flat matte gradients only. No grain, no noise. */
@@ -132,13 +151,13 @@ html.js .piece:has(.piece-link:focus-visible) .skin { outline: 2px solid var(--a
 html.js .piece-meta { position: absolute; z-index: 2; margin: 0; gap: 2px 12px; font: 500 10.5px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
 html.js .piece-meta time { display: none; }
 html.js .piece-why {
-  position: absolute; z-index: 2; margin: 0; font: italic 400 16px/1.28 var(--serif); color: var(--text-2);
-  transition: color 1.4s ease, text-shadow 1.4s ease;
+  position: absolute; z-index: 2; margin: 0; font: italic 400 16px/1.28 var(--serif); color: var(--text-2); opacity: .85;
+  transition: color 1.4s ease, text-shadow 1.4s ease, opacity 1.2s ease;
 }
 /* pencil at rest, ink once the light lands */
-html.js .piece.is-lit .piece-why, html.js .piece:has(:focus-visible) .piece-why { color: var(--ink); text-shadow: 0 0 1px rgba(244, 236, 221, .4); }
+html.js .piece.is-lit .piece-why, html.js .piece:has(:focus-visible) .piece-why { color: var(--ink); opacity: 1; text-shadow: 0 0 1px rgba(244, 236, 221, .4); }
 @media (hover: hover) and (pointer: fine) {
-  html.js .piece:hover .piece-why { color: var(--ink); text-shadow: 0 0 1px rgba(244, 236, 221, .4); }
+  html.js .piece:hover .piece-why { color: var(--ink); opacity: 1; text-shadow: 0 0 1px rgba(244, 236, 221, .4); }
 }
 
 html.js .breakdown { position: absolute; inset: 0; margin: 0; padding: 0; display: block; pointer-events: none; z-index: 2; font: inherit; }
@@ -198,7 +217,7 @@ html.js .piece[data-shape="letter"] .piece-link { left: 24px; right: 24px; top: 
 html.js .piece[data-shape="letter"] .piece-why {
   left: 0; width: 100%; top: 0; height: var(--hlast, 478px); padding: 18px 24px 0;
   transform: var(--tlast, none); transform-origin: 50% 0;
-  transition: color 1.4s ease, text-shadow 1.4s ease, transform 1.4s var(--slow);
+  transition: color 1.4s ease, text-shadow 1.4s ease, opacity 1.2s ease, transform 1.4s var(--slow);
 }
 html.js .piece[data-shape="letter"][data-folds] .piece-why { padding-top: 18px; }
 html.js .piece[data-shape="letter"]:not([data-folds]) .piece-why,
@@ -265,10 +284,9 @@ html.js .piece[data-shape="sheet"] .breakdown { position: absolute; width: 1px; 
 
 /* ---------- the head ---------- */
 .room-head { text-align: center; margin-top: 8px; }
-.room-kicker { color: var(--text-3); letter-spacing: .14em; }
-.room-head h1 { margin-top: 14px; font: 400 clamp(34px, 4.6vw, 56px)/1.02 var(--serif); letter-spacing: -.01em; color: var(--text); }
-.room-head h1 em { color: var(--text-2); }
-.room-hint { display: none; margin-top: 14px; font: italic 400 18px/1.4 var(--serif); color: var(--text-2); }
-.room-hint .hint-touch { display: none; }
-html.js .room-hint { display: block; }
-@media (hover: none) { .room-hint .hint-pointer { display: none; } .room-hint .hint-touch { display: inline; } }
+.room-kicker { margin: 0; font: 500 12px/1.4 var(--mono); text-transform: uppercase; color: var(--text-3); letter-spacing: .14em; }
+
+/* reduced motion: static and lit, so a lit-but-closed piece stays flat 2D (no perspective) */
+@media (prefers-reduced-motion: reduce) {
+  html.js .piece.is-lit:not(.is-open):not(:hover) { transform: translate(var(--dx), calc(var(--dy) - 12px)) rotate(calc(var(--rot) * .25)) scale(1.025); }
+}

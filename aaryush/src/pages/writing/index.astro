@@ -14,11 +14,11 @@ const layout = layoutDesk(views);
 const ordered = layout.placements.map((place) => ({ piece: views.find((v) => v.slug === place.slug)!, place }));
 ---
 <BaseLayout title="Writing — Aaryush Gupta" description="Essays by Aaryush Gupta on AI and how organizations work." ogImage="/og/writing.png" path="/writing">
-  <main class="sec room"><div class="wrap">
+  <main class="sec room">
+    <div class="light" aria-hidden="true"><div class="window"><i></i><i></i></div><div class="pool"><i></i><i></i></div><canvas class="dust" data-dust="paused"></canvas></div>
+    <div class="wrap">
     <header class="room-head">
-      <p class="room-kicker mono">Writing</p>
-      <h1>Pull up a chair. <em>It&rsquo;s all on the desk.</em></h1>
-      <p class="room-hint"><span class="hint-pointer">Hover a thing, or tab to it. The light will find it.</span><span class="hint-touch">Tap a thing to see inside. Tap again to read.</span></p>
+      <h1 class="room-kicker mono">Writing</h1>
     </header>
     <div class="desk-wrap">
       <ul class="pieces desk" data-writing-list data-cols={layout.cols} style={`--cols:${layout.cols}`}>
@@ -26,5 +26,5 @@ const ordered = layout.placements.map((place) => ({ piece: views.find((v) => v.s
       </ul>
     </div>
   </div></main>
-  <script>import '../../scripts/writing-desk';</script>
+  <script>import '../../scripts/light-pool'; import '../../scripts/dust'; import '../../scripts/writing-desk';</script>
 </BaseLayout>

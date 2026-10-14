@@ -955,16 +955,14 @@ Edits:
 (any label changes)
 ```
 
-### 16f. Page head and hint
+### 16f. Page head
 
 Source: `aaryush/src/pages/writing/index.astro` (draft, flag `site.drafts.writingRoom`).
 
 Current:
 
-- Kicker: Writing
-- Heading (the page's only h1, with the second sentence in italic serif): Pull up a chair. *It's all on the desk.*
-- Hint, pointer devices: Hover a thing, or tab to it. The light will find it.
-- Hint, touch devices: Tap a thing to see inside. Tap again to read.
+- Heading (the page's only h1, styled small, quiet and centred like a kicker): Writing
+- There is no other headline, sentence or hint on the page.
 
 Edits:
 

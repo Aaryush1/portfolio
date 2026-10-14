@@ -134,8 +134,8 @@ test('after a ctrl-click and moving away nothing stays lit, and hovering the oth
 test('the page head is the only h1 and the link hit area matches the object, not 400px beyond it', async ({ page, isMobile }) => {
   await page.goto('/writing');
   await expect(page.locator('h1')).toHaveCount(1);
-  await expect(page.locator('h1')).toContainText("Pull up a chair.");
-  await expect(page.locator('h1 em')).toContainText('all on the desk');
+  await expect(page.locator('h1')).toHaveText('Writing');
+  expect(await page.locator('h1').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(14); // small and quiet
   if (isMobile) return;
   const p = piece(page, 'bigger-than-electricity');
   const extra = await p.evaluate((el) => {
