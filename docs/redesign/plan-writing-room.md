@@ -1659,8 +1659,8 @@ Names checked across tasks: `layoutDesk`, `nominalSize`, `Placement` (Task 2); `
 5. On papers, the fan is driven by `breakdown` and the piles by the real `##` headings on the essay page. They're allowed to differ.
 6. Unknown kinds use the default cross-fade. Accepted.
 7. Firefox navigates instantly, with no cross-document view transitions. Accepted. It's progressive enhancement.
-8. The contextOS folder is decorative and doesn't open or link anywhere, pending Aaryush.
+8. The contextOS folder is decorative and doesn't open or link anywhere. Confirmed by Aaryush, 2026-10-14.
 9. If both storages are blocked, Back doesn't restore focus to the piece, and the browser default applies. Accepted.
-10. The drawer entries come from Aaryush. Until he confirms them, `site.drawer` holds only the contextOS folder (no fake drafts).
+10. The drawer holds ONLY the contextOS folder. Aaryush confirmed this on 2026-10-14: there are no draft entries, so `site.drawer` is empty and the redacted-draft rendering stays in place for future use.
 11. Papers swap the progress bar for the piles. Letters and other kinds keep the bar.
 12. AA wins. The faint states are faint relative to the inked state, but still pass AA at rest.
