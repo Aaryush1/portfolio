@@ -9,7 +9,7 @@ Voice reminders (from the project notes): operator, not engineer; confident but 
 Contents
 
 - Part A: Draft blocks (the brief's list): 1 Hero, 2 About, 3 How AI fits, 4 Inside-link label, 5 Work intro lead, 6 Content files with `draft: true`
-- Part B: New copy written during the build (not from the old live site): 7 Diagram titles and descriptions, 8 Hero figure caption and title block, 9 Section intros and headings, 10 Footer, 11 "Next" line, 12 404 page, 13 Other small UI labels, 14 Console note and keyboard map
+- Part B: New copy written during the build (not from the old live site): 7 Diagram titles and descriptions, 8 Hero figure caption and title block, 9 Section intros and headings, 10 Footer, 11 "Next" line, 12 404 page, 13 Other small UI labels, 14 Console note and keyboard map, 15 QR page and contact card
 
 ---
 
@@ -805,6 +805,48 @@ Edits:
 
 ```
 (any label changes)
+```
+
+---
+
+## 15. QR page and contact card
+
+**Source:** `aaryush/src/data/site.ts` (`site.meet`; draft flag `site.drafts.qrCard`) and `aaryush/src/lib/vcard.ts` (the note's wording). Added in Task 26 (E6).
+
+`/qr` is the page you use on your phone to make a QR that remembers where you met someone. Nothing on it is stored. The person who scans sees nothing on the page; the context only shows up in the note on the contact card they save.
+
+### 15a. /qr labels
+
+Current:
+
+- Field label: Where. Placeholder: Madison AI Week
+- Quick picks (one tap, deliberately vague): Coffee, Conference, Dinner
+- Field label: Talked about. Placeholder: pricing AI agents
+- Topic chips (built from the site, max 2): Gupta Advisory, the systems by name, Writing
+- Clear control: Clear
+- Caption when nothing is filled in: aaryush.com
+- Caption when filled in (everyone near the screen can read it): Met at Madison AI Week · talked about Engineering loop, pricing AI agents
+
+Edits:
+
+```
+(any label changes)
+```
+
+### 15b. Contact-card note
+
+The note in the saved contact, built on the scanner's device from the context and their own clock. Topics appear by name; no links.
+
+Current:
+
+- With everything: Met at Madison AI Week · Wed, Oct 14, 2026 · Talked about: Engineering loop, pricing AI agents
+- Where only: Met at Coffee · Wed, Oct 14, 2026
+- No context at all (a plain Save contact): Saved Wed, Oct 14, 2026
+
+Edits:
+
+```
+(any wording changes)
 ```
 
 ---

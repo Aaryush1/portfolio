@@ -4,6 +4,12 @@ import { site } from '../data/site';
 interface Props { variant: 'hero' | 'footer' }
 const { variant } = Astro.props;
 const c = site.contact;
+const [given, ...rest] = site.name.split(' ');
+const family = rest.join(' ');
+// "Save contact": href is the static .vcf (the no-JS fallback). scripts/contact-card.ts replaces the click with a vCard built
+// at runtime so it can carry the "where we met" note; it reads this instance's own [data-obf][data-v] anchors below.
+// Selector dependency (E4): the print contact lines (scripts/site.ts, beforeprint) read the HERO instance's
+// [data-obf][data-v] anchors, so keep that markup and the data-contact="hero" wrapper stable.
 // Email and phone: parts are reversed and joined with "|", so neither the address nor the number appears in HTML.
 const enc = (parts: readonly string[]) => [...parts].reverse().join('|');
 const links = [
@@ -14,7 +20,7 @@ const links = [
 ] as const;
 ---
 <div class="cta" data-contact={variant}>
-  <a class="btn btn-primary" href={c.vcard} download="Aaryush Gupta.vcf"><Icon name="card" />Save contact</a>
+  <a class="btn btn-primary" href={c.vcard} download="Aaryush Gupta.vcf" data-vcard data-given={given} data-family={family} data-url={site.url}><Icon name="card" />Save contact</a>
   <span class="sep-v" aria-hidden="true"></span>
   <div class="icons">
     {links.map((l) => (

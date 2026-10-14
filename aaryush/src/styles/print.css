@@ -2,7 +2,11 @@
    Essay pages keep the rules in essay.css and share only the generic rules at the top of this file. */
 .print-only{display:none}
 
-@page{size:auto;margin:.3in}
+/* Only the home sheet gets the narrow .3in margin: it is a named page, applied through body.home { page: home }.
+   Essays and every other page keep the browser's default margin. Browsers without named-page support
+   (older Firefox and Safari) ignore the name and use their default margin; the sheet still fits, since its height is the page's. */
+@page{size:auto}
+@page home{margin:.3in}
 
 @media print{
   .print-only{display:block}
@@ -18,8 +22,11 @@
      pagination, and backgrounds don't print by default, so every rule on this sheet is a border.)
      The doubled .home class outranks the scoped component styles. */
   body.home{
+    page:home;
     box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;
     border:.75pt solid #000;padding:.22in .3in .24in;
+    /* when the sheet breaks across pages, each page keeps its own border and padding */
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;
     font-size:9pt;line-height:1.4;
   }
   body.home.home *{color:#000 !important;background:none !important;box-shadow:none !important;text-shadow:none !important;border-radius:0 !important}

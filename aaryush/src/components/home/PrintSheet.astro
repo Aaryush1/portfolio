@@ -1,6 +1,5 @@
 ---
-import { site, lastDeploy } from '../../data/site';
-const { sheet } = site;
+import TitleBlock from './TitleBlock.astro';
 ---
 <!-- Print only (hidden on screen; see styles/print.css). The contact lines are filled in by scripts/site.ts on beforeprint. -->
 <div class="print-only print-contact" aria-hidden="true">
@@ -15,13 +14,7 @@ const { sheet } = site;
       </ul>
     </div>
     <div class="print-only print-block">
-      <dl class="tblock">
-        <div><dt>Dwg. no.</dt><dd>{sheet.dwg}</dd></div>
-        <div><dt>Sheet</dt><dd>{sheet.sheet}</dd></div>
-        <div><dt>Region</dt><dd>{sheet.region}</dd></div>
-        <div><dt>Last deploy</dt><dd>{lastDeploy()}</dd></div>
-        <div><dt>Scale</dt><dd>{sheet.scale}</dd></div>
-      </dl>
+      <TitleBlock />
     </div>
   </div>
 </div>

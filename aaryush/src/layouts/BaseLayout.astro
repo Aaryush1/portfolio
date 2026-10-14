@@ -13,6 +13,9 @@ import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import KeyMap from '../components/KeyMap.astro';
 import { site } from '../data/site';
+import { getTopics } from '../lib/topics';
+const topics = await getTopics();
+const topicsJson = JSON.stringify(Object.fromEntries(topics.map((t) => [t.slug, t.name]))).replace(/</g, '\\u003c');
 interface Props { title?: string; description?: string; ogImage?: string; path?: string; bodyClass?: string }
 const { title = site.title, description = site.description, ogImage = '/og/home.png', path = Astro.url.pathname, bodyClass } = Astro.props;
 ---
@@ -25,7 +28,7 @@ const { title = site.title, description = site.description, ogImage = '/og/home.
     <meta name="color-scheme" content="dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <Seo title={title} description={description} ogImage={ogImage} path={path} />
-    <script is:inline>document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {} try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { var f = 0; try { f = sessionStorage.getItem('mark-played'); sessionStorage.setItem('mark-played', '1'); } catch (e) {} if (!f) document.documentElement.classList.add('mark-first'); } } catch (e) {}</script>
+    <script is:inline>document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {} try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.pathname.replace(/\/$/, '') !== '/qr') { var f = 0; try { f = sessionStorage.getItem('mark-played'); sessionStorage.setItem('mark-played', '1'); } catch (e) {} if (!f) document.documentElement.classList.add('mark-first'); } } catch (e) {}</script>
     <slot name="head" />
   </head>
   <body class={bodyClass} data-home-title={site.title}>
@@ -34,6 +37,8 @@ const { title = site.title, description = site.description, ogImage = '/og/home.
     <slot />
     <SiteFooter />
     <KeyMap />
+    <script is:inline type="application/json" id="meet-topics" set:html={topicsJson}></script>
+    <script>import '../scripts/contact-card';</script>
     <script>import '../scripts/site';</script>
     <script>import '../scripts/console-note';</script>
   </body>

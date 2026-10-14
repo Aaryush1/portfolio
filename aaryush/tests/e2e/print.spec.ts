@@ -196,3 +196,55 @@ test.describe('E4 print sheet: PDF page budget (Chromium)', () => {
     expect(pages(await page.pdf({ format: 'Letter' }))).toBeLessThanOrEqual(2);
   });
 });
+
+test.describe('E4 print sheet: page breaks and page margin', () => {
+  test('the border is cloned at a page break (box-decoration-break)', async ({ page }) => {
+    await printed(page);
+    const v = await page.evaluate(() => {
+      const s = getComputedStyle(document.body) as CSSStyleDeclaration & { webkitBoxDecorationBreak?: string };
+      return s.getPropertyValue('box-decoration-break') || s.webkitBoxDecorationBreak || '';
+    });
+    expect(v).toBe('clone');
+  });
+
+  test('a sheet forced onto a second page still renders as exactly two pages (Chromium)', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'page.pdf() is Chromium-only');
+    const pages = (pdf: Buffer) => (pdf.toString('latin1').match(/\/Type\s*\/Page(?![s\w])/g) ?? []).length;
+    await page.goto('/');
+    await fire(page, 'beforeprint');
+    // grow the sheet one extra writing row at a time until it spills onto page two
+    let n = pages(await page.pdf({ format: 'Letter' }));
+    for (let i = 0; i < 60 && n < 2; i++) {
+      await page.evaluate(() => {
+        const post = document.querySelector('.post')!;
+        post.parentElement!.append(post.cloneNode(true));
+      });
+      n = pages(await page.pdf({ format: 'Letter' }));
+    }
+    expect(n).toBe(2);
+  });
+
+  test('the narrow .3in margin belongs to the home sheet only (named @page)', async ({ page }) => {
+    const rules = async (path: string) => {
+      await printed(page, path);
+      return page.evaluate(() => {
+        const out: { name: string; margin: string }[] = [];
+        for (const sheet of [...document.styleSheets]) {
+          let list: CSSRuleList;
+          try { list = sheet.cssRules; } catch { continue; }
+          for (const r of [...list]) if (r instanceof CSSPageRule) out.push({ name: r.selectorText, margin: r.style.margin });
+        }
+        const bodyPage = (getComputedStyle(document.body) as CSSStyleDeclaration & { page?: string }).page ?? getComputedStyle(document.body).getPropertyValue('page');
+        return { out, bodyPage };
+      });
+    };
+    const home = await rules('/');
+    // no unnamed @page rule carries a margin, and the home page opts into the named one
+    expect(home.out.filter((r) => r.name === '' && r.margin !== '')).toEqual([]);
+    expect(home.out.some((r) => r.name === 'home' && /\.3in|0\.3in|28\.8px/.test(r.margin))).toBe(true);
+    if (home.bodyPage) expect(home.bodyPage).toBe('home');
+    const essay = await rules('/writing/quiet-singularity');
+    expect(essay.out.filter((r) => r.name === '' && r.margin !== '')).toEqual([]);
+    expect(essay.bodyPage === '' || essay.bodyPage === 'auto').toBe(true);
+  });
+});

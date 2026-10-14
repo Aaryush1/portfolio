@@ -1,13 +1,73 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+import { getTopics } from '../lib/topics';
+import { LIMITS } from '../lib/meet';
+const topics = await getTopics();
+const L = site.meet.labels;
 ---
 <BaseLayout title="QR — Aaryush Gupta" description="Scan to open aaryush.com." ogImage="/og/home.png" path="/qr">
-  <main class="wrap qr">
-    <img src="/assets/QR.png" alt="QR code for aaryush.com" width="320" height="320" />
+  <main class="wrap qr" data-qr data-base={site.url}>
+    <div class="qr-box" data-qr-box>
+      <img class="qr-img" src="/assets/QR.png" alt="QR code for aaryush.com" width="300" height="300" />
+    </div>
+    <p class="qr-cap mono" data-qr-cap data-idle={L.idle}>{L.idle}</p>
+
+    <form class="qr-form" data-qr-form autocomplete="off" novalidate>
+      <div class="field">
+        <label for="qr-where">{L.where}</label>
+        <input id="qr-where" type="text" inputmode="text" enterkeyhint="done" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength={LIMITS.where} placeholder={L.wherePlaceholder} data-where />
+        <div class="chips" role="group" aria-label={`${L.where}: quick picks`}>
+          {site.meet.presets.map((p) => <button type="button" class="qchip" aria-pressed="false" data-preset={p}>{p}</button>)}
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" id="qr-about-label">{L.about}</span>
+        <div class="chips" role="group" aria-labelledby="qr-about-label">
+          {topics.map((t) => <button type="button" class="qchip" aria-pressed="false" data-topic={t.slug}>{t.name}</button>)}
+        </div>
+        <input id="qr-note" type="text" inputmode="text" enterkeyhint="done" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength={LIMITS.note} placeholder={L.aboutPlaceholder} aria-labelledby="qr-about-label" data-note />
+      </div>
+      <button type="button" class="qclear" data-clear>{L.clear}</button>
+    </form>
+
     <a class="more" href="/">Continue to site</a>
   </main>
 </BaseLayout>
+<script>import '../scripts/qr-page';</script>
 <style>
-  .qr { min-height: calc(100svh - var(--header) - 240px); display: grid; place-content: center; justify-items: center; gap: 28px; padding: 64px 0; }
-  .qr img { width: min(320px, 80vw); height: auto; padding: 14px; border-radius: 14px; background: #fff; border: 1px solid var(--line-2); }
+  .qr { padding-block: 24px 56px; display: grid; justify-items: center; gap: 14px; }
+  /* fixed box: denser codes scale inside it, so nothing below ever moves */
+  .qr-box { width: min(320px, 100%); aspect-ratio: 1; border-radius: 14px; background: #fff; border: 1px solid var(--line-2); overflow: hidden; }
+  .qr-box :global(svg), .qr-img { display: block; width: 100%; height: 100%; }
+  /* three lines reserved, clamped: a long note never pushes the fields down */
+  .qr-cap {
+    width: min(320px, 100%); height: 4.5em; margin: 0; text-align: center; text-transform: none; letter-spacing: .02em; line-height: 1.5; color: var(--text-3);
+    overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+  }
+  .qr-form { width: min(420px, 100%); display: grid; gap: 18px; }
+  :global(html:not(.js)) .qr-form { display: none; }
+  .field { display: grid; gap: 8px; }
+  label, .label { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+  input {
+    width: 100%; height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line-2);
+    background: var(--s2); color: var(--text); font: 400 16px/1 var(--font);
+  }
+  input::placeholder { color: var(--text-3); }
+  input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-color: transparent; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .qchip {
+    min-height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid var(--line-2); background: transparent;
+    color: var(--text-2); font: 400 14px/1 var(--font); cursor: pointer;
+  }
+  .qchip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+  .qchip:disabled { opacity: .4; cursor: default; }
+  .qclear {
+    justify-self: start; min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--text-3);
+    font: 400 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+  }
+  .qclear:hover { color: var(--text); }
+  @media (prefers-reduced-motion: no-preference) {
+    .qchip, .qclear { transition: border-color .2s var(--ease), background-color .2s var(--ease), color .2s var(--ease); }
+  }
 </style>

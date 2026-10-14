@@ -1,3 +1,5 @@
+import { decode, emailOf, phoneOf } from './obf';
+
 const top = document.getElementById('top');
 const onScroll = () => top?.classList.toggle('scrolled', window.scrollY > 8);
 window.addEventListener('scroll', onScroll, { passive: true });
@@ -5,7 +7,6 @@ onScroll();
 
 // Assemble obfuscated contact links at runtime (scraper protection: never in HTML).
 // The scheme is derived from data-obf so the literal protocol strings never ship in the bundle either.
-const decode = (a: HTMLAnchorElement) => ({ kind: a.dataset.obf ?? '', parts: (a.dataset.v ?? '').split('|').reverse() });
 document.querySelectorAll<HTMLAnchorElement>('a[data-obf][data-v]').forEach((a) => {
   const { kind, parts } = decode(a);
   const scheme = kind === 'mail' ? kind + 'to' : kind;
@@ -20,7 +21,7 @@ if (printBox) {
     const rows: [string, string][] = [];
     document.querySelectorAll<HTMLAnchorElement>('[data-contact="hero"] a[data-obf][data-v]').forEach((a) => {
       const { kind, parts } = decode(a);
-      rows.push(kind === 'mail' ? ['Email', parts[0] + '@' + parts[1]] : ['Phone', parts.join(' ')]);
+      rows.push(kind === 'mail' ? ['Email', emailOf(parts)] : ['Phone', phoneOf(parts)]);
     });
     printBox.replaceChildren(...rows.map(([label, value]) => {
       const p = document.createElement('p');

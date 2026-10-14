@@ -24,6 +24,18 @@ export const site = {
     github: 'https://github.com/Aaryush1',
     vcard: '/Aaryush%20Contact%20Info.vcf',
   },
+  /** /qr: the page Aaryush uses on his phone to make a QR that remembers where he met someone (E6). Draft copy. */
+  meet: {
+    presets: ['Coffee', 'Conference', 'Dinner'],
+    labels: {
+      where: 'Where',
+      wherePlaceholder: 'Madison AI Week',
+      about: 'Talked about',
+      aboutPlaceholder: 'pricing AI agents',
+      clear: 'Clear',
+      idle: 'aaryush.com',
+    },
+  },
   /** Title-block fields, shared by the hero and the printed sheet. */
   sheet: { dwg: 'AG-001', sheet: '01 / 06', region: 'us-central', scale: 'NTS' },
   location: 'Madison, WI',
@@ -35,7 +47,7 @@ export const site = {
   },
   companyLinkLabel: (name: string) => `Inside ${name}`,
   /** Flip to false in Task 13 once Aaryush approves each block. */
-  drafts: { hero: true, about: true, levels: true, companyLinkLabel: true, footer: false, consoleNote: true, keyboardMap: true, notFound: true },
+  drafts: { hero: true, about: true, levels: true, companyLinkLabel: true, footer: false, consoleNote: true, keyboardMap: true, notFound: true, qrCard: true },
 } as const;
 
 /** Build-time stamp (YYYY.MM), so it always matches the deploy that's live. */
