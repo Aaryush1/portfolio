@@ -1649,3 +1649,18 @@ Names checked across tasks: `layoutDesk`, `nominalSize`, `Placement` (Task 2); `
 10. **Draft drawer entries.** The two `site.drawer` entries (essay ~2,000 words, letter ~800 words) come from the prototype. Whether those reflect real drafts is Aaryush's call.
 11. **Where the generic progress bar goes for unknown kinds.** The plan keeps it (only papers lose it). The spec says "papers only", so this follows it literally, but it's untested against a real third kind.
 12. **Lighthouse "100 accessibility" with the faint states.** The spec asks for AA on every readable label while also asking for a faint pencil `why` and a faint first phrase. If both can't hold at once, the plan raises the resting contrast; the spec doesn't say which wins.
+
+## Controller rulings on open questions (2026-10-14)
+
+1. Keep `kind` strict, with `z.enum(['letter','paper','essay','talk'])`, so a typo fails the build. Essay and talk render as the plain sheet until each is designed. Acceptance criterion 9 (unknown kind → plain sheet) is tested at the component level by passing an unrecognised kind to the desk renderer directly.
+2. A letter's "furthest section" is the fold index derived from scroll fraction across its `breakdown` length. Accepted as the plan describes.
+3. "Pick up" on a letter scrolls to the stored fraction, with the same affordance as papers.
+4. Reaching the final section clears the pick-up offer and the home teaser ribbon. The piece keeps a subtle pulled-out look, which reads as "you've been here".
+5. On papers, the fan is driven by `breakdown` and the piles by the real `##` headings on the essay page. They're allowed to differ.
+6. Unknown kinds use the default cross-fade. Accepted.
+7. Firefox navigates instantly, with no cross-document view transitions. Accepted. It's progressive enhancement.
+8. The contextOS folder is decorative and doesn't open or link anywhere, pending Aaryush.
+9. If both storages are blocked, Back doesn't restore focus to the piece, and the browser default applies. Accepted.
+10. The drawer entries come from Aaryush. Until he confirms them, `site.drawer` holds only the contextOS folder (no fake drafts).
+11. Papers swap the progress bar for the piles. Letters and other kinds keep the bar.
+12. AA wins. The faint states are faint relative to the inked state, but still pass AA at rest.
