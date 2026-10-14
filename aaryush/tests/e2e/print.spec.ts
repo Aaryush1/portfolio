@@ -55,7 +55,7 @@ test.describe('E4 print sheet: what prints', () => {
     const t = (await text(page)).toLowerCase();
     for (const s of [
       'aaryush gupta', 'ai strategy & organizational design',
-      'i build the systems behind', 'how organizations work',
+      'i build the systems behind', 'how anyone solves problems',
       'ai is becoming the infrastructure', 'if you’re thinking about what ai means',
       'gupta advisory', 'founder', 'dec 2024 – present',
       'ready rebound', 'ai & engineering lead', 'cylerity', 'ai lead', 'jan 2024 – present',
@@ -136,7 +136,7 @@ test.describe('E4 print sheet: contact lines', () => {
     expect(t).toContain('linkedin.com/in/aaryush');
     expect(t).toContain('Aaryush Gupta');
     expect(t.toLowerCase()).toContain('gupta advisory');
-    expect(t.toLowerCase()).toContain('how organizations work');
+    expect(t.toLowerCase()).toContain('how anyone solves problems');
     await ctx.close();
   });
 });
@@ -150,7 +150,7 @@ test.describe('E4 print sheet: failure cases', () => {
     expect(await visible(page, 'dialog#popup')).toBe(0);
     const t = (await text(page)).toLowerCase();
     expect(t).not.toMatch(/the challenge|what i designed|open schematic/);
-    expect(t).toContain('how organizations work');
+    expect(t).toContain('how anyone solves problems');
     expect(t).toContain('gupta advisory');
     expect(t).toContain('univise');
     // a locked page must not clip the sheet to the first screen
@@ -161,7 +161,7 @@ test.describe('E4 print sheet: failure cases', () => {
   test('a standalone /work page prints the same sheet', async ({ page }) => {
     await printed(page, '/work/cylerity');
     expect(await visible(page, 'dialog#popup')).toBe(0);
-    expect((await text(page)).toLowerCase()).toContain('how organizations work');
+    expect((await text(page)).toLowerCase()).toContain('how anyone solves problems');
   });
 
   test('essays keep their own print rules, minus the background layer', async ({ page }) => {

@@ -3,12 +3,12 @@ export const site = {
   url: 'https://aaryush.com',
   title: 'Aaryush Gupta — AI Strategy & Organizational Design',
   description:
-    'I build the systems behind how organizations work: operating models, decision architectures and AI systems for organizations in healthcare, finance, tech and beyond.',
+    'I build the systems behind how anyone solves problems: operating models, decision architectures and AI systems for organizations in healthcare, finance, tech and beyond.',
   eyebrow: 'AI Strategy & Organizational Design',
   hero: {
     lead: 'I build the systems behind',
-    subjects: ['how decisions get made', 'how work moves', 'how teams build', 'how products get made'],
-    settled: { before: 'how ', em: 'organizations', after: ' work' },
+    subjects: ['how a problem gets solved', 'how problems get solved', 'how problems solve themselves', 'how teams solve problems'],
+    settled: { before: 'how ', em: 'anyone', after: ' solves problems' },
     lede: 'I look for the system underneath how a company works, then rebuild it with AI, so it handles a whole class of problems on its own, not just the one in front of it.',
   },
   about: [

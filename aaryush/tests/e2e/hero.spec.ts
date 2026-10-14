@@ -16,7 +16,7 @@ test('hero reads correctly without JavaScript', async ({ browser }) => {
   const page = await context.newPage();
   await page.goto('/');
   await expect(page.locator('#rot')).toContainText('I build the systems behind');
-  await expect(page.locator('#slot')).toHaveText('how organizations work');
+  await expect(page.locator('#slot')).toHaveText('how anyone solves problems');
   await expect(page.locator('#slot')).toBeVisible();
   await context.close();
 });
@@ -24,8 +24,8 @@ test('hero reads correctly without JavaScript', async ({ browser }) => {
 test('rotating line cycles subjects, then settles', async ({ page }) => {
   await page.goto('/');
   const slot = page.locator('#slot');
-  await expect(slot).toHaveText('how decisions get made');
-  await expect(slot).toHaveText('how organizations work', { timeout: 15000 });
+  await expect(slot).toHaveText('how a problem gets solved');
+  await expect(slot).toHaveText('how anyone solves problems', { timeout: 15000 });
   await expect(page.locator('#rot')).toHaveClass(/is-settled/);
 });
 
@@ -33,7 +33,7 @@ test('reduced motion shows the settled line immediately', async ({ browser }) =>
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
   await page.goto('/');
-  await expect(page.locator('#slot')).toHaveText('how organizations work');
+  await expect(page.locator('#slot')).toHaveText('how anyone solves problems');
   await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'false');
   await context.close();
 });
@@ -61,7 +61,7 @@ test('morph keeps the word spaces: every subject reads correctly once it lands',
   const slot = page.locator('#slot');
   const subjects: string[] = JSON.parse((await page.locator('#rot').getAttribute('data-subjects')) ?? '[]');
   const seen: string[] = [];
-  for (const expected of [...subjects, 'how organizations work']) {
+  for (const expected of [...subjects, 'how anyone solves problems']) {
     // textContent (not innerText) on purpose: ghosts are gone once the transition has finished
     await expect
       .poll(
@@ -77,7 +77,7 @@ test('morph keeps the word spaces: every subject reads correctly once it lands',
       return w.slice(1).map((r, i) => r.left - w[i].right);
     });
     for (const g of gaps) expect(g).toBeGreaterThan(2);
-    if (expected !== 'how organizations work') await page.waitForTimeout(300);
+    if (expected !== 'how anyone solves problems') await page.waitForTimeout(300);
   }
   expect(seen.length).toBe(subjects.length + 1);
 });

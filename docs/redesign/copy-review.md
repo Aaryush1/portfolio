@@ -17,6 +17,8 @@ Contents
 
 ## 1. Hero
 
+**Approved by Aaryush on 2026-10-14.** Final sequence (lead unchanged: "I build the systems behind"): how a problem gets solved / how problems get solved / how problems solve themselves / how teams solve problems, settling on "how *anyone* solves problems" (`anyone` in Instrument Serif italic; `settled = { before: 'how ', em: 'anyone', after: ' solves problems' }`). The options below are superseded.
+
 **Source:** `aaryush/src/data/site.ts` (`site.hero`)
 
 ### 1a. Lead (fixed phrase before the rotating subject)
@@ -51,12 +53,12 @@ Note: option A is identical to the current list. Say so if you want it kept. The
 
 ### 1c. Settled line (where the rotator comes to rest)
 
-Current: "I build the systems behind **how organizations work**." Stored as three parts: before `how `, emphasized word `organizations`, after ` work`.
+Approved: "I build the systems behind **how anyone solves problems**." Stored as three parts: before `how `, emphasized word `anyone`, after ` solves problems`.
 
 ```
 before: "how "
-em:     "organizations"
-after:  " work"
+em:     "anyone"
+after:  " solves problems"
 ```
 
 Edit here if you want different wording:
@@ -83,7 +85,7 @@ Current page title:
 
 Current meta description (search results and link previews):
 
-> I build the systems behind how organizations work: operating models, decision architectures and AI systems across healthcare, finance and tech.
+> I build the systems behind how anyone solves problems: operating models, decision architectures and AI systems across healthcare, finance and tech.
 
 ---
 
