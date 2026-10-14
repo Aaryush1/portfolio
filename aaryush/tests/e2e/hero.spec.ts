@@ -38,7 +38,7 @@ test('reduced motion shows the settled line immediately', async ({ browser }) =>
   await context.close();
 });
 
-test('hero schematic pauses while a pop-up is open', async ({ page }) => {
+test('hero canvas pauses while a pop-up is open', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'true');
   // DOM click so the page does not scroll: the hero stays in view and only html.locked can pause it
@@ -49,7 +49,7 @@ test('hero schematic pauses while a pop-up is open', async ({ page }) => {
   await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'true');
 });
 
-test('hero schematic pauses when scrolled away', async ({ page }) => {
+test('hero canvas pauses when scrolled away', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'true');
   await page.locator('#writing').scrollIntoViewIfNeeded();

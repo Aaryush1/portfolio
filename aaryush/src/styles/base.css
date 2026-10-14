@@ -5,14 +5,6 @@ html.locked{overflow:hidden}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 body{
   margin:0;color:var(--text);
-  background-color:var(--bg);
-  /* the measured sheet: 24px minor grid, 96px major grid — always there, never loud */
-  background-image:
-    linear-gradient(var(--g-maj) 1px, transparent 1px),
-    linear-gradient(90deg, var(--g-maj) 1px, transparent 1px),
-    linear-gradient(var(--g-min) 1px, transparent 1px),
-    linear-gradient(90deg, var(--g-min) 1px, transparent 1px);
-  background-size:96px 96px,96px 96px,24px 24px,24px 24px;
   font-family:var(--font);font-size:16px;line-height:1.65;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   text-rendering:optimizeLegibility;overflow-x:hidden;overflow-x:clip;
@@ -28,6 +20,30 @@ svg{display:block}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .wrap{max-width:calc(var(--maxw) + var(--gutter)*2);margin:0 auto;padding:0 var(--gutter)}
 .mono{font-family:var(--mono);font-size:12px;line-height:1.4;letter-spacing:.06em;text-transform:uppercase;font-weight:400}
+
+/* Site-wide background: warm and cool light drifting very slowly (transform only), plus a still grain tile.
+   Sits behind everything at z-index -1; html supplies the flat colour, so body stays transparent. */
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+/* light layers are drawn at 1/4 size and scaled up 4x: the gradients are smooth, and it keeps the raster cost small */
+.bg i{position:absolute;border-radius:50%;will-change:transform}
+.bg .l1{left:74%;top:30%;width:30vmax;height:30vmax;margin:-15vmax 0 0 -15vmax;
+  background:radial-gradient(closest-side, rgba(255,214,150,.085), rgba(255,214,150,.029) 50%, rgba(255,214,150,0));
+  animation:drift-a 64s ease-in-out infinite alternate}
+.bg .l2{left:30%;top:90%;width:32.5vmax;height:32.5vmax;margin:-16.25vmax 0 0 -16.25vmax;
+  background:radial-gradient(closest-side, rgba(110,140,215,.07), rgba(110,140,215,.024) 50%, rgba(110,140,215,0));
+  animation:drift-b 78s ease-in-out infinite alternate}
+.bg .l3{left:50%;top:-10%;width:40vmax;height:40vmax;margin:-20vmax 0 0 -20vmax;
+  background:radial-gradient(closest-side, rgba(255,255,255,.022), rgba(255,255,255,.0075) 50%, rgba(255,255,255,0));
+  animation:drift-c 90s ease-in-out infinite alternate}
+@media (max-width:759px){.bg .l1{left:55%}}
+.bg .grain{position:absolute;inset:0;background:url(/grain.png) 0 0/160px 160px;opacity:.4}
+.essay-page .bg .grain{opacity:.22}
+@keyframes drift-a{from{transform:translate(-7vw,-8vh) scale(4)}to{transform:translate(7vw,8vh) scale(4)}}
+@keyframes drift-b{from{transform:translate(9vw,-6vh) scale(4)}to{transform:translate(-9vw,6vh) scale(4)}}
+@keyframes drift-c{from{transform:translate(-20vw,0) scale(4)}to{transform:translate(20vw,0) scale(4)}}
+html.locked .bg i{animation-play-state:paused} /* a pop-up covers the page: stop drawing behind it */
+@media (prefers-reduced-motion:reduce){.bg i{animation:none}}
+@media print{.bg{display:none}}
 
 /* registration crosses */
 .reg{position:absolute;width:11px;height:11px;pointer-events:none}

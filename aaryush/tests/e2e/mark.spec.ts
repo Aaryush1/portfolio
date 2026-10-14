@@ -51,18 +51,21 @@ test.describe('reduced motion', () => {
   });
 });
 
+// the header is translucent; the slowly drifting site background would differ between the two renders
+const HIDE_BG = '.bg{display:none}';
+
 test.describe('no javascript', () => {
   test.use({ javaScriptEnabled: false });
   test('mark renders fully drawn and matches the reduced-motion render', async ({ page, browser }) => {
     await page.goto('/');
     await expect(page.locator('html')).not.toHaveClass(/mark-first/);
     expect(parseFloat(await penOffset(page, '.pen-g'))).toBe(0);
-    const noJs = await page.locator(svg).screenshot();
+    const noJs = await page.locator(svg).screenshot({ style: HIDE_BG });
 
     const ctx = await browser.newContext({ reducedMotion: 'reduce' });
     const rm = await ctx.newPage();
     await rm.goto('/');
-    const staticShot = await rm.locator(svg).screenshot();
+    const staticShot = await rm.locator(svg).screenshot({ style: HIDE_BG });
     await ctx.close();
     expect(noJs.equals(staticShot)).toBe(true);
     expect(noJs.length).toBeGreaterThan(300); // not an empty crop
