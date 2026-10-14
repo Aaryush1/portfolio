@@ -1,4 +1,4 @@
-import { createKeyRouter, type KeyAction } from '../lib/keymap';
+import { createKeyRouter, isEditableTarget, type KeyAction } from '../lib/keymap';
 
 const dialog = document.getElementById('keymap') as HTMLDialogElement | null;
 if (dialog && !(window as unknown as Record<string, unknown>).__agKeys) {
@@ -75,11 +75,6 @@ function init(dialog: HTMLDialogElement) {
     else location.assign(href);
   }
 
-  const isEditable = (t: EventTarget | null) => {
-    if (!(t instanceof HTMLElement)) return false;
-    return t.isContentEditable || !!t.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
-  };
-
   document.addEventListener('keydown', (e) => {
     if (e.repeat || e.defaultPrevented) return;
     const action = router.handle({
@@ -89,7 +84,7 @@ function init(dialog: HTMLDialogElement) {
       altKey: e.altKey,
       isComposing: e.isComposing,
       keyCode: e.keyCode,
-      editable: isEditable(e.target),
+      editable: isEditableTarget(e.target),
       popupOpen: !!document.querySelector('dialog#popup[open]'),
       mapOpen: dialog.open,
     });

@@ -4,7 +4,7 @@
 // from the previous hero drawing; tests/e2e/hero.spec.ts depends on it.
 // The look follows the visitor's local hour (src/lib/daypart.ts, spec E5).
 
-import { daypartFor, fieldParams, isDaypart, type Daypart, type FieldParams, type Rgba } from '../lib/daypart';
+import { calmParams, contourLevels, daypartFor, fieldParams, isDaypart, PHONE_QUERY, type Daypart, type FieldParams, type Rgba } from '../lib/daypart';
 import { getOverride } from './daypart-override';
 
 const hero = document.getElementById('hero');
@@ -86,10 +86,13 @@ if (hero && cv && ctx) {
 
   // ---------- day period (E5) ----------
   let part: Daypart | null = null;
+  let calmOn: boolean | null = null;
   let params: FieldParams = fieldParams('afternoon');
   let minorStroke = '', majorStroke = '', amberStroke = '', warmStroke = '';
   let minorLevels: number[] = [], majorLevels: number[] = [];
   let tag: HTMLElement | null = null, tagTimer = 0;
+  // Phones (T34): a calmer field behind the text. Desktop is untouched.
+  const phone = matchMedia(PHONE_QUERY);
 
   // Precedence: data-daypart on <html> (tests), then the shared `t` preview, then ?daypart= (dev builds only), then the clock.
   function resolvePart(): Daypart {
@@ -106,13 +109,17 @@ if (hero && cv && ctx) {
 
   function applyPart() {
     const next = resolvePart();
-    if (next === part) return;
+    const calm = phone.matches;
+    if (next === part && calm === calmOn) return;
     part = next;
-    params = fieldParams(next);
+    calmOn = calm;
+    const base = fieldParams(next);
+    params = calm ? calmParams(base) : base;
     minorStroke = rgba(params.minor); majorStroke = rgba(params.major); amberStroke = rgba(params.amber); warmStroke = params.warmLevel ? rgba(params.warmLevel.color) : '';
-    minorLevels = []; majorLevels = [];
-    for (let i = 0; i < params.levelCount; i++) (i % 4 === 0 ? majorLevels : minorLevels).push(-0.7 + i * params.levelStep);
+    const levels = contourLevels(params, calm);
+    minorLevels = levels.minor; majorLevels = levels.major;
     cv!.dataset.daypart = next;
+    cv!.dataset.calm = String(calm);
     cv!.dataset.levels = String(params.levelCount);
     cv!.dataset.drift = String(params.drift);
     cv!.dataset.amber = String(params.amber[3]);
@@ -258,6 +265,7 @@ if (hero && cv && ctx) {
   setInterval(() => { if (visible && !document.hidden) applyPart(); }, RECHECK_MS);
   new MutationObserver(applyPart).observe(root, { attributes: true, attributeFilter: ['data-daypart'] });
   reduceMQ.addEventListener('change', () => { stop(); refresh(); });
+  phone.addEventListener('change', applyPart);
   // Pause while a pop-up is open (html.locked): saves CPU and keeps the frame count low behind the dialog.
   new MutationObserver(() => { if (locked()) stop(); else start(); }).observe(root, { attributes: true, attributeFilter: ['class'] });
 }

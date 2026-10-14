@@ -24,9 +24,9 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | **The letter signs itself** | Letter essay pages | At the end of a letter, the "ag." signature draws itself. | ✅ |
 | **Two piles of paper** | Paper essay pages | Reading progress shown as sheets moving from one pile to the other. | ✅ |
 | **The room remembers you** | /writing and the home teaser | Pieces you've opened sit slightly pulled out with a ribbon, with "pick up where you left off". It's stored only in your own browser. | 🔨 |
-| **General notes** | Home hero, 9pm–7am (footer on phones) | Pencilled "GENERAL NOTES 1. It's past nine. 2. So are you." | 🔨 |
-| **contextOS caret** | Home timeline, "Next" line | An amber caret blinks where the period was, as if the name is still being typed. | 🔨 |
-| **Type `contextos`** | Home, anywhere outside text fields | The contextOS word re-types itself once with the hero's morph. | 🔨 |
+| **General notes** | Home hero, 9pm–7am (footer on phones) | Pencilled "GENERAL NOTES 1. It's past nine. 2. So are you." | ✅ |
+| **contextOS caret** | Home timeline, "Next" line | An amber caret blinks where the period was, as if the name is still being typed. | ✅ |
+| **Type `contextos`** | Home, anywhere outside text fields | The contextOS word re-types itself once with the hero's morph. | ✅ |
 
 ## Adding a new one
 

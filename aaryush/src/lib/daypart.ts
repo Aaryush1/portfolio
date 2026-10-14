@@ -86,3 +86,18 @@ export function currentDaypart(root: Element, now: Date = new Date(), override: 
   if (isDaypart(override)) return override;
   return daypartFor(now.getHours());
 }
+
+/** Phones (below 560px): the hero field is calmer behind the text (T34). Desktop keeps the day look. */
+export const PHONE_QUERY = '(max-width: 559px)';
+
+/** The field with the phone calm applied: minor lines about 40% fainter, the amber contour a little thinner. Pure. */
+export function calmParams(p: FieldParams): FieldParams {
+  return { ...p, minor: [p.minor[0], p.minor[1], p.minor[2], p.minor[3] * 0.6], amberWidth: p.amberWidth * 0.8 };
+}
+
+/** The contour levels to draw from -0.7 upward: every fourth is a major line. Calm keeps every second minor line. Pure. */
+export function contourLevels(p: FieldParams, calm: boolean): { minor: number[]; major: number[] } {
+  const minor: number[] = [], major: number[] = [];
+  for (let i = 0; i < p.levelCount; i++) (i % 4 === 0 ? major : minor).push(-0.7 + i * p.levelStep);
+  return { minor: calm ? minor.filter((_, k) => k % 2 === 0) : minor, major };
+}
