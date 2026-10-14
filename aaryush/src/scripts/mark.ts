@@ -43,3 +43,5 @@ function init() {
 }
 
 init();
+
+export {};

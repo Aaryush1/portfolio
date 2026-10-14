@@ -20,4 +20,4 @@ export async function getStaticPaths() {
 }
 
 export const GET: APIRoute<Props> = async ({ props }) =>
-  new Response(await renderOg(props), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=31536000, immutable' } });
+  new Response(new Uint8Array(await renderOg(props)), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=31536000, immutable' } });

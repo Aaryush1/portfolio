@@ -25,6 +25,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.64.0",
     "@resvg/resvg-js": "^2.6.2",
+    "@types/js-yaml": "^4.0.9",
     "jsqr": "^1.4.0",
     "satori": "^0.56.1",
     "typescript": "^5.9.3",

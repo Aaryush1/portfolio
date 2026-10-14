@@ -31,9 +31,11 @@ const byCompany = new Map(entries);
 
 const views = slugs.map((slug) => {
   const company = companyById.get(slug);
-  if (company) return { slug, company, systems: byCompany.get(slug)!.systems };
-  const system = systemById.get(slug)!;
-  return { slug, system, company: companyById.get(system.data.company.id)! };
+  if (company) return { kind: 'job' as const, slug, company, systems: byCompany.get(slug)!.systems };
+  const system = systemById.get(slug);
+  const parent = system && companyById.get(system.data.company.id);
+  if (!system || !parent) throw new Error(`Work slug "${slug}" has no matching company or system entry`);
+  return { kind: 'system' as const, slug, system, company: parent };
 });
 ---
 <BaseLayout {...seo} bodyClass="home">
@@ -48,13 +50,13 @@ const views = slugs.map((slug) => {
   <PopupShell openSlug={openSlug} backHref={backHref} backName={backName}>
     {views.filter((v) => v.slug === openSlug).map((v) => (
       <Fragment slot="open">
-        {'system' in v ? <SystemView system={v.system} company={v.company} number={numbers.get(v.slug)!} /> : <JobView company={v.company} systems={v.systems} numbers={numbers} />}
+        {v.kind === 'system' ? <SystemView system={v.system} company={v.company} number={numbers.get(v.slug)!} /> : <JobView company={v.company} systems={v.systems} numbers={numbers} />}
       </Fragment>
     ))}
   </PopupShell>
   {views.map((v) => (
     <template id={`popup-${v.slug}`}>
-      {'system' in v ? <SystemView system={v.system} company={v.company} number={numbers.get(v.slug)!} /> : <JobView company={v.company} systems={v.systems} numbers={numbers} />}
+      {v.kind === 'system' ? <SystemView system={v.system} company={v.company} number={numbers.get(v.slug)!} /> : <JobView company={v.company} systems={v.systems} numbers={numbers} />}
     </template>
   ))}
   <script>import '../scripts/popups';</script>
