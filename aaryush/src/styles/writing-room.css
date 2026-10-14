@@ -376,3 +376,16 @@ html.js .room.drawer-open .desk-wrap { opacity: .3; }
   /* opened, the folds need the room: the "why" fades out and returns when the letter closes */
   html.js .piece[data-shape="letter"].is-open .piece-why, html.js .piece[data-shape="letter"]:has(:focus-visible) .piece-why { opacity: 0; }
 }
+
+/* ---------- walking in on phones (Task 32): a copy of the piece is brought up to fill the screen, see scripts/walk-in.ts ---------- */
+.walk-veil { position: fixed; inset: 0; z-index: 999; background: #0a0b0e; opacity: 0; touch-action: none; }
+html.js .piece.is-open .piece-link { -webkit-tap-highlight-color: transparent; }
+html.js .piece.walk-clone { position: fixed; margin: 0; z-index: 1000; pointer-events: none; transition: none !important; will-change: transform; }
+html.js .walk-clone .fold, html.js .walk-clone .breakdown li, html.js .walk-clone .sheet { transition: transform var(--wd, .3s) cubic-bezier(.45, .05, .2, 1), opacity .3s ease !important; }
+html.js .walk-clone .fold::after, html.js .walk-clone .letter-base { transition: opacity var(--wd, .3s) ease !important; }
+html.js .piece.walk-clone .fold.flat::after { opacity: 0 !important; }
+html.js .walk-clone .staple { display: none; }
+.walk-staple {
+  position: fixed; left: 8px; top: 16px; z-index: 1001; width: 22px; height: 3px; border-radius: 2px; background: #8b8f9b;
+  transform: rotate(38deg); box-shadow: 0 1px 0 #000, 0 0 0 .5px rgba(0, 0, 0, .5); pointer-events: none;
+}

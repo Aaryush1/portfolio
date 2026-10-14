@@ -47,3 +47,40 @@
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   .piece, .essay-head { view-transition-name: none !important; }
 }
+
+/* ---------- Phones (below 560px, Task 32): walking into a piece fills the whole screen ----------
+ * No piece is a shared element here. Letters and papers are first brought up to fill the screen on the desk (scripts/walk-in.ts),
+ * then the essay page finishes the move below. Sheets and unknown kinds cross-fade the whole screen. Back is a soft fade-and-scale.
+ * The class on <html> (walk-letter, walk-paper, vt-back) is set by the pagereveal hook in BaseLayout; nothing here animates layout. */
+@media (max-width: 559px) {
+  .piece, .essay-head { view-transition-name: none !important; }
+  html.walk-out .top, html.walk-letter .top, html.walk-paper .top { view-transition-name: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .42s; }
+
+  /* Paper: the full-screen cover turns up on the staple (its left edge); the essay's head is already underneath. */
+  html.walk-paper::view-transition-old(root) { z-index: 2; mix-blend-mode: normal; transform-origin: 0 50%; animation: walk-turn .58s var(--ease-d) both; }
+  html.walk-paper::view-transition-new(root) { mix-blend-mode: normal; animation: walk-under .58s var(--ease-out) both; }
+  @keyframes walk-turn {
+    0% { opacity: 1; transform: perspective(1400px) rotateY(0); }
+    78% { opacity: 1; }
+    100% { opacity: 0; transform: perspective(1400px) rotateY(-100deg); }
+  }
+  @keyframes walk-under { from { transform: scale(.985); } to { transform: none; } }
+
+  /* Letter: the opened sheet is the screen; the essay text fades in on it, then the sheet melts into the page. */
+  html.walk-letter::view-transition-old(root) { z-index: 2; mix-blend-mode: normal; animation: walk-fade-out .3s ease .04s both; }
+  html.walk-letter::view-transition-new(root) { mix-blend-mode: normal; animation: none; }
+  html.walk-letter::after {
+    content: ""; position: fixed; inset: 0; z-index: 90; pointer-events: none;
+    background: linear-gradient(180deg, #1f1b16, #191611); animation: walk-fade-out .55s ease .22s both;
+  }
+  html.walk-letter .essay { position: relative; z-index: 91; animation: walk-fade-in .45s var(--ease-out) .05s both; }
+  @keyframes walk-fade-out { to { opacity: 0; } }
+  @keyframes walk-fade-in { from { opacity: 0; } }
+
+  /* Back from the essay, or from the desk to it: a soft fade and scale, the way you step back from the page. */
+  html.vt-back::view-transition-old(root) { animation: walk-back-out .38s var(--ease-d) both; }
+  html.vt-back::view-transition-new(root) { animation: walk-back-in .5s var(--ease-out) both; }
+  @keyframes walk-back-out { to { opacity: 0; transform: scale(.95); } }
+  @keyframes walk-back-in { from { opacity: 0; transform: scale(1.04); } }
+}

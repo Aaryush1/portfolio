@@ -21,6 +21,9 @@ const { title = site.title, description = site.description, ogImage = '/og/home.
 // `bare` pages (the /qr tool) touch no storage and never read or keep the contact context, so they skip the mark-played flag, and scripts/contact-card.ts skips capture() when body has data-bare.
 const markPart = bare ? '' : " try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { var f = 0; try { f = sessionStorage.getItem('mark-played'); sessionStorage.setItem('mark-played', '1'); } catch (e) {} if (!f) document.documentElement.classList.add('mark-first'); } } catch (e) {}";
 const boot = "document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {}" + markPart;
+// Phones, writing only (Task 32): tell the view transition how this page was reached. A piece that walked in leaves a
+// short-lived flag (see scripts/walk-in.ts); a Back to the desk or from an essay gets the soft fade-and-scale.
+const reveal = "try { if ('onpagereveal' in window && matchMedia('(max-width: 559px)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches && location.pathname.indexOf('/writing') === 0) addEventListener('pagereveal', function (e) { if (!e.viewTransition) return; var c = document.documentElement.classList, k = ''; try { var v = (sessionStorage.getItem('walk-in') || '').split('|'); sessionStorage.removeItem('walk-in'); if ((v[0] === 'letter' || v[0] === 'paper') && Date.now() - Number(v[1]) < 8000) k = v[0]; } catch (x) {} if (k) c.add('walk-' + k); else { var a = window.navigation && navigation.activation; if (a && a.navigationType === 'traverse') c.add('vt-back'); } }); } catch (x) {}";
 ---
 <!doctype html>
 <html lang="en">
@@ -32,6 +35,7 @@ const boot = "document.documentElement.classList.add('js'); try { if (!matchMedi
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <Seo title={title} description={description} ogImage={ogImage} path={path} />
     <script is:inline set:html={boot}></script>
+    {!bare && <script is:inline set:html={reveal}></script>}
     <slot name="head" />
   </head>
   <body class={bodyClass} data-home-title={site.title} data-bare={bare ? '' : undefined}>

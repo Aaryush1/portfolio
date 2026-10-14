@@ -4,6 +4,7 @@
  * CSS hover/:has(:focus-visible) already covers the case where this script never runs.
  */
 import { nearestToCenter } from '../lib/room-light';
+import { canWalk, clearWalk, isWalking, prefetchPiece, walkIn } from './walk-in';
 
 const pieces = Array.from(document.querySelectorAll<HTMLElement>('[data-piece]'));
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -68,10 +69,17 @@ for (const el of pieces) {
   el.addEventListener('focusout', (e) => { if (!el.contains(e.relatedTarget as Node | null)) unlight(el); });
   el.querySelector<HTMLAnchorElement>('.piece-link')?.addEventListener('click', (e) => {
     if (!phone() || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-    if (el.classList.contains('is-open')) return; // second tap follows the link
+    if (isWalking()) { e.preventDefault(); return; }
+    if (el.classList.contains('is-open')) {
+      // second tap follows the link; letters and papers walk in first (Task 32), anything else just navigates
+      const shape = el.dataset.shape;
+      if ((shape === 'letter' || shape === 'paper') && walkIn(el, (e.currentTarget as HTMLAnchorElement).href, shape)) e.preventDefault();
+      return;
+    }
     e.preventDefault();
     for (const p of pieces) if (p !== el) unlight(p);
     light(el);
+    if (canWalk()) prefetchPiece((e.currentTarget as HTMLAnchorElement).href);
   });
 }
 document.addEventListener('click', (e) => {
@@ -103,4 +111,4 @@ function restoreFocus() {
 }
 const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
 if (nav?.type === 'back_forward') restoreFocus();
-addEventListener('pageshow', (e) => { if (e.persisted) restoreFocus(); });
+addEventListener('pageshow', (e) => { if (e.persisted) { clearWalk(); restoreFocus(); } });
