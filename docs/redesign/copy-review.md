@@ -71,7 +71,9 @@ Edit here if you want different wording:
 
 Current:
 
-> I look for the system underneath how a company works, then rebuild it with AI, so it handles a whole class of problems on its own, not just the one in front of it.
+> Interesting people are the best part of this. Say hi.
+
+**Approved by Aaryush 2026-10-14** (replaces the earlier lede). The eyebrow "AI Strategy & Organizational Design" was cut; the page title is now just "Aaryush Gupta".
 
 ### 1e. Eyebrow, site title and meta description (also in `site.ts`)
 

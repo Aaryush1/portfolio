@@ -8,7 +8,7 @@ export const site = {
     lead: 'I build the systems behind',
     subjects: ['how a problem gets solved', 'how problems get solved', 'how problems solve themselves', 'how teams solve problems'],
     settled: { before: 'how ', em: 'anyone', after: ' solves problems' },
-    lede: 'I look for the system underneath how a company works, then rebuild it with AI, so it handles a whole class of problems on its own, not just the one in front of it.',
+    lede: 'Interesting people are the best part of this. Say hi.',
   },
   /** Unused on the homepage: moving to a writing piece. Kept so the copy isn't lost. */
   aboutArchive: [
