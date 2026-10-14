@@ -52,8 +52,7 @@ function vcardFor(a: HTMLAnchorElement): string | null {
   });
 }
 
-function download(text: string, filename: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/vcard;charset=utf-8' }));
+function download(url: string, filename: string) {
   const dl = document.createElement('a');
   dl.href = url;
   dl.download = filename;
@@ -64,15 +63,20 @@ function download(text: string, filename: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-capture();
-document.addEventListener('click', (e) => {
-  if (e.defaultPrevented || e.button !== 0 || !(e.target instanceof Element)) return;
-  const a = e.target.closest<HTMLAnchorElement>('a[data-vcard]');
-  if (!a) return;
-  try {
-    const text = vcardFor(a);
-    if (!text) return; // anything missing: let the link fall back to the static .vcf
-    e.preventDefault();
-    download(text, a.getAttribute('download') || 'contact.vcf');
-  } catch { /* fall back to the static .vcf */ }
-});
+// Bare pages (/qr) never read, keep or act on the contact context.
+if (!document.body.hasAttribute('data-bare')) {
+  capture();
+  document.addEventListener('click', (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || !(e.target instanceof Element)) return;
+    const a = e.target.closest<HTMLAnchorElement>('a[data-vcard]');
+    if (!a) return;
+    let url: string;
+    try {
+      const text = vcardFor(a);
+      if (!text) return; // anything missing: let the link fall back to the static .vcf
+      url = URL.createObjectURL(new Blob([text], { type: 'text/vcard;charset=utf-8' }));
+    } catch { return; } // fall back to the static .vcf
+    e.preventDefault(); // only now: the card and its URL exist
+    download(url, a.getAttribute('download') || 'contact.vcf');
+  });
+}

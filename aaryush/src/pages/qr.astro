@@ -6,7 +6,7 @@ import { LIMITS } from '../lib/meet';
 const topics = await getTopics();
 const L = site.meet.labels;
 ---
-<BaseLayout title="QR — Aaryush Gupta" description="Scan to open aaryush.com." ogImage="/og/home.png" path="/qr">
+<BaseLayout title="QR — Aaryush Gupta" description="Scan to open aaryush.com." ogImage="/og/home.png" path="/qr" bare>
   <main class="wrap qr" data-qr data-base={site.url}>
     <div class="qr-box" data-qr-box>
       <img class="qr-img" src="/assets/QR.png" alt="QR code for aaryush.com" width="300" height="300" />
@@ -40,10 +40,12 @@ const L = site.meet.labels;
   /* fixed box: denser codes scale inside it, so nothing below ever moves */
   .qr-box { width: min(320px, 100%); aspect-ratio: 1; border-radius: 14px; background: #fff; border: 1px solid var(--line-2); overflow: hidden; }
   .qr-box :global(svg), .qr-img { display: block; width: 100%; height: 100%; }
-  /* three lines reserved, clamped: a long note never pushes the fields down */
+  /* The caption shows everything that will be saved, never clipped. Six lines are reserved at 12px (the longest
+     realistic caption wraps to six at 375px), so the fields below stay put; beyond that it grows downward and
+     only the fields move, never the QR. */
   .qr-cap {
-    width: min(320px, 100%); height: 4.5em; margin: 0; text-align: center; text-transform: none; letter-spacing: .02em; line-height: 1.5; color: var(--text-3);
-    overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden;
+    width: min(320px, 100%); min-height: 9em; margin: 0; text-align: center; text-transform: none; letter-spacing: .02em; line-height: 1.5; color: var(--text-3);
+    overflow-wrap: anywhere;
   }
   .qr-form { width: min(420px, 100%); display: grid; gap: 18px; }
   :global(html:not(.js)) .qr-form { display: none; }

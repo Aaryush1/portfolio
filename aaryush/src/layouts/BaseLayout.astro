@@ -16,8 +16,11 @@ import { site } from '../data/site';
 import { getTopics } from '../lib/topics';
 const topics = await getTopics();
 const topicsJson = JSON.stringify(Object.fromEntries(topics.map((t) => [t.slug, t.name]))).replace(/</g, '\\u003c');
-interface Props { title?: string; description?: string; ogImage?: string; path?: string; bodyClass?: string }
-const { title = site.title, description = site.description, ogImage = '/og/home.png', path = Astro.url.pathname, bodyClass } = Astro.props;
+interface Props { title?: string; description?: string; ogImage?: string; path?: string; bodyClass?: string; bare?: boolean }
+const { title = site.title, description = site.description, ogImage = '/og/home.png', path = Astro.url.pathname, bodyClass, bare = false } = Astro.props;
+// `bare` pages (the /qr tool) touch no storage and never read or keep the contact context, so they skip the mark-played flag, and scripts/contact-card.ts does nothing when body has data-bare.
+const markPart = bare ? '' : " try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { var f = 0; try { f = sessionStorage.getItem('mark-played'); sessionStorage.setItem('mark-played', '1'); } catch (e) {} if (!f) document.documentElement.classList.add('mark-first'); } } catch (e) {}";
+const boot = "document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {}" + markPart;
 ---
 <!doctype html>
 <html lang="en">
@@ -28,10 +31,10 @@ const { title = site.title, description = site.description, ogImage = '/og/home.
     <meta name="color-scheme" content="dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <Seo title={title} description={description} ogImage={ogImage} path={path} />
-    <script is:inline>document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {} try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.pathname.replace(/\/$/, '') !== '/qr') { var f = 0; try { f = sessionStorage.getItem('mark-played'); sessionStorage.setItem('mark-played', '1'); } catch (e) {} if (!f) document.documentElement.classList.add('mark-first'); } } catch (e) {}</script>
+    <script is:inline set:html={boot}></script>
     <slot name="head" />
   </head>
-  <body class={bodyClass} data-home-title={site.title}>
+  <body class={bodyClass} data-home-title={site.title} data-bare={bare ? '' : undefined}>
     <div class="bg" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i><div class="grain"></div></div>
     <SiteHeader />
     <slot />

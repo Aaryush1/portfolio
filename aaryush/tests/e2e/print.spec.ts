@@ -207,6 +207,8 @@ test.describe('E4 print sheet: page breaks and page margin', () => {
     expect(v).toBe('clone');
   });
 
+  // Note: this only proves that a long sheet paginates to exactly two pages. It cannot show that the border is repeated on
+  // page two; the computed-style test above (box-decoration-break: clone) is the guard for that.
   test('a sheet forced onto a second page still renders as exactly two pages (Chromium)', async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'page.pdf() is Chromium-only');
     const pages = (pdf: Buffer) => (pdf.toString('latin1').match(/\/Type\s*\/Page(?![s\w])/g) ?? []).length;

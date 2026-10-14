@@ -8,23 +8,40 @@ export function escapeText(s: string): string {
   return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
 }
 
-/** Fold one content line so no physical line exceeds 75 octets; continuation lines start with one space. */
+/** Unbreakable pieces of a line: a grapheme cluster where Intl.Segmenter exists (else a code point); a backslash and what it escapes stay together. */
+function atoms(line: string): string[] {
+  const segs: string[] =
+    typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function'
+      ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(line), (s) => s.segment)
+      : Array.from(line);
+  const out: string[] = [];
+  for (let i = 0; i < segs.length; i++) {
+    if (segs[i] === '\\' && i + 1 < segs.length) out.push(segs[i] + segs[++i]);
+    else out.push(segs[i]);
+  }
+  return out;
+}
+
+/** Fold one content line so no physical line exceeds 75 octets; continuation lines start with one space.
+ *  Never breaks inside an escape pair or (where cheap) a grapheme cluster; an oversized cluster falls back to code points. */
 export function foldLine(line: string): string {
   if (octets(line) <= 75) return line;
   const out: string[] = [];
   let cur = '';
   let used = 0;
-  let limit = 75;
-  for (const ch of line) {
-    const n = octets(ch);
-    if (used + n > limit) {
+  const push = (piece: string) => {
+    const n = octets(piece);
+    if (used + n > 75) {
       out.push(cur);
       cur = ' ';
       used = 1;
-      limit = 75;
     }
-    cur += ch;
+    cur += piece;
     used += n;
+  };
+  for (const atom of atoms(line)) {
+    if (octets(atom) > 74) for (const ch of atom) push(ch);
+    else push(atom);
   }
   out.push(cur);
   return out.join('\r\n');

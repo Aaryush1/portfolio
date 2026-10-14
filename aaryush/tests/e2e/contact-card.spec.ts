@@ -186,13 +186,19 @@ test.describe('E6 /qr: the tool', () => {
     });
     await expect(page.locator('[data-qr-box] svg')).toBeVisible();
     const blank = await geo();
-    await where(page).fill('Madison AI Week, a very long place name for the conference hall');
-    await topic(page, 'Gupta Advisory').click();
-    await topic(page, 'Writing').click();
-    await note(page).fill('a rather long note about pricing AI agents and other things we cover');
+    // worst case: 60-character place, the two longest topic names, an 80-character note
+    await where(page).fill('Madison AI Week conference hall, level three, east wing lobby, x'.slice(0, 60));
+    await topic(page, 'UMN Discovery Launchpad').click();
+    await topic(page, 'Claims underwriting').click();
+    await note(page).fill('a rather long note about pricing AI agents and other things we cover here ok'.slice(0, 80));
     await expect.poll(async () => (await qrUrl(page)).length).toBeGreaterThan(150);
     const dense = await geo();
     expect(dense).toEqual(blank);
+    // the caption shows everything that will be saved: nothing is clipped
+    const cap = page.locator('[data-qr-cap]');
+    expect(await cap.evaluate((e) => e.scrollHeight <= e.clientHeight)).toBe(true);
+    await expect(cap).toContainText('Met at Madison AI Week');
+    await expect(cap).toContainText(await note(page).inputValue());
     expect(dense.sw).toBeLessThanOrEqual(dense.vw);
     expect(await decodeQr(page)).toBe(await qrUrl(page));
   });
@@ -223,12 +229,12 @@ test.describe('E6 /qr: the tool', () => {
   test('the QR library is on /qr only, never in the home bundle', async ({ page }) => {
     const SIG = ['createSvgTag', 'getModuleCount'];
     const scriptsOn = async (path: string) => {
-      const bodies: string[] = [];
-      page.on('response', async (r) => { if (/javascript/.test(r.headers()['content-type'] ?? '')) bodies.push(await r.text().catch(() => '')); });
+      const pending: Promise<string>[] = [];
+      page.on('response', (r) => { if (/javascript/.test(r.headers()['content-type'] ?? '')) pending.push(r.text().catch(() => '')); });
       await page.goto(path);
       await page.waitForLoadState('networkidle');
       page.removeAllListeners('response');
-      return bodies;
+      return Promise.all(pending); // every body, not just the ones that resolved in time
     };
     const home = await scriptsOn('/');
     expect(home.length).toBeGreaterThan(0);
@@ -360,13 +366,53 @@ test.describe('E6 the person who scans', () => {
   });
 
   test('the shipped scripts never hold the joined address or number either', async ({ page }) => {
-    const bodies: string[] = [];
-    page.on('response', async (r) => { if (/javascript/.test(r.headers()['content-type'] ?? '')) bodies.push(await r.text().catch(() => '')); });
+    const pending: Promise<string>[] = [];
+    page.on('response', (r) => { if (/javascript/.test(r.headers()['content-type'] ?? '')) pending.push(r.text().catch(() => '')); });
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.goto('/qr');
     await page.waitForLoadState('networkidle');
+    const bodies = await Promise.all(pending);
     expect(bodies.length).toBeGreaterThan(0);
-    for (const b of bodies) for (const s of ['aaryush@outlook.com', 'outlook.com', '331', '2850', 'mailto:', 'tel:']) expect(b, s).not.toContain(s);
+    // specific forms only: the joined address, the host half, the number as written or digits-only, and the two link schemes
+    for (const b of bodies) for (const s of ['aaryush@outlook.com', 'outlook.com', '+1 949', '949 331', '9493312850', '+19493312850', 'mailto:', 'tel:']) expect(b, s).not.toContain(s);
+  });
+});
+
+test.describe('E6 hardening', () => {
+  test('/qr never writes storage, even when visited with met, about and note', async ({ page }) => {
+    await page.goto('/qr?met=x&note=y&about=writing');
+    await expect(page.locator('[data-qr-box] svg')).toBeVisible();
+    await where(page).fill('Madison');
+    await page.waitForTimeout(250);
+    const stored = await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length, cookie: document.cookie }));
+    expect(stored).toEqual({ local: 0, session: 0, cookie: '' });
+    // and the visit left no context for a later Save contact in this tab
+    await page.goto('/');
+    expect((await saveContact(page)).noteText).toBe(`Saved ${SAVED}`);
+  });
+
+  test('a huge met value cannot stall the page', async ({ page }) => {
+    // (two values of 3k characters each (past the 1000-character read cap): the preview server rejects request lines over ~16KB; the unit test covers 200k)
+    for (const shape of ['a', 'a.', 'x@', 'a-']) {
+      const big = encodeURIComponent(shape.repeat(Math.floor(3000 / shape.length)));
+      const t0 = Date.now();
+      await page.goto(`/?met=${big}&note=${big}`);
+      await expect.poll(() => new URL(page.url()).search).toBe('');
+      expect(Date.now() - t0, shape).toBeLessThan(4000);
+      const v = await saveContact(page);
+      expect(v.noteText.length, shape).toBeLessThan(400);
+      for (const line of v.text.split('\r\n')) expect(Buffer.byteLength(line)).toBeLessThanOrEqual(75);
+    }
+  });
+
+  test('modified clicks on Save contact are left to the browser; a plain click is handled', async ({ page }) => {
+    await page.goto('/');
+    const notPrevented = await page.locator('[data-contact="hero"] [data-vcard]').evaluate((a) => {
+      const send = (init: MouseEventInit) => a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...init }));
+      // dispatchEvent returns false when something called preventDefault
+      return { ctrl: send({ ctrlKey: true }), meta: send({ metaKey: true }), shift: send({ shiftKey: true }), alt: send({ altKey: true }), plain: send({}) };
+    });
+    expect(notPrevented).toEqual({ ctrl: true, meta: true, shift: true, alt: true, plain: false });
   });
 });

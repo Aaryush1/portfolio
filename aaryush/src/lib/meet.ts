@@ -7,23 +7,41 @@ export interface Meet { met: string; about: string[]; note: string }
 /** slug -> display name */
 export type Known = Readonly<Record<string, string>>;
 
-const CONTROL = new RegExp('[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u2028-\u202E\u2060-\u2069\uFEFF]', 'g');
-// Links are never kept: schemes, www hosts, email-like tokens and bare domains.
-const LINKS = [
-  /\b[a-z][a-z0-9+.-]*:\/\/\S*/gi,
-  /\b(?:javascript|data|vbscript|mailto|tel|sms):\S*/gi,
-  /\bwww\.\S*/gi,
-  /\S+@\S+/g,
-  /\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|org|net|io|ai|co|dev|app|edu|gov|us|me|xyz|info|ly|uk|de|ca)\b\S*/gi,
-];
+// Control, zero-width and bidi characters (built from code points so the source holds no invisible characters).
+const CONTROL = new RegExp(
+  '[' + [[0, 31], [127, 159], [0x200b, 0x200f], [0x2028, 0x202e], [0x2060, 0x2069], [0xfeff, 0xfeff]]
+    .map(([a, b]) => String.fromCharCode(a) + '-' + String.fromCharCode(b)).join('') + ']',
+  'g',
+);
+// Ideographic and half-width full stops count as dots (NFKC already maps the full-width one).
+const DOTS = new RegExp('[' + String.fromCharCode(0x3002, 0xff0e, 0xff61) + ']', 'g');
 
-/** Trim, drop control/bidi characters, angle brackets and links, collapse whitespace, cap by character. */
+// Links are never kept. Matching is token by token (split on whitespace) with simple anchored tests, so the cost is
+// linear and no pattern backtracks across the input. The input is capped before any of it runs.
+const RAW_CAP = 1000; // UTF-16 units read from a value, however long it is
+const SCHEME = /^(?:javascript|data|vbscript|mailto|tel|sms|file|blob):/i;
+const HOST = /^(?:[\p{L}\p{N}-]+\.)+(?:\p{L}{2,24}|xn--[a-z0-9-]{2,20})$/iu;
+const ALNUM_END = /[\p{L}\p{N}]$/u;
+
+function isLink(token: string): boolean {
+  if (token.includes('://') || token.includes('@') || SCHEME.test(token) || /^www\./i.test(token)) return true;
+  // label.label with a letters-only TLD of 2-24 characters, optionally followed by a port, path, query or fragment
+  let end = token.search(/[/?#:]/);
+  if (end < 0) end = token.length;
+  let host = token.slice(0, end);
+  while (host && !ALNUM_END.test(host)) host = host.slice(0, -1);
+  return HOST.test(host);
+}
+
+/** Cap the raw value, NFKC-normalise, drop control/bidi characters, angle brackets and links, collapse whitespace, cap by character. */
 export function clean(raw: unknown, max: number): string {
   if (typeof raw !== 'string') return '';
-  let s = raw.normalize('NFC').replace(/[\t\r\n]/g, ' ').replace(CONTROL, '').replace(/[<>]/g, '');
-  for (const re of LINKS) s = s.replace(re, ' ');
-  s = s.replace(/\s+/g, ' ').trim();
-  return Array.from(s).slice(0, max).join('').trim();
+  let head = raw.slice(0, RAW_CAP);
+  const last = head.charCodeAt(head.length - 1);
+  if (last >= 0xd800 && last <= 0xdbff) head = head.slice(0, -1); // never end on half an emoji
+  const s = head.normalize('NFKC').replace(DOTS, '.').replace(/[\t\r\n]/g, ' ').replace(CONTROL, '').replace(/[<>]/g, '');
+  const kept = s.split(/\s+/).filter((t) => t && !isLink(t)).join(' ');
+  return Array.from(kept).slice(0, max).join('').trim();
 }
 
 /** Keep known, distinct slugs, at most LIMITS.topics, in the order given. Accepts "a,b" or an array. */
