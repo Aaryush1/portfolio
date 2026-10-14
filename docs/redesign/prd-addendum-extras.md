@@ -209,6 +209,33 @@ On essay pages (any kind), the page's ambient light very slowly warms the longer
 
 The printed home drawing sheet carries the "ag." mark in the title block, as a static pencil-grey signature in a small "Signed" cell. Low priority; it's cheap.
 
+## E14. A revision block behind the deploy hash
+
+Clicking or pressing Enter on the "Last deploy" cell (which reveals the commit hash, E10) opens a small drawing-style revision block anchored to the title block. It's a table with the columns **Rev · Date · Description**, showing the five most recent entries.
+- **Data:** the rows come from a hand-written list in `src/data/revisions.ts`. They're curated descriptions, not git messages. Revisions are lettered A, B, C… in drafting style, newest first. The current redesign is the latest row.
+- **Behaviour:** it closes on Esc, on an outside click, and on clicking the cell again. Focus returns to the cell.
+- **Phones:** the title block is hidden, so this easter egg is desktop-only.
+- **Visibility:** it isn't explained anywhere. It's listed in `docs/easter-eggs.md`.
+- **Workflow:** add a row whenever something meaningful ships. The project CLAUDE.md records this step.
+
+## E15. Arrow keys walk the desk
+
+On /writing, when no text field has focus:
+- ← and → move the light, and the keyboard focus, from piece to piece in visual order;
+- Enter opens the lit piece;
+- Home and End jump to the first and last piece.
+
+It works alongside Tab order, not instead of it. Under reduced motion, the light jumps rather than glides.
+
+## E16. The writing room's own 404
+
+Unknown `/writing/<slug>` URLs render a writing-room-specific not-found page instead of the site 404:
+- the dim desk, in the current daypart's light;
+- a single crumpled sheet in the pool of light;
+- one quiet link, "Back to the desk".
+
+The page returns a 404 status, and the requested slug is never rendered as HTML. In Astro, this means a catch-all route or redirect so that `/writing/*` misses land here; choose the cleanest approach that still returns a 404 from Vercel and explain it.
+
 ## Out of scope here (planned separately)
 
 - **The dynamic vCard:** waiting on Aaryush's depth decision.
