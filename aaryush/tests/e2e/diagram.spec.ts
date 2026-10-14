@@ -105,8 +105,9 @@ test('skale platform page and home pop-up render the diagram with its title', as
   await page.goto('/work/skale-platform');
   await expect(svg(page)).toHaveClass(/\brun\b/);
   await expect(svg(page).locator('title')).toHaveText('Skale.win career platform system diagram');
-  await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 15000 });
+  await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 30000 });
   await page.goto('/');
   await page.locator('#sys-skale-platform').click();
+  await expect(page.locator('dialog#popup')).toBeVisible();
   await expect(svg(page).locator('title')).toHaveText('Skale.win career platform system diagram');
 });

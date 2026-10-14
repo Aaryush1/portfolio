@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { diagrams } from '../../src/data/diagrams';
-import { nodeBounds, nodeHits } from '../../src/lib/diagram';
+import { isDiamond, nodeBounds, nodeHits } from '../../src/lib/diagram';
 
 for (const [key, spec] of Object.entries(diagrams)) {
   describe(`diagram ${key}`, () => {
@@ -22,6 +22,13 @@ for (const [key, spec] of Object.entries(diagrams)) {
     });
     it('starts the loop after the last node has drawn', () => {
       expect(spec.loopStart).toBeGreaterThan(Math.max(...spec.nodes.map((n) => n.d)));
+    });
+    it('keeps input lines clear of the N.xx label of the node they enter', () => {
+      for (const [x, , y2, label] of spec.inputs) {
+        const n = spec.nodes.find((m) => !isDiamond(m) && m.y === y2);
+        if (!n || isDiamond(n)) continue;
+        expect(x < n.x - 2 || x > n.x + 26, `${key} input ${label} crosses the N label at x ${n.x}-${n.x + 26}`).toBe(true);
+      }
     });
     it('has an accessible title and description', () => {
       expect(spec.title.length).toBeGreaterThan(5);
