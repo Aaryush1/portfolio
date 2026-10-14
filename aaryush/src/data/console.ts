@@ -45,10 +45,9 @@ export const notFound = {
   missing: 'Not issued',
   sheets: [
     { n: '01', label: 'Hero', href: '/#hero' },
-    { n: '02', label: 'About', href: '/#about' },
-    { n: '03', label: 'How AI fits', href: '/#levels' },
-    { n: '04', label: 'Work', href: '/#work' },
-    { n: '05', label: 'Writing', href: '/writing' },
-    { n: '06', label: 'Contact', href: '/#contact' },
+    { n: '02', label: 'How AI fits', href: '/#levels' },
+    { n: '03', label: 'Work', href: '/#work' },
+    { n: '04', label: 'Writing', href: '/writing' },
+    { n: '05', label: 'Contact', href: '/#contact' },
   ],
 } as const;

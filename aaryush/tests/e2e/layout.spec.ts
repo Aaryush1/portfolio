@@ -50,3 +50,13 @@ test('favicon is served', async ({ request }) => {
   expect(svg).toMatch(/<path[^>]*fill="#E6E7EA"[^>]*d="M[^"]{200,}"/);
   expect(svg).not.toContain('<rect x="2.5"');
 });
+
+test('phone header nav shows Writing and Contact only; desktop shows all four', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/');
+  const nav = page.locator('header nav[aria-label="Sections"]');
+  await expect(nav.locator('a:visible')).toHaveText(['Writing', 'Contact']);
+  await expect(page.locator('header .mark')).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(nav.locator('a:visible')).toHaveText(['How AI fits', 'Work', 'Writing', 'Contact']);
+});

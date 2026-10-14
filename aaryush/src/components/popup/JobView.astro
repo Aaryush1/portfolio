@@ -20,7 +20,27 @@ const levelLabel = (l: (typeof levels)[number]) => `L${l.n} — ${l.title}${l.em
     {c.role && <p class="v-role">{c.role}</p>}
     {tagLevels.length > 0 && <ul class="tags">{tagLevels.map((l) => <li class="lv">{levelLabel(l)}</li>)}</ul>}
   </header>
-  <div class="v-body">
+  {systems.length > 0 && (
+    <section class="v-sys">
+      <h3 class="mono">Systems built here</h3>
+      <ul class="sys-list">
+        {systems.map((s) => (
+          <li>
+            <a class="sys-row" href={`/work/${s.id}`} data-popup-link>
+              <span class="id">{numbers.get(s.id)}</span>
+              <span class="t">{s.data.title}<small>{s.data.summary}</small></span>
+              <span class="lvs">{levelsFor(s.id, levels).map((l) => <span class="lv">L{l.n}</span>)}</span>
+              <span class="go">{s.data.diagram ? 'Open schematic' : 'Read'}<Icon name="arrow-right" /></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+  <div class="v-body job">
+    <dl class="spec">
+      {c.facts.map((f) => <div><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
+    </dl>
     <div>
       <section class="v-sec">
         <h3 class="mono">{advisory ? 'The practice' : 'The company'}</h3>
@@ -42,27 +62,5 @@ const levelLabel = (l: (typeof levels)[number]) => `L${l.n} — ${l.title}${l.em
         )}
       </section>
     </div>
-    <aside>
-      <dl class="spec">
-        {c.facts.map((f) => <div><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
-      </dl>
-    </aside>
   </div>
-  {systems.length > 0 && (
-    <section class="v-sys">
-      <h3 class="mono">Systems built here</h3>
-      <ul class="sys-list">
-        {systems.map((s) => (
-          <li>
-            <a class="sys-row" href={`/work/${s.id}`} data-popup-link>
-              <span class="id">{numbers.get(s.id)}</span>
-              <span class="t">{s.data.title}<small>{s.data.summary}</small></span>
-              <span class="lvs">{levelsFor(s.id, levels).map((l) => <span class="lv">L{l.n}</span>)}</span>
-              <span class="go">{s.data.diagram ? 'Open schematic' : 'Read'}<Icon name="arrow-right" /></span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
 </article>

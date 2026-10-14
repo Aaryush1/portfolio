@@ -10,11 +10,15 @@ const companies = await getCollection('companies');
 const systems = await getCollection('systems');
 const timeline = buildTimeline(companies, systems);
 const sysNumbers = numberSystems(timeline);
+const advisory = timeline.find((t) => t.company.id === 'gupta-advisory');
+const entriesShown = timeline.filter((t) => t.company.id !== 'gupta-advisory');
+// Descriptor: the first clause of the existing summary (no new copy).
+const advisoryClause = advisory ? advisory.company.data.summary.split(',')[0].replace(/\.$/, '') + '.' : '';
 const levelTitle = (n: number) => levels.find((l) => l.n === n);
 ---
 <section class="sec" id="work" aria-labelledby="work-title">
   <div class="wrap">
-    <div class="sec-head mono rv"><span class="n">§ 04</span><span>Work</span><span class="f">Fig. 4.1 — Timeline, newest first</span></div>
+    <div class="sec-head mono rv"><span class="n">§ 03</span><span>Work</span><span class="f">Fig. 3.1 — Timeline, newest first</span></div>
     <div class="sec-intro rv">
       <h2 class="h2" id="work-title">Companies, and the systems inside them.</h2>
     </div>
@@ -22,7 +26,16 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
     <div class="tl-wrap">
       <p class="next rv"><b>Next</b> — {site.next.name}. <span class="soon">{site.next.note}</span></p>
 
-      {timeline.map(({ company, systems: syss }) => {
+      {advisory && (
+        <p class="adv rv" id="co-gupta-advisory">
+          <b>{advisory.company.data.name}</b>
+          <span class="role">{advisory.company.data.role}</span>
+          <span class="desc">{advisoryClause}</span>
+          <a class="more" href={`/work/${advisory.company.id}`} data-popup-link>{site.companyLinkLabel(advisory.company.data.name)}<Icon name="arrow-right" /></a>
+        </p>
+      )}
+
+      {entriesShown.map(({ company, systems: syss }) => {
         const c = company.data;
         const isGroup = c.kind === 'group';
         return (
@@ -30,7 +43,7 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
             <div class="meta"><span class="date">{formatRange(c.start, c.end, isGroup)}</span><span class="role">{isGroup ? 'Earlier work' : c.role}</span></div>
             <div class="co">
               <h3>{c.name}</h3>
-              {company.id === 'gupta-advisory' ? <blockquote>{c.summary}</blockquote> : <p class="desc">{c.summary}</p>}
+              <p class="desc">{c.summary}</p>
               {!isGroup && (
                 <a class="more" href={`/work/${company.id}`} data-popup-link>{site.companyLinkLabel(c.name)}<Icon name="arrow-right" /></a>
               )}
@@ -69,6 +82,16 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 .next .soon{color:var(--text-3)}
 @media (prefers-reduced-motion:no-preference){.next::before{animation:breathe 3.6s var(--ease) infinite}}
 @keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(242,181,68,0)}50%{box-shadow:0 0 0 4px rgba(242,181,68,.12)}}
+.adv{position:relative;padding:0 0 26px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:15.5px;line-height:1.5;color:var(--text-2);scroll-margin-top:calc(var(--header) + 24px)}
+.adv b{font-weight:500;color:var(--text);letter-spacing:-.01em}
+.adv .role{font:400 12px/1 var(--mono);letter-spacing:.04em;color:var(--text-3);text-transform:uppercase}
+.adv .desc{flex:1 1 18rem;min-width:0}
+.adv .more{display:inline-flex;align-items:center;gap:8px;font:400 12px/1 var(--mono);letter-spacing:.04em;color:var(--text-2);min-height:44px}
+.adv .more :global(svg){width:14px;height:14px;transition:transform .3s var(--ease),color .2s}
+.adv .more:hover{color:var(--text)}
+.adv .more:hover :global(svg){transform:translateX(3px);color:var(--accent)}
+.adv.is-target{animation:advFlash 2.2s var(--ease)}
+@keyframes advFlash{0%,30%{color:var(--text);text-shadow:0 0 18px rgba(242,181,68,.35)}100%{text-shadow:none}}
 .entry{position:relative;padding:30px 0 38px;display:grid;gap:12px;scroll-margin-top:calc(var(--header) + 24px)}
 .entry:last-child{padding-bottom:0}
 @media (min-width:860px){.entry{grid-template-columns:minmax(0,3fr) minmax(0,9fr);column-gap:28px;padding:38px 0 46px}}
@@ -88,7 +111,6 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 @media (min-width:860px){.meta{flex-direction:column;gap:6px;padding-top:6px}}
 .co h3{font-size:clamp(24px, 2.6vw, 30px);font-weight:500;letter-spacing:-.028em;line-height:1.15}
 .co .desc{margin-top:10px;color:var(--text-2);font-size:16.5px;line-height:1.7;max-width:40rem}
-.co blockquote{margin:12px 0 0;padding-left:16px;border-left:1px solid rgba(242,181,68,.6);color:var(--text);font-size:16.5px;line-height:1.7;max-width:40rem}
 .cards{margin-top:22px;display:grid;gap:12px}
 @media (min-width:640px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:1000px){.cards.three{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -114,4 +136,15 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 .card:hover .card-open :global(svg){transform:translateX(3px);color:var(--accent)}
 .card.is-target{animation:cardFlash 2.2s var(--ease)}
 @keyframes cardFlash{0%,30%{border-color:rgba(242,181,68,.8);box-shadow:0 0 0 3px rgba(242,181,68,.12)}100%{border-color:var(--line);box-shadow:0 0 0 3px transparent}}
+@media (max-width:559px){
+  .cards{gap:0;margin-top:14px;border-top:1px solid var(--line)}
+  .card{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:6px 10px;min-height:48px;padding:10px 4px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0}
+  .card:hover{background:var(--s1)}
+  .card-top{display:contents}
+  .card-top > span:first-child{order:1;font-size:12px}
+  .card h4{order:2;margin:0;font-size:15.5px}
+  .card .lvs{order:3}
+  .card-open{order:4;padding:0}
+  .card-open span,.card p{display:none}
+}
 </style>

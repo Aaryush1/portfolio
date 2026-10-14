@@ -21,9 +21,9 @@ describe('404 sheet helpers', () => {
     expect(displayPath('/<script>alert(1)</script>')).toBe('/<script>alert(1)</script>');
   });
   it('inserts the missing row in sorted position among the sheets', () => {
-    const hrefs = ['/#hero', '/#about', '/#levels', '/#work', '/writing', '/#contact'];
-    expect(insertIndex('/zzz', hrefs)).toBe(6);
-    expect(insertIndex('/nope', hrefs)).toBe(4);
+    const hrefs = ['/#hero', '/#levels', '/#work', '/writing', '/#contact'];
+    expect(insertIndex('/zzz', hrefs)).toBe(5);
+    expect(insertIndex('/nope', hrefs)).toBe(3);
     expect(insertIndex('/', hrefs)).toBe(0);
   });
 });

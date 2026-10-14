@@ -80,8 +80,13 @@ dialog.sheet.is-in::backdrop{opacity:1}
 .spec dt{font:400 11.5px/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);padding-top:2px}
 .spec dd{font-size:14.5px;color:var(--text);line-height:1.5}
 .stub-note{margin-top:20px;color:var(--text-3)}
-.v-sys{padding:28px 20px 40px}
-@media (min-width:640px){.v-sys{padding:32px 36px 48px}}
+/* Company view order: header, systems (full width), facts (a strip), then the story. Same on every width. */
+.v-sys{padding:28px 20px 0}
+@media (min-width:640px){.v-sys{padding:32px 36px 0}}
+.v-body.job{display:block;padding-bottom:40px}
+.v-body.job > .spec{margin-bottom:32px}
+@media (min-width:640px){.v-body.job > .spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));column-gap:32px}.v-body.job > .spec > div{grid-template-columns:72px 1fr}}
+@media (min-width:760px){.v-body.job > div:not(.spec){max-width:46em}}
 .sys-list{border-top:1px solid var(--line)}
 .sys-row{
   position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;align-items:center;

@@ -230,7 +230,7 @@ test.describe('E3 404 sheet', () => {
     await expect(page.locator('main .sec-head')).toContainText('Sheet not in set');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sheet not in set.');
     const hrefs = await page.locator('[data-register] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-    expect(hrefs).toEqual(['/#hero', '/#about', '/#levels', '/#work', '/writing', '/#contact']);
+    expect(hrefs).toEqual(['/#hero', '/#levels', '/#work', '/writing', '/#contact']);
     const row = page.locator('[data-register] [data-missing]');
     await expect(row).toContainText('/no/such/sheet');
     await expect(row).toContainText('Not issued');
@@ -280,7 +280,7 @@ test.describe('E3 404 sheet', () => {
     const ctx = await browser.newContext({ javaScriptEnabled: false });
     const page = await ctx.newPage();
     await page.goto('/gone');
-    await expect(page.locator('[data-register] a')).toHaveCount(6);
+    await expect(page.locator('[data-register] a')).toHaveCount(5);
     await expect(page.locator('[data-missing]')).toHaveCount(0);
     await ctx.close();
   });

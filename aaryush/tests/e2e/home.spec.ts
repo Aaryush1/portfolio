@@ -5,12 +5,12 @@ test.describe('home structure', () => {
 
   test('sections appear in order', async ({ page }) => {
     const ids = await page.locator('main > section').evaluateAll((els) => els.map((e) => e.id));
-    expect(ids).toEqual(['hero', 'about', 'levels', 'work', 'writing']);
+    expect(ids).toEqual(['hero', 'levels', 'work', 'writing']);
   });
 
   test('timeline lists companies newest first, with the earlier group last', async ({ page }) => {
     const ids = await page.locator('article.entry').evaluateAll((els) => els.map((e) => e.id));
-    expect(ids).toEqual(['co-gupta-advisory', 'co-cylerity', 'co-ready-rebound', 'co-skale', 'co-earlier']);
+    expect(ids).toEqual(['co-cylerity', 'co-ready-rebound', 'co-skale', 'co-earlier']);
   });
 
   test('contextOS is a single line above the timeline, not a card', async ({ page }) => {
@@ -71,4 +71,70 @@ test('level meter fills on keyboard focus', async ({ page }) => {
   await page.goto('/');
   await page.locator('li.level[data-level="2"] a.chip').first().focus();
   await expect(page.locator('li.level[data-level="2"] .meter i.fill')).toHaveCount(2, { timeout: 1000 });
+});
+
+test('there is no About section, and the section strips count to five', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#about')).toHaveCount(0);
+  const strips = await page.locator('.sec-head').evaluateAll((els) => els.map((e) => e.textContent!.replace(/s+/g, ' ').trim()));
+  expect(strips.map((s) => s.slice(0, 4))).toEqual(['§ 02', '§ 03', '§ 04', '§ 05', '§ 05']);
+  expect(strips.some((s) => s.includes('/ 06'))).toBe(false);
+});
+
+test('phone contact row: one big Save contact, then four icon-only 44px buttons with names', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/');
+  const cta = page.locator('[data-contact="hero"]');
+  const primary = await cta.locator('.btn-primary').boundingBox();
+  expect(primary!.width).toBeGreaterThan(300);
+  for (const name of ['Email', 'Call', 'LinkedIn', 'GitHub']) {
+    const a = cta.locator(`a[aria-label="${name}"]`);
+    const box = await a.boundingBox();
+    expect(box!.width, name).toBeGreaterThanOrEqual(44);
+    expect(box!.height, name).toBeGreaterThanOrEqual(44);
+    expect(box!.y, name).toBeGreaterThan(primary!.y + primary!.height);
+    expect(await a.innerText(), name).toBe('');
+  }
+});
+
+test('company pop-up: systems, then facts, then the story, at both widths', async ({ page }) => {
+  for (const w of [375, 1280]) {
+    await page.setViewportSize({ width: w, height: 800 });
+    await page.goto('/work/ready-rebound');
+    const dlg = page.locator('dialog#popup');
+    const sys = await dlg.locator('.v-sys').boundingBox();
+    const spec = await dlg.locator('dl.spec').boundingBox();
+    const story = await dlg.locator('.v-sec').first().boundingBox();
+    const head = await dlg.locator('.v-head').boundingBox();
+    expect(sys!.y, w + ' systems under header').toBeGreaterThanOrEqual(head!.y + head!.height - 1);
+    expect(spec!.y, w + ' facts under systems').toBeGreaterThanOrEqual(sys!.y + sys!.height - 1);
+    expect(story!.y, w + ' story under facts').toBeGreaterThanOrEqual(spec!.y + spec!.height - 1);
+    const order = await dlg.locator('.v-sys, dl.spec, .v-sec').evaluateAll((els) => els.map((e) => e.className || e.tagName));
+    expect(order[0]).toBe('v-sys');
+  }
+});
+
+test('Gupta Advisory is a one-line sibling of the contextOS line, above the first company entry', async ({ page }) => {
+  await page.goto('/');
+  const next = await page.locator('.tl-wrap > .next').boundingBox();
+  const adv = page.locator('.tl-wrap > p.adv#co-gupta-advisory');
+  const first = await page.locator('article.entry').first().boundingBox();
+  const box = await adv.boundingBox();
+  expect(box!.y).toBeGreaterThan(next!.y);
+  expect(box!.y).toBeLessThan(first!.y);
+  await expect(adv).not.toContainText('2024');
+  await expect(adv).toContainText('Founder');
+  await expect(page.locator('article.entry#co-gupta-advisory')).toHaveCount(0);
+});
+
+test('phone system cards are compact rows: number, title, levels, arrow; no description', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/');
+  const card = page.locator('#sys-cylerity-intake');
+  await expect(card.locator('p').first()).toBeHidden();
+  const box = await card.boundingBox();
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  expect(box!.height).toBeLessThan(120);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(card.locator('p').first()).toBeVisible();
 });

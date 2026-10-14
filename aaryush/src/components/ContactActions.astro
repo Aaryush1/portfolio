@@ -66,10 +66,10 @@ const links = [
   .cta{margin-top:22px;display:grid;grid-template-columns:1fr;gap:8px}
   .cta .btn-primary{height:48px;width:100%}
   .cta .sep-v{display:none}
-  .icons{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:8px}
-  .ico{flex-direction:column;gap:4px;height:56px;padding:0 4px}
-  .ico .lbl{font:400 12px/1 var(--mono);color:var(--text-2)}
+  /* Phones: one full-width primary button, then small icon-only buttons (44px targets) in a row. */
+  .icons{display:flex;gap:8px}
+  .ico{width:44px;height:44px;padding:0}
+  .ico .lbl{display:none}
 }
 :global(html:not(.js)) .ico[data-obf]{display:none}
-@media (max-width:719px){:global(html:not(.js)) .icons{--n:2}}
 </style>

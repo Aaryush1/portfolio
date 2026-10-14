@@ -148,7 +148,7 @@ test('double close stays on site', async ({ page }) => {
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toBeHidden();
-  await expect(page).toHaveURL('http://localhost:4322/');
+  await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/$/);
 });
 
 test('opening a pop-up focuses its title, and closing restores focus to the trigger', async ({ page }) => {

@@ -50,14 +50,13 @@ test.describe('E4 print sheet: what prints', () => {
     expect(c.body).toBe('rgb(0, 0, 0)');
   });
 
-  test('header, about, timeline, writing and links are on the sheet', async ({ page }) => {
+  test('header, timeline, writing and links are on the sheet', async ({ page }) => {
     await printed(page);
     const t = (await text(page)).toLowerCase();
     for (const s of [
       'aaryush gupta', 'ai strategy & organizational design',
       'i build the systems behind', 'how anyone solves problems',
-      'ai is becoming the infrastructure', 'if you’re thinking about what ai means',
-      'gupta advisory', 'founder', 'dec 2024 – present',
+      'gupta advisory', 'founder',
       'ready rebound', 'ai & engineering lead', 'cylerity', 'ai lead', 'jan 2024 – present',
       'skale.win', 'jun 2024 – feb 2026', 'earlier', '2023 – 2024',
       'a fintech-healthcare company that underwrites',

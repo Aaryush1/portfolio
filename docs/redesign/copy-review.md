@@ -89,9 +89,9 @@ Current meta description (search results and link previews):
 
 ---
 
-## 2. About
+## 2. About (moved off the homepage; will become a writing piece)
 
-**Source:** `aaryush/src/data/site.ts` (`site.about`, three paragraphs; the first is shown larger)
+**Source:** `aaryush/src/data/site.ts` (`site.aboutArchive`, three paragraphs; the first is shown larger)
 
 Current paragraph 1:
 
@@ -663,7 +663,7 @@ Current title block (drawing-sheet style):
 | Label | Value |
 | ----- | ----- |
 | Drawn by | A. Gupta |
-| Sheet | 01 / 06 |
+| Sheet | 01 / 05 |
 | Rev. | 2026.10 |
 | Scale | 1 : company |
 
@@ -683,13 +683,13 @@ The small header strip on each section (a "§" number, a name and a "Sheet" note
 | Section | Strip | Heading | Lead | Source |
 | ------- | ----- | ------- | ---- | ------ |
 | Hero | none | (name) | see section 1 | `components/home/Hero.astro` |
-| About | § 02 · About · Sheet 02 / 06 | (hidden "About") | see section 2 | `components/home/About.astro` |
-| How AI fits | § 03 · How AI fits · Sheet 03 / 06 | Four levels where AI changes an organization. | see section 3a | `components/home/Levels.astro` |
-| Work | § 04 · Work · Fig. 4.1 — Timeline, newest first | Companies, and the systems inside them. | see section 5 | `components/home/Timeline.astro` |
-| Writing | § 05 · Writing · Sheet 05 / 06 | Notes on where this is going. | none | `components/home/WritingTeaser.astro` |
-| Contact | § 06 · Contact · Sheet 06 / 06 | see section 10 | see section 10 | `components/SiteFooter.astro` |
+| About | (removed: moved off the homepage; will become a writing piece) | - | see section 2 | `site.aboutArchive` (no component) |
+| How AI fits | § 02 · How AI fits · Sheet 02 / 05 | Four levels where AI changes an organization. | see section 3a | `components/home/Levels.astro` |
+| Work | § 03 · Work · Fig. 3.1 — Timeline, newest first | Companies, and the systems inside them. | see section 5 | `components/home/Timeline.astro` |
+| Writing | § 04 · Writing · Sheet 04 / 05 | Notes on where this is going. | none | `components/home/WritingTeaser.astro` |
+| Contact | § 05 · Contact · Sheet 05 / 05 | see section 10 | see section 10 | `components/SiteFooter.astro` |
 
-Also: the levels diagram caption in the How AI fits section reads "**Fig. 3.1** — Four levels, outside in", and the Writing section has a link reading "All writing".
+Also: the levels diagram caption in the How AI fits section reads "**Fig. 2.1** — Four levels, outside in", and the Writing section has a link reading "All writing".
 
 Edited headings (leave blank to keep):
 
@@ -755,7 +755,7 @@ Current:
 
 - Strip: § 404 · Sheet not in set · Sheet — / —
 - Heading: Sheet not in set.
-- Register rows (each a link): 01 Hero, 02 About, 03 How AI fits, 04 Work, 05 Writing, 06 Contact
+- Register rows (each a link): 01 Hero, 02 How AI fits, 03 Work, 04 Writing, 05 Contact
 - Struck-through row for the requested path (filled in by JavaScript; omitted without it): "Not issued"
 - Browser tab title: Sheet not in set — Aaryush Gupta
 - Meta description: This page doesn't exist.
