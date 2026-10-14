@@ -107,9 +107,9 @@ Each feature works without JavaScript, or degrades to nothing. Each respects `pr
 - **Why:** Aaryush shows his QR from his phone at events and meetings. Generating event QRs by hand is too much friction, so the QR page itself is the tool.
 - **The QR page (`/qr`, on his phone):**
   - Above the QR are two quick inputs:
-    - **Where:** a free-text field ("Madison AI Week") with a few one-tap presets configured in `site.ts`, such as Coffee, Conference, Dinner and Meetup.
-    - **Talked about:** up to two topic chips. Each maps to a page on the site: the systems, Advisory and Writing.
-  - The QR re-renders live as he types or taps, client-side, and encodes `https://aaryush.com/?met=<where>&about=<slug,slug>`.
+    - **Where:** a free-text field ("Madison AI Week") with three vague one-tap presets configured in `site.ts`: Coffee, Conference, Dinner. Anything more specific gets typed.
+    - **Talked about:** up to two topic chips, each mapping to a page on the site (the systems, Advisory, Writing), plus a free-text field for anything else ("pricing AI agents"). Free text is capped at 80 characters.
+  - The QR re-renders live as he types or taps, client-side, and encodes `https://aaryush.com/?met=<where>&about=<slug,slug>&note=<free text>`.
   - **Nothing persists:** every visit to `/qr` starts blank, with no storage of any kind.
   - Under Reduce Motion, the QR doesn't animate between states.
 - **The person who scans:**
@@ -120,7 +120,7 @@ Each feature works without JavaScript, or degrades to nothing. Each respects `pr
   - Without params, the vCard still gets "Saved Tue, Oct 14, 2026 from aaryush.com".
 - **No follow-up nudge:** the note never tells them what to write.
 - **Acceptance criteria:**
-  - **Escaping:** the `where` value is trimmed, capped at 60 characters and vCard-escaped. Backslash, comma, semicolon and newline are escaped per RFC 6350.
+  - **Escaping:** the `note` value follows the same rules as `where`, but is capped at 80 characters. The `where` value is trimmed, capped at 60 characters and vCard-escaped. Backslash, comma, semicolon and newline are escaped per RFC 6350.
   - **Unknown topics:** topic slugs not in the known list are dropped.
   - **Valid card:** the vCard imports on iOS and Android contacts with the note intact. This is a manual check; automated tests parse the generated text.
   - **Scraper protection holds:** the email and phone never appear in the served HTML or the QR. The existing leak tests still pass.
