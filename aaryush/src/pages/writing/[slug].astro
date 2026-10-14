@@ -9,9 +9,9 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, remarkPluginFrontmatter } = await render(post);
 const minutes = readingMinutes(wordCount(post.body ?? ''));
 ---
-<EssayLayout title={post.data.title} subtitle={post.data.subtitle} date={post.data.date} summary={post.data.summary} slug={post.id} pdf={post.data.pdf} minutes={minutes} kind={post.data.kind} sections={sectionCount(post.data.kind, post.body ?? '', (post.data.breakdown ?? []).length)}>
+<EssayLayout title={post.data.title} subtitle={post.data.subtitle} date={post.data.date} summary={post.data.summary} slug={post.id} pdf={post.data.pdf} minutes={minutes} kind={post.data.kind} sections={sectionCount(post.data.kind, post.body ?? '', (post.data.breakdown ?? []).length)} references={remarkPluginFrontmatter.referencesHtml}>
   <Content />
 </EssayLayout>

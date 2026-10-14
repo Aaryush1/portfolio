@@ -957,6 +957,7 @@ Current:
 
 - Pick up where you left off (on an essay page, and on the home writing teaser)
 - forget (a quiet control on /writing that clears what the room remembers)
+- " — section N" (appended to the pick-up link on a paper, e.g. "Pick up where you left off — section III"; letters have no suffix)
 - writing I'm working on (the drawer's label)
 
 Edits:

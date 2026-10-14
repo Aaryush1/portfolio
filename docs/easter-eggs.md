@@ -21,9 +21,9 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | **Dust in the light** | /writing | Slow motes drift, but only inside the pool of light. | ✅ |
 | **"you're up late too."** | /writing, 9pm–7am | A handwritten note on the desk that catches the light. It's absent in the daytime. | ✅ |
 | **The drawer** | /writing | A small, quiet drawer that slides open to a contextOS folder. | ✅ |
-| **The letter signs itself** | Letter essay pages | At the end of a letter, the "ag." signature draws itself. | ✅ |
+| **Every piece signs itself** | Essay pages (letters, papers) | At the end of every piece, the "ag." signature draws itself. | ✅ |
 | **Two piles of paper** | Paper essay pages | Reading progress shown as sheets moving from one pile to the other. | ✅ |
-| **The room remembers you** | /writing and the home teaser | Pieces you've opened sit slightly pulled out with a ribbon, with "pick up where you left off". It's stored only in your own browser. | 🔨 |
+| **The room remembers you** | /writing and the home teaser | Pieces you've opened sit slightly pulled out with a ribbon, with "pick up where you left off". It's stored only in your own browser. | ✅ |
 | **General notes** | Home hero, 9pm–7am (footer on phones) | Pencilled "GENERAL NOTES 1. It's past nine. 2. So are you." | ✅ |
 | **contextOS caret** | Home timeline, "Next" line | An amber caret blinks where the period was, as if the name is still being typed. | ✅ |
 | **Type `contextos`** | Home, anywhere outside text fields | The contextOS word re-types itself once with the hero's morph. | ✅ |

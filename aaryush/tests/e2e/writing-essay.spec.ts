@@ -1,42 +1,56 @@
 import { expect, test } from '@playwright/test';
 
-test('a letter ends with the ag. signature, drawn once when it scrolls into view', async ({ page }) => {
-  await page.goto('/writing/bigger-than-electricity');
-  const sig = page.locator('svg[data-signature]');
-  await expect(sig).toHaveCount(1);
-  await expect(sig).not.toHaveClass(/is-playing/);
-  await sig.scrollIntoViewIfNeeded();
-  await expect(sig).toHaveClass(/is-playing/);
-  // the logo draw-on is reused: same keyframes as the header mark
-  expect(await sig.locator('.pen-a').evaluate((e) => getComputedStyle(e).animationName)).toBe('mk-draw');
-});
+// One letter and one paper: every piece ends with the signature, and each kind gets the same behaviour.
+const pieces = [
+  { kind: 'letter', slug: '/writing/bigger-than-electricity' },
+  { kind: 'paper', slug: '/writing/quiet-singularity' },
+] as const;
 
-test('only letters get a signature; papers do not', async ({ page }) => {
-  await page.goto('/writing/quiet-singularity');
-  await expect(page.locator('svg[data-signature]')).toHaveCount(0);
-});
-
-test('the header mark and the signature have different mask ids and the header still plays', async ({ page }) => {
-  await page.addInitScript(() => {
-    (window as any).__headerPlayed = false;
-    new MutationObserver((muts) => {
-      for (const m of muts) {
-        const el = m.target as Element;
-        if (el.classList?.contains('is-playing') && !el.hasAttribute('data-signature')) (window as any).__headerPlayed = true;
-      }
-    }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+for (const { kind, slug } of pieces) {
+  test(`a ${kind} ends with the ag. signature, drawn once when it scrolls into view`, async ({ page }) => {
+    await page.goto(slug);
+    const sig = page.locator('svg[data-signature]');
+    await expect(sig).toHaveCount(1);
+    await expect(sig).not.toHaveClass(/is-playing/);
+    await sig.scrollIntoViewIfNeeded();
+    await expect(sig).toHaveClass(/is-playing/);
+    // the logo draw-on is reused: same keyframes as the header mark
+    expect(await sig.locator('.pen-a').evaluate((e) => getComputedStyle(e).animationName)).toBe('mk-draw');
   });
-  await page.goto('/writing/bigger-than-electricity');
-  const ids = await page.locator('svg.mark-svg mask').evaluateAll((m) => m.map((e) => e.id));
-  expect(new Set(ids).size).toBe(ids.length);
-  expect(ids.length).toBe(2);
-  await page.waitForFunction(() => (window as any).__headerPlayed === true);
-});
 
-test('the signature is still undrawn before it scrolls into view', async ({ page }) => {
-  await page.goto('/writing/bigger-than-electricity');
-  const off = await page.locator('svg[data-signature] .pen-a').evaluate((e) => getComputedStyle(e).strokeDashoffset);
-  expect(parseFloat(off)).toBe(108);
+  test(`a ${kind} signature is undrawn before it scrolls into view`, async ({ page }) => {
+    await page.goto(slug);
+    const off = await page.locator('svg[data-signature] .pen-a').evaluate((e) => getComputedStyle(e).strokeDashoffset);
+    expect(parseFloat(off)).toBe(108);
+  });
+
+  test(`a ${kind}: the header mark and the signature have different mask ids and the header still plays`, async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as any).__headerPlayed = false;
+      new MutationObserver((muts) => {
+        for (const m of muts) {
+          const el = m.target as Element;
+          if (el.classList?.contains('is-playing') && !el.hasAttribute('data-signature')) (window as any).__headerPlayed = true;
+        }
+      }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
+    await page.goto(slug);
+    const ids = await page.locator('svg.mark-svg mask').evaluateAll((m) => m.map((e) => e.id));
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.length).toBe(2);
+    await page.waitForFunction(() => (window as any).__headerPlayed === true);
+  });
+}
+
+test('a paper signs off after its last section and before the references', async ({ page }) => {
+  await page.goto('/writing/quiet-singularity');
+  const sig = page.locator('.signature');
+  const refs = page.locator('.essay-body .references');
+  await expect(refs).toHaveCount(1);
+  // DOCUMENT_POSITION_FOLLOWING (4): the references come after the signature
+  expect(await sig.evaluate((s, r) => !!(s.compareDocumentPosition(r) & 4), await refs.elementHandle())).toBe(true);
+  const lastSection = page.locator('.essay-body h2:not(.references h2)').last();
+  expect(await sig.evaluate((s, h) => !!(s.compareDocumentPosition(h) & 2), await lastSection.elementHandle())).toBe(true); // PRECEDING: the section is before the signature
 });
 
 test('essay:section state is readable by a late listener', async ({ page }) => {
@@ -64,16 +78,18 @@ for (const size of [{ width: 1100, height: 760 }, { width: 375, height: 700 }]) 
   });
 }
 
-test('signature is fully drawn without JS and under reduced motion', async ({ browser }) => {
-  for (const opts of [{ javaScriptEnabled: false }, { reducedMotion: 'reduce' as const }]) {
-    const ctx = await browser.newContext(opts);
-    const page = await ctx.newPage();
-    await page.goto('/writing/bigger-than-electricity');
-    const off = await page.locator('svg[data-signature] .pen-a').evaluate((e) => getComputedStyle(e).strokeDashoffset);
-    expect(parseFloat(off)).toBe(0);
-    await ctx.close();
-  }
-});
+for (const { kind, slug } of pieces) {
+  test(`a ${kind} signature is fully drawn without JS and under reduced motion`, async ({ browser }) => {
+    for (const opts of [{ javaScriptEnabled: false }, { reducedMotion: 'reduce' as const }]) {
+      const ctx = await browser.newContext(opts);
+      const page = await ctx.newPage();
+      await page.goto(slug);
+      const off = await page.locator('svg[data-signature] .pen-a').evaluate((e) => getComputedStyle(e).strokeDashoffset);
+      expect(parseFloat(off)).toBe(0);
+      await ctx.close();
+    }
+  });
+}
 
 test('a paper shows two piles, not the generic bar, and sheets move as sections pass', async ({ page }) => {
   await page.goto('/writing/quiet-singularity');

@@ -20,7 +20,6 @@
 .essay-body .table-note{font:400 12.5px/1.5 var(--mono);color:var(--text-3)}
 .essay-body .references{margin-top:3em;font-family:var(--font);font-size:14px;color:var(--text-2)}
 .essay-body .references ol{list-style:decimal;padding-left:1.4em;display:grid;gap:6px}
-.essay-sign{font-size:var(--essay-size);width:100%;max-width:var(--essay-measure);margin:0 auto}
 .essay-foot{max-width:var(--essay-measure);margin:clamp(48px,7vw,80px) auto 0;display:flex;flex-wrap:wrap;gap:12px 24px}
 .progress{position:fixed;top:var(--header);left:0;right:0;height:2px;z-index:19;background:transparent}
 .progress::after{content:"";position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--progress,0));background:var(--accent)}

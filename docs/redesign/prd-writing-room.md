@@ -57,7 +57,7 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
 
 - **Letter:**
   - **Opening:** it lifts and unfolds toward you, and the letter page appears.
-  - **The signature:** at the end of a letter's essay page, the "ag." mark writes itself once it scrolls into view. This reuses the logo draw-on, and only letters get a signature.
+  - **The signature:** at the end of every piece's essay page (letters, papers and notes), the "ag." mark writes itself once it scrolls into view. On a paper it sits after the last section and before the references. This reuses the logo draw-on; every piece ends with the signature.
 - **Paper:**
   - **Opening:** the stack slides forward and the cover flips at the staple to reveal the page.
   - **Reading progress:** on a paper's essay page, progress shows as two small piles of sheets, with sheets moving from the unread pile to the read pile as each section passes. This replaces the generic progress bar on papers only.
@@ -98,7 +98,7 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
 2. **Hover and focus** on a piece measurably change three things: its transform (lift), the light pool position, and the opacity of the "why" line.
 3. **Night note:** it renders only for 21:00–07:00, including at the boundary hours, and is absent from the DOM in daytime.
 4. **Opening a piece** navigates to its URL, and Back restores the desk with focus on that piece.
-5. **Letter signature:** the letter page draws the signature at the end. Paper pages show the two piles, which advance by section.
+5. **Signature:** every piece's page draws the signature at the end (before the references on a paper). Paper pages show the two piles, which advance by section.
 6. **Remembering:** after reading a paper to section III and returning, the paper is pulled out with a ribbon, and its page offers to pick up at III. "Forget" clears it, and so does storage throwing.
 7. **No JS:** all pieces are listed, with working links.
 8. **Reduced motion:** the page is static and lit, transitions are instant, there's no dust, and no animation loop is running.
