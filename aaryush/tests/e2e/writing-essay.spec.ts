@@ -17,11 +17,52 @@ test('only letters get a signature; papers do not', async ({ page }) => {
 });
 
 test('the header mark and the signature have different mask ids and the header still plays', async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).__headerPlayed = false;
+    new MutationObserver((muts) => {
+      for (const m of muts) {
+        const el = m.target as Element;
+        if (el.classList?.contains('is-playing') && !el.hasAttribute('data-signature')) (window as any).__headerPlayed = true;
+      }
+    }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  });
   await page.goto('/writing/bigger-than-electricity');
   const ids = await page.locator('svg.mark-svg mask').evaluateAll((m) => m.map((e) => e.id));
   expect(new Set(ids).size).toBe(ids.length);
   expect(ids.length).toBe(2);
+  await page.waitForFunction(() => (window as any).__headerPlayed === true);
 });
+
+test('the signature is still undrawn before it scrolls into view', async ({ page }) => {
+  await page.goto('/writing/bigger-than-electricity');
+  const off = await page.locator('svg[data-signature] .pen-a').evaluate((e) => getComputedStyle(e).strokeDashoffset);
+  expect(parseFloat(off)).toBe(108);
+});
+
+test('essay:section state is readable by a late listener', async ({ page }) => {
+  await page.goto('/writing/quiet-singularity');
+  const h = page.locator('.essay-body h2:not(.references h2)').nth(2);
+  await h.evaluate((e) => e.scrollIntoView({ block: 'start' }));
+  await expect.poll(() => page.evaluate(() => JSON.parse(document.documentElement.dataset.essaySection ?? '{}').index)).toBe(2);
+});
+
+for (const size of [{ width: 1100, height: 760 }, { width: 375, height: 700 }]) {
+  test(`at the very bottom the piles never touch the site footer links (${size.width}px)`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await page.goto('/writing/quiet-singularity');
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(500);
+    const dock = page.locator('.pile-dock');
+    if (await dock.isVisible()) {
+      const d = (await dock.boundingBox())!;
+      for (const box of await page.locator('footer a').evaluateAll((as) => as.map((a) => { const r = a.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }))) {
+        const hit = box.x < d.x + d.width && box.x + box.width > d.x && box.y < d.y + d.height && box.y + box.height > d.y;
+        expect(hit).toBe(false);
+      }
+    }
+    await expect(dock).toBeHidden();
+  });
+}
 
 test('signature is fully drawn without JS and under reduced motion', async ({ browser }) => {
   for (const opts of [{ javaScriptEnabled: false }, { reducedMotion: 'reduce' as const }]) {

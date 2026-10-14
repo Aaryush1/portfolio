@@ -29,7 +29,7 @@ if (article) {
   };
 
   const measure = () => {
-    const next = Array.from(article.querySelectorAll<HTMLElement>('h2:not(.references h2)')); // the References heading is not a section
+    const next = Array.from(article.querySelectorAll<HTMLElement>('h2:not(.references h2)')); // convention: a paper's bibliography is wrapped in <div class="references"> and is not a section
     const changed = next.length !== heads.length;
     heads = next;
     if (changed) buildPiles();
@@ -54,6 +54,8 @@ if (article) {
     if (piles || heads.length) {
       const idx = currentSection(heads.map((h) => h.getBoundingClientRect().top), window.innerHeight);
       if (piles) updatePiles(idx);
+      // current state for late listeners (Task 8 reads this on init, in case it missed the first event)
+      document.documentElement.dataset.essaySection = JSON.stringify({ index: idx, total: heads.length, kind });
       if (idx !== lastSection) {
         lastSection = idx;
         document.dispatchEvent(new CustomEvent('essay:section', { detail: { index: idx, total: heads.length, kind } }));
@@ -69,6 +71,14 @@ if (article) {
 
   const onScroll = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
   const onResize = () => { measure(); onScroll(); };
+  // the piles step aside once the site footer is on screen, so they never sit on its links
+  const dock = document.querySelector<HTMLElement>('.pile-dock');
+  const foot = document.querySelector<HTMLElement>('footer.foot');
+  if (dock && foot && 'IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      dock.classList.toggle('is-away', entries.some((e) => e.isIntersecting));
+    }).observe(foot);
+  }
   measure();
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onResize);

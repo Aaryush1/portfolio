@@ -27,6 +27,8 @@
 /* Papers: two piles of sheets instead of the bar. Decoration only (aria-hidden); hidden without JS. */
 .pile-dock{display:none}
 html.js .pile-dock{display:block;position:fixed;right:24px;bottom:20px;z-index:19;width:max-content;min-width:112px;pointer-events:none}
+.pile-dock{transition:opacity .25s,visibility 0s}
+html.js .pile-dock.is-away{opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
 .piles{position:relative;height:calc(44px + var(--n,6) * 2.6px);width:112px}
 .pile-sh{position:absolute;left:0;bottom:0;width:34px;height:44px;border:1px solid var(--line-3);border-radius:2px;background:var(--s3);
   transform:translate(0,calc(var(--i) * -2.6px));transition:transform .45s var(--ease-out)}
