@@ -26,7 +26,7 @@ export async function renderOg({ kicker, title, subtitle }: { kicker: string; ti
       h('div', { fontSize: title.length > 40 ? 64 : 80, fontWeight: 500, lineHeight: 1.02, letterSpacing: -2.5 }, title),
       subtitle ? h('div', { fontSize: 30, color: '#A0A4AE', lineHeight: 1.3, maxWidth: 940 }, subtitle) : null,
     ].filter(Boolean)),
-    h('div', { display: 'flex', justifyContent: 'space-between', fontFamily: 'JetBrains Mono', fontSize: 20, color: '#7D828E' }, [h('div', {}, 'aaryush.com'), h('div', {}, 'Aaryush Gupta')]),
+    h('div', { display: 'flex', justifyContent: 'space-between', fontFamily: 'JetBrains Mono', fontSize: 20, color: '#8B909C' }, [h('div', {}, 'aaryush.com'), h('div', {}, 'Aaryush Gupta')]),
   ]);
   const svg = await satori(tree as never, { width: 1200, height: 630, fonts: await loadFonts() });
   return new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } }).render().asPng();
