@@ -62,7 +62,7 @@ function mount(svg: SVGSVGElement): () => void {
       if (t >= rt.loopStart - 300) svg.classList.add('closed');
       if (t >= rt.loopStart) {
         const prev = s;
-        s = (s + (SPEED * dt) / 1000) % len;
+        s = (s + ((rt.speed ?? SPEED) * dt) / 1000) % len;
         place(s);
         if (!dot.classList.contains('on')) setOn(true);
         for (const h of rt.hits) if (crossed(prev, s, h.at, len)) pulseNode(h.node);

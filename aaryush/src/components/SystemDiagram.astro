@@ -4,7 +4,7 @@ import { boxPath, isDiamond, nodeHits, pathD, pointAt, polylineLength, type Diag
 interface Props { name: DiagramKey }
 const { name } = Astro.props;
 const S = diagrams[name];
-const runtime: DiagramRuntime = { pulse: S.pulse, inputs: S.inputs, loopStart: S.loopStart, hits: nodeHits(S) };
+const runtime: DiagramRuntime = { pulse: S.pulse, inputs: S.inputs, loopStart: S.loopStart, hits: nodeHits(S), speed: S.speed };
 const rest = pointAt(S.pulse, polylineLength(S.pulse) * 0.62);
 const ms = (d: number) => `--d:${Math.round(d)}ms`;
 const pad = (n: number) => String(n).padStart(2, '0');

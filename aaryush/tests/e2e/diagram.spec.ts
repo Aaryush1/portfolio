@@ -105,6 +105,7 @@ test('skale platform page and home pop-up render the diagram with its title', as
   await page.goto('/work/skale-platform');
   await expect(svg(page)).toHaveClass(/\brun\b/);
   await expect(svg(page).locator('title')).toHaveText('Skale.win career platform system diagram');
+  // 30s tolerates webkit running slowly under full parallel load (the Skale loop starts at 5.4s).
   await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 30000 });
   await page.goto('/');
   await page.locator('#sys-skale-platform').click();

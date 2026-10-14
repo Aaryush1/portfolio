@@ -4,9 +4,9 @@ export type DiamondNode = { diamond: true; cx: number; cy: number; r: number; t:
 export type DiagramNode = BoxNode | DiamondNode;
 export type DiagramEdge = { p: Pt[]; d: number; dur?: number; fb?: boolean; dash?: boolean; l?: [string, number, number, 'start' | 'middle' | 'end'][] };
 export type DiagramInput = [x: number, y1: number, y2: number, label: string, delay: number];
-export type DiagramSpec = { vb: [number, number]; title: string; desc: string; inputs: DiagramInput[]; nodes: DiagramNode[]; edges: DiagramEdge[]; pulse: Pt[]; loopStart: number };
+export type DiagramSpec = { vb: [number, number]; title: string; desc: string; inputs: DiagramInput[]; nodes: DiagramNode[]; edges: DiagramEdge[]; pulse: Pt[]; loopStart: number; speed?: number };
 export type Hit = { node: number; at: number };
-export type DiagramRuntime = { pulse: Pt[]; inputs: DiagramInput[]; loopStart: number; hits: Hit[] };
+export type DiagramRuntime = { pulse: Pt[]; inputs: DiagramInput[]; loopStart: number; hits: Hit[]; speed?: number };
 export type DiagramKey = 'intake' | 'loop' | 'launchpad' | 'skale';
 
 export const isDiamond = (n: DiagramNode): n is DiamondNode => 'diamond' in n;

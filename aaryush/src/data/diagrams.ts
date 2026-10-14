@@ -78,7 +78,7 @@ export const diagrams: Record<DiagramKey, DiagramSpec> = {
     vb: [320, 760],
     title: 'Skale.win career platform system diagram',
     desc: 'An optional job link goes through Perplexity and comes back as structured job requirements, alongside an optional industry and a difficulty level. An interview planner turns that into a dynamic question plan, reshaped after every answer. The interview itself is a real-time voice loop: speech to text, a language model on OpenRouter, text to speech, back to the candidate in under 500 milliseconds a turn. An evaluator scores competencies plus categories generated for that interview and writes specific feedback. The profile embeds skills and preferences to match roles by vector similarity, and the weakest categories seed the next interview.',
-    inputs: [[100, 26, 54, 'JOB URL', 0], [168, 26, 54, 'INDUSTRY', 110], [232, 26, 54, 'LEVEL', 220]],
+    inputs: [[92, 26, 54, 'JOB URL', 0], [168, 26, 54, 'INDUSTRY', 110], [240, 26, 54, 'LEVEL', 220]],
     nodes: [
       { x: 45, y: 54, w: 210, h: 50, t: 'Job context', s: 'PERPLEXITY · STRUCTURED', d: 380 },
       { x: 50, y: 140, w: 200, h: 50, t: 'Interview planner', s: 'DYNAMIC · PER ANSWER', d: 900 },
@@ -102,7 +102,8 @@ export const diagrams: Record<DiagramKey, DiagramSpec> = {
       { p: [[83, 604], [83, 690]], d: 3600, dur: 360 },
       { p: [[228, 604], [228, 632], [310, 632], [310, 167], [250, 167]], d: 3700, dur: 1400, fb: true, l: [['WEAKEST CATEGORIES', 306, 656, 'end'], ['SEED THE NEXT INTERVIEW', 306, 672, 'end']] },
     ],
-    pulse: [[150, 167], [150, 254], [246, 254], [246, 382], [150, 382], [54, 382], [54, 254], [150, 254], [246, 254], [246, 382], [150, 382], [150, 575], [228, 575], [228, 632], [310, 632], [310, 167]],
+    pulse: [[150, 167], [150, 254], [246, 254], [246, 382], [150, 382], [54, 382], [54, 254], [150, 254], [150, 575], [228, 575], [228, 632], [310, 632], [310, 167]],
     loopStart: 5400,
+    speed: 148,
   },
 };
