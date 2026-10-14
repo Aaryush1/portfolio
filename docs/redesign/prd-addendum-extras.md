@@ -170,6 +170,45 @@ Each feature works without JavaScript, or degrades to nothing. Each respects `pr
   - The morph runs once per trigger, and repeated triggers while it's running are ignored.
   - Neither part is in the keyboard map or explained anywhere.
 
+## E9. "Save contact" becomes "Saved."
+
+When a Save contact button successfully triggers the vCard download, its label morphs with the hero's shared-letter morph:
+- "Save" keeps its letters.
+- A "d" arrives in amber, following the hero's main-change rule.
+- "contact" leaves.
+- A full stop settles at the end.
+
+The button's look also changes to show the saved state: an amber hairline border, the icon swapped for a small check, and a slightly dimmed fill. It returns to "Save contact" only on the next page load.
+
+Requirements:
+- The morph and state change happen only after the download was actually triggered, never on a failed build.
+- Under reduced motion the label swaps instantly.
+- The accessible name changes to "Contact saved" through a polite live region.
+- This applies to both the hero and footer instances.
+
+## E10. The deploy hash
+
+Hovering or focusing "Last deploy" in the hero title block reveals the commit it was built from, e.g. "2026.10 · a868cd5".
+- The commit is the short git SHA, injected at build time via `import.meta.env` or a Vite `define`. It falls back to nothing (just the date) if git is unavailable.
+- Use the mono style, fade in, and keep the cell width stable so nothing shifts.
+- Show it on focus too (the cell is focusable, with `tabindex=0`), with the accessible name "Last deploy 2026.10, commit a868cd5".
+
+## E11. Type `ag.`
+
+Typing `a`, `g`, `.` anywhere (same guards as `contextos` and the keyboard shortcuts) replays the header logo's draw-on. It isn't explained anywhere. Under reduced motion it does nothing.
+
+## E12. The lamp warms while you read
+
+On essay pages (any kind), the page's ambient light very slowly warms the longer someone stays and reads.
+- Reading means the tab is visible and the user has scrolled or moved within the last 60 seconds.
+- The shift is imperceptible minute to minute. It reaches its maximum after about 5 minutes of reading: roughly +6% warmth in the background warm light, never touching text contrast.
+- It resets on a new page load.
+- Under reduced motion there's no change. It costs nothing at rest: use a single CSS custom property updated about once every 15 seconds, with no rAF.
+
+## E13. Signed prints
+
+The printed home drawing sheet carries the "ag." mark in the title block, as a static pencil-grey signature in a small "Signed" cell. Low priority; it's cheap.
+
 ## Out of scope here (planned separately)
 
 - **The dynamic vCard:** waiting on Aaryush's depth decision.
