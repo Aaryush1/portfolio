@@ -1,12 +1,12 @@
 ---
 name: Gupta Advisory
-role: AI strategy & systems advisory
+role: Founder
 start: 2024-12
 end: null
 order: 1
 summary: I work with organizations on how they should operate with AI, starting with how the business actually works, then targeted experiments that prove value fast.
 facts:
-  - { label: Role, value: Advisor }
+  - { label: Role, value: Founder }
   - { label: Since, value: Dec 2024 }
 ogDescription: How Aaryush Gupta works with organizations on what AI means for how they operate.
 draft: true

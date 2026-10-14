@@ -3,7 +3,7 @@ export const site = {
   url: 'https://aaryush.com',
   title: 'Aaryush Gupta — AI Strategy & Organizational Design',
   description:
-    'I build the systems behind how organizations work: operating models, decision architectures and AI systems across healthcare, finance and tech.',
+    'I build the systems behind how organizations work: operating models, decision architectures and AI systems for organizations in healthcare, finance, tech and beyond.',
   eyebrow: 'AI Strategy & Organizational Design',
   hero: {
     lead: 'I build the systems behind',
