@@ -43,7 +43,7 @@ if (piece.shape === 'paper') vars.push(`--n:${Math.min(n, 6)}`);
   {n > 0 && (
     <ol class="breakdown">
       {piece.breakdown.slice(0, 6).map((b) => (
-        <li>{b.label}{b.gist && <> <span class="gist" data-sep="— ">{b.gist}</span></>}</li>
+        <li><span class="ph-label">{b.label}</span>{b.gist && <> <span class="gist" data-sep="— ">{b.gist}</span></>}</li>
       ))}
     </ol>
   )}

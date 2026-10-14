@@ -1,7 +1,7 @@
 /**
  * Desk behaviour: pointer and focus light a piece (is-lit + is-open), phones tap once to open and again to enter.
  * Everything visual is CSS; this only sets classes, a little pointer tilt, and announces piece:lit / piece:unlit.
- * CSS hover/focus-within already covers the case where this script never runs.
+ * CSS hover/:has(:focus-visible) already covers the case where this script never runs.
  */
 const pieces = Array.from(document.querySelectorAll<HTMLElement>('[data-piece]'));
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -23,7 +23,7 @@ function unlight(el: HTMLElement) {
 
 for (const el of pieces) {
   el.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch' && !phone()) light(el); });
-  el.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && !phone() && !el.contains(document.activeElement)) unlight(el); });
+  el.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && !phone() && !el.matches(':has(:focus-visible)')) unlight(el); });
   el.addEventListener('pointermove', (e) => {
     if (e.pointerType === 'touch' || phone() || reduce.matches) return;
     const r = el.getBoundingClientRect();
