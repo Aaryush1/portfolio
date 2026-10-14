@@ -2,7 +2,7 @@
 
 Aaryush Gupta's personal site. It helps people understand who he is as a builder and want to talk to him because he's interesting, not to hire him. There's no selling, no testimonials and no "hire me".
 
-The app lives in `aaryush/` (Astro 5, static, deployed on Vercel). The HTML and CSS files at the repo root are legacy. Don't edit them; deleting them is a separate, optional cleanup.
+The app lives in `aaryush/` (Astro 5, static, deployed on Vercel).
 
 ## Who visits, and on what
 

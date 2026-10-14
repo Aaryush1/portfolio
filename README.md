@@ -17,5 +17,3 @@ More detail lives in these files:
 - **How the site works and how it's maintained:** [CLAUDE.md](CLAUDE.md).
 - **Specs, plans and copy decisions:** [docs/redesign/](docs/redesign/).
 - **Easter eggs:** [docs/easter-eggs.md](docs/easter-eggs.md). Don't share these widely.
-
-The HTML and CSS files at the repo root (`index.html`, `main.css`, `qr.*`) belong to the original 2018 contact-card site. They're kept for history.
