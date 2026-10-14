@@ -63,7 +63,7 @@ They're **shown, never explained**. Nothing on the site hints at them, labels th
 
 ## Voice and content rules
 
-- **Never name** the Ready Rebound engineering tool, the Ready Rebound city product, or any city. See the confidentiality test in `tests/unit/`.
+- **Never show on the site** the Ready Rebound engineering tool's name, the Ready Rebound city product, or any city. Repo docs may mention them; the site must not. The confidentiality test in `tests/unit/` scans the site source.
 - **No buzzwords:** leverage, unlock, transform, seamless, paradigm shift.
 - **No metrics,** except people ratios like "two people now ship what four did" and facts he's given ("under 500ms a turn").
 - **Real titles are reframed:** "Lead AI Engineer" appears as "AI Lead" and "AI & Engineering Lead". Gupta Advisory's role is "Founder".
