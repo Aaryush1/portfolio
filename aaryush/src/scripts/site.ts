@@ -5,12 +5,35 @@ onScroll();
 
 // Assemble obfuscated contact links at runtime (scraper protection: never in HTML).
 // The scheme is derived from data-obf so the literal protocol strings never ship in the bundle either.
+const decode = (a: HTMLAnchorElement) => ({ kind: a.dataset.obf ?? '', parts: (a.dataset.v ?? '').split('|').reverse() });
 document.querySelectorAll<HTMLAnchorElement>('a[data-obf][data-v]').forEach((a) => {
-  const kind = a.dataset.obf ?? '';
-  const parts = (a.dataset.v ?? '').split('|').reverse();
+  const { kind, parts } = decode(a);
   const scheme = kind === 'mail' ? kind + 'to' : kind;
   a.href = scheme + ':' + (kind === 'mail' ? parts[0] + '@' + parts[1] : parts.join(''));
 });
+
+// Printing (E4): the drawing sheet shows the email and phone as plain text. They are assembled here,
+// from the same split parts, only for the printout, and removed again afterwards.
+const printBox = document.querySelector<HTMLElement>('[data-print-contact]');
+if (printBox) {
+  window.addEventListener('beforeprint', () => {
+    const rows: [string, string][] = [];
+    document.querySelectorAll<HTMLAnchorElement>('[data-contact="hero"] a[data-obf][data-v]').forEach((a) => {
+      const { kind, parts } = decode(a);
+      rows.push(kind === 'mail' ? ['Email', parts[0] + '@' + parts[1]] : ['Phone', parts.join(' ')]);
+    });
+    printBox.replaceChildren(...rows.map(([label, value]) => {
+      const p = document.createElement('p');
+      const k = document.createElement('span');
+      const v = document.createElement('span');
+      k.textContent = label;
+      v.textContent = value;
+      p.append(k, v);
+      return p;
+    }));
+  });
+  window.addEventListener('afterprint', () => printBox.replaceChildren());
+}
 
 // ---------- Homepage: reveal, pointer glow, depth meters, index chips ----------
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;

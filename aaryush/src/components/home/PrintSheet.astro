@@ -1,0 +1,27 @@
+---
+import { site, lastDeploy } from '../../data/site';
+const { sheet } = site;
+---
+<!-- Print only (hidden on screen; see styles/print.css). The contact lines are filled in by scripts/site.ts on beforeprint. -->
+<div class="print-only print-contact" aria-hidden="true">
+  <div class="sec-head mono"><span class="n">§ 06</span><span>Contact</span><span class="f">Sheet 06 / 06</span></div>
+  <div class="pc-row">
+    <div class="pc-body">
+      <div class="pc-js" data-print-contact></div>
+      <ul class="pc-links">
+        <li><span>LinkedIn</span><span>linkedin.com/in/aaryush</span></li>
+        <li><span>GitHub</span><span>github.com/Aaryush1</span></li>
+        <li><span>Site</span><span>aaryush.com</span></li>
+      </ul>
+    </div>
+    <div class="print-only print-block">
+      <dl class="tblock">
+        <div><dt>Dwg. no.</dt><dd>{sheet.dwg}</dd></div>
+        <div><dt>Sheet</dt><dd>{sheet.sheet}</dd></div>
+        <div><dt>Region</dt><dd>{sheet.region}</dd></div>
+        <div><dt>Last deploy</dt><dd>{lastDeploy()}</dd></div>
+        <div><dt>Scale</dt><dd>{sheet.scale}</dd></div>
+      </dl>
+    </div>
+  </div>
+</div>

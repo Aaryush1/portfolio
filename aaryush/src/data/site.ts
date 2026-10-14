@@ -24,6 +24,8 @@ export const site = {
     github: 'https://github.com/Aaryush1',
     vcard: '/Aaryush%20Contact%20Info.vcf',
   },
+  /** Title-block fields, shared by the hero and the printed sheet. */
+  sheet: { dwg: 'AG-001', sheet: '01 / 06', region: 'us-central', scale: 'NTS' },
   location: 'Madison, WI',
   education: 'UW–Madison',
   next: { name: 'contextOS', note: 'Coming soon.' },
@@ -35,5 +37,10 @@ export const site = {
   /** Flip to false in Task 13 once Aaryush approves each block. */
   drafts: { hero: true, about: true, levels: true, companyLinkLabel: true, footer: false, consoleNote: true, keyboardMap: true, notFound: true },
 } as const;
+
+/** Build-time stamp (YYYY.MM), so it always matches the deploy that's live. */
+export function lastDeploy(built = new Date()): string {
+  return `${built.getFullYear()}.${String(built.getMonth() + 1).padStart(2, '0')}`;
+}
 
 export type Site = typeof site;

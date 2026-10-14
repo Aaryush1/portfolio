@@ -6,6 +6,7 @@ import About from './home/About.astro';
 import Levels from './home/Levels.astro';
 import Timeline from './home/Timeline.astro';
 import WritingTeaser from './home/WritingTeaser.astro';
+import PrintSheet from './home/PrintSheet.astro';
 import PopupShell from './popup/PopupShell.astro';
 import JobView from './popup/JobView.astro';
 import SystemView from './popup/SystemView.astro';
@@ -35,13 +36,14 @@ const views = slugs.map((slug) => {
   return { slug, system, company: companyById.get(system.data.company.id)! };
 });
 ---
-<BaseLayout {...seo}>
+<BaseLayout {...seo} bodyClass="home">
   <main>
     <Hero />
     <About />
     <Levels />
     <Timeline />
     <WritingTeaser />
+    <PrintSheet />
   </main>
   <PopupShell openSlug={openSlug} backHref={backHref} backName={backName}>
     {views.filter((v) => v.slug === openSlug).map((v) => (
