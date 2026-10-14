@@ -4,8 +4,24 @@
 // rings inside it. The server-rendered SVG is already the finished full picture; this script
 // only animates it. Ported from the 9b exploration (zoom 1, hex .22, ripple .85, iris .38, spin .5).
 
-const GREY = [160, 164, 174]; // --text-2
-const AMBER = [242, 181, 68]; // --accent
+import { reducedMotion } from './motion-pref';
+
+type RGB = number[];
+// Fallbacks for --text-2, --text-3 and --accent; the live tokens win when they parse.
+const FALLBACK_TEXT2: RGB = [160, 164, 174];
+const FALLBACK_TEXT3: RGB = [139, 144, 156];
+const FALLBACK_ACCENT: RGB = [242, 181, 68];
+
+function token(name: string, fallback: RGB): RGB {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(v);
+  if (hex) {
+    const h = hex[1].length === 3 ? [...hex[1]].map((c) => c + c).join('') : hex[1];
+    return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  }
+  const rgb = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/.exec(v);
+  return rgb ? [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])] : fallback;
+}
 
 // Tuning for the chosen variant.
 const ZOOM = 1, HEX_ALPHA = 0.22, RIPPLE_ALPHA = 0.85, IRIS_OPEN = 0.38, SPIN = 0.5;
@@ -19,6 +35,8 @@ type Ripple = { from: number; to: number; t0: number; dur: number };
 export type Lens = {
   /** Highlight `level` (1-4, or null) and zoom toward `zoomTo` (0-3 ring index; 0 is the full picture). */
   set(level: number | null, zoomTo: number): void;
+  /** Called with the level (1-4) under the pointer, or null when it leaves the rings. Mouse and pen only. */
+  onRingHover(cb: (level: number | null) => void): void;
 };
 
 export function createLens(fig: HTMLElement): Lens | null {
@@ -36,8 +54,10 @@ export function createLens(fig: HTMLElement): Lens | null {
   if (rings.length !== 4 || labels.length !== 4 || !glowEl || !hexEl) return null;
   const glow = glowEl, hex = hexEl;
 
-  const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
-  const reduced = () => reduceMQ.matches;
+  const GREY = token('--text-2', FALLBACK_TEXT2);
+  const GREY3 = token('--text-3', FALLBACK_TEXT3);
+  const AMBER = token('--accent', FALLBACK_ACCENT);
+  const reduced = () => reducedMotion.matches;
   const root = document.documentElement;
 
   const cx = Number(fig.dataset.c), cy = cx;
@@ -56,11 +76,11 @@ export function createLens(fig: HTMLElement): Lens | null {
   let ripList: Ripple[] = [];
   let clock = STILL_T;
 
-  const blend = (k: number) => GREY.map((g, i) => Math.round(lerp(g, AMBER[i], k))).join(',');
-  function paint(node: Element, i: number, base: number, hi: number, prop: 'stroke' | 'fill', mul = 1) {
+  const blend = (k: number, grey = GREY) => grey.map((g, i) => Math.round(lerp(g, AMBER[i], k))).join(',');
+  function paint(node: Element, i: number, base: number, hi: number, prop: 'stroke' | 'fill', mul = 1, grey = GREY) {
     const k = a[i], dim = 1 - 0.5 * any * (1 - k);
     const al = lerp(base * dim, hi, k) * mul;
-    (node as SVGElement).style[prop] = `rgba(${blend(k)},${al.toFixed(3)})`; // inline style so it beats the stylesheet
+    (node as SVGElement).style[prop] = `rgba(${blend(k, grey)},${al.toFixed(3)})`; // inline style so it beats the stylesheet
   }
 
   // still = reduced motion: full picture, ring highlight only, nothing moves.
@@ -120,7 +140,7 @@ export function createLens(fig: HTMLElement): Lens | null {
       ring.setAttribute('stroke-width', (1.3 + a[j]).toFixed(2));
       paint(ring, j, 0.38, 1, 'stroke', (1 - 0.6 * o) * fade);
       labels[j].setAttribute('y', (cy - rr - 4).toFixed(1));
-      paint(labels[j], j, 0.5, 1, 'fill', (1 - 0.7 * o) * fade);
+      paint(labels[j], j, 1, 1, 'fill', (1 - 0.7 * o) * fade, GREY3); // rest = --text-3, as the stylesheet draws it
       hits[j]?.setAttribute('r', rs.toFixed(1));
     }
     fig.dataset.zoom = String(Math.round(u * 100) / 100);
@@ -148,9 +168,16 @@ export function createLens(fig: HTMLElement): Lens | null {
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     fig.dataset.running = 'false';
+    snapRest();
   }
   function sync() { if (canRun()) start(); else stop(); }
   function still() { draw(STILL_T, 0, true); }
+  // Back at rest while paused: draw the full picture once so re-entry doesn't animate the zoom back out.
+  function snapRest() {
+    if (active !== null || zt !== 0 || reduced()) return;
+    u = 0; a.fill(0); op.fill(0); glowR = R[3] * 1.15; ripList = [];
+    draw(clock, 0, false); // dt 0: nothing eases, rotation keeps its clock phase
+  }
 
   fig.dataset.running = 'false';
   if ('IntersectionObserver' in window) {
@@ -158,9 +185,9 @@ export function createLens(fig: HTMLElement): Lens | null {
   }
   document.addEventListener('visibilitychange', sync);
   new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
-  reduceMQ.addEventListener('change', () => {
+  reducedMotion.onChange((r) => {
     stop(); u = zt = 0; ripList = [];
-    if (reduced()) still(); else sync();
+    if (r) still(); else sync();
   });
 
   if (reduced()) still(); else sync();
@@ -180,6 +207,14 @@ export function createLens(fig: HTMLElement): Lens | null {
         if (from !== i) ripList.push({ from: R[from], to: R[i], t0: clock, dur: 0.9 + Math.abs(from - i) * 0.25 });
       }
       if (i !== null) last = i;
+      if (!raf) snapRest();
+    },
+    onRingHover(cb) {
+      let cur: number | null = null;
+      hits.forEach((hit, n) => {
+        hit.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') { cur = n; cb(n + 1); } });
+        hit.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && cur === n) { cur = null; cb(null); } });
+      });
     },
   };
 }

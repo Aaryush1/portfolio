@@ -1,7 +1,7 @@
 import { createLens } from './lens';
+import { reducedMotion } from './motion-pref';
 
 const STEP = 100; // ms between meter segments
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fig = document.getElementById('lvfig');
 const lens = fig ? createLens(fig) : null;
 const section = document.getElementById('levels');
@@ -26,14 +26,14 @@ function buildRow(el: HTMLElement): Row {
     fill() {
       clear();
       segs.forEach((seg, i) => {
-        if (reduced) seg.classList.add('fill');
+        if (reducedMotion.matches) seg.classList.add('fill');
         else timers.push(window.setTimeout(() => seg.classList.add('fill'), i * STEP));
       });
     },
     drain() {
       clear();
       [...segs].reverse().forEach((seg, i) => {
-        if (reduced) seg.classList.remove('fill');
+        if (reducedMotion.matches) seg.classList.remove('fill');
         else timers.push(window.setTimeout(() => seg.classList.remove('fill'), i * STEP));
       });
     },
@@ -72,11 +72,8 @@ rows.forEach(({ el, depth }) => {
   });
 });
 
-fig?.querySelectorAll<SVGElement>('[data-hit]').forEach((hit) => {
-  const level = Number(hit.dataset.hit) + 1;
-  hit.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') { ring = level; update(); } });
-  hit.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && ring === level) { ring = null; update(); } });
-});
+// Hovering a ring lights its row (no zoom); the ring markup is lens.ts's business.
+lens?.onRingHover((level) => { ring = level; update(); });
 
 // Leaving the section always returns to the full picture.
 if (section && 'IntersectionObserver' in window) {

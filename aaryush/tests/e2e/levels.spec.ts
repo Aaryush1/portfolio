@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
+import { SETTLE, expectZoomAbove } from './lens-helpers';
+
 // Zoom eases over ~2s of frame time, with dt capped per frame, so slow headless browsers need real-time slack.
-const SETTLE = 20_000;
 const fig = (page: import('@playwright/test').Page) => page.locator('#lvfig');
 const row = (page: import('@playwright/test').Page, n: number) => page.locator(`li.level[data-level="${n}"]`);
 
@@ -12,7 +13,7 @@ test('lens figure is server-rendered with four rings, hidden from assistive tech
   await expect(fig(page)).toHaveAttribute('aria-hidden', 'true');
   await expect(fig(page).locator('svg circle.ring')).toHaveCount(4);
   await expect(fig(page).locator('svg text')).toHaveCount(4);
-  await expect(fig(page).locator('figcaption')).toContainText('Four levels. Pick one to zoom.');
+  await expect(fig(page).locator('figcaption')).toContainText('Zoom in or out.');
   await expect(fig(page)).toHaveAttribute('data-zoom', '0');
   await context.close();
 });
@@ -26,7 +27,7 @@ test('focusing a level zooms the figure to it, and blurring returns to the full 
   await row(page, 4).locator('a.chip').first().focus();
   await expect(fig(page)).toHaveAttribute('data-level', '4');
   await fig(page).scrollIntoViewIfNeeded(); // on a phone the figure sits above the row; it only animates while visible
-  await expect(fig(page)).toHaveAttribute('data-zoom', '3', { timeout: SETTLE });
+  await expectZoomAbove(fig(page));
   await expect(fig(page).locator('circle.ring').nth(3)).toHaveCSS('stroke', /rgba?\(24\d, 1[78]\d, \d+/);
   await row(page, 4).locator('a.chip').first().blur();
   await expect(fig(page)).toHaveAttribute('data-level', '');
@@ -40,7 +41,7 @@ test('hovering a row zooms; moving away returns to the full picture', async ({ p
   await row(page, 4).scrollIntoViewIfNeeded();
   await row(page, 4).hover();
   await fig(page).scrollIntoViewIfNeeded();
-  await expect(fig(page)).toHaveAttribute('data-zoom', '3', { timeout: SETTLE });
+  await expectZoomAbove(fig(page));
   await page.mouse.move(0, 0);
   await expect(fig(page)).toHaveAttribute('data-zoom', '0', { timeout: SETTLE });
 });
@@ -110,24 +111,48 @@ test('reduced motion: still full picture, no frame loop, ring still highlights',
   await context.close();
 });
 
-test('figure shows on a 375px phone and a tap pins a level', async ({ browser }) => {
+test('figure pauses when scrolled away and comes back as the full picture', async ({ page }) => {
+  test.slow();
+  await page.goto('/');
+  await fig(page).scrollIntoViewIfNeeded();
+  await row(page, 4).locator('a.chip').first().focus();
+  await expectZoomAbove(fig(page));
+  await page.locator('#writing').scrollIntoViewIfNeeded();
+  await expect(fig(page)).toHaveAttribute('data-running', 'false');
+  // state cleared while paused: the rest picture is drawn then, not animated on re-entry
+  await expect(fig(page)).toHaveAttribute('data-zoom', '0');
+  await expect(fig(page)).toHaveAttribute('data-level', '');
+  await fig(page).scrollIntoViewIfNeeded();
+  await expect(fig(page)).toHaveAttribute('data-running', 'true');
+  await expect(fig(page)).toHaveAttribute('data-zoom', '0');
+});
+
+test('mini lens stays pinned on a 375px phone and a tap zooms it', async ({ browser }) => {
   test.slow();
   const context = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true });
   const page = await context.newPage();
   await page.goto('/');
-  await fig(page).scrollIntoViewIfNeeded();
-  const box = (await fig(page).boundingBox())!;
-  expect(box.width).toBeGreaterThan(150);
+  await row(page, 1).scrollIntoViewIfNeeded();
+  const header = (await page.locator('header').first().boundingBox())!;
+  const lens = fig(page);
+  // scroll until L4 is in view
+  await row(page, 4).scrollIntoViewIfNeeded();
+  await expect(lens).toHaveAttribute('data-running', 'true');
+  const box = (await lens.boundingBox())!;
+  expect(box.y).toBeGreaterThanOrEqual(header.y + header.height - 0.5);
+  expect(box.y + box.height).toBeLessThanOrEqual(812);
+  expect(box.height).toBeLessThan(140);
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(375);
-  await expect(fig(page).locator('svg')).toBeVisible();
+  // the lens does not sit on the row being tapped
+  const rb = (await row(page, 4).locator('h3').boundingBox())!;
+  expect(rb.y).toBeGreaterThanOrEqual(box.y + box.height);
+  // and the topmost element at the lens centre is the lens, not the header
+  expect(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('#lvfig'), [box.x + box.width / 2, box.y + box.height / 2])).toBe(true);
   await row(page, 4).locator('h3').tap();
-  await expect(fig(page)).toHaveAttribute('data-level', '4');
-  // the phone figure sits above the list, so it is off-screen (paused) while the row is tapped; it catches up once seen
-  await fig(page).scrollIntoViewIfNeeded();
-  await expect(fig(page)).toHaveAttribute('data-zoom', '3', { timeout: SETTLE });
+  await expect(lens).toHaveAttribute('data-level', '4');
+  await expectZoomAbove(lens);
   await row(page, 4).locator('h3').tap();
-  await fig(page).scrollIntoViewIfNeeded();
-  await expect(fig(page)).toHaveAttribute('data-zoom', '0', { timeout: SETTLE });
+  await expect(lens).toHaveAttribute('data-zoom', '0', { timeout: SETTLE });
   await context.close();
 });
