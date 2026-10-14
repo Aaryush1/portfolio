@@ -1,9 +1,12 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import '../styles/essay.css';
+import '../styles/writing-transitions.css';
+import { knownKind } from '../lib/writing';
 import Signature from '../components/writing/Signature.astro';
 interface Props { title: string; subtitle: string; date: Date; summary: string; slug: string; pdf?: string; minutes: number; kind?: string }
 const { title, subtitle, date, summary, slug, pdf, minutes, kind } = Astro.props;
+const shape = knownKind(kind ?? '');
 const isPaper = kind === 'paper';
 const isLetter = kind === 'letter';
 const month = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -11,7 +14,7 @@ const month = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric',
 <BaseLayout title={`${title} — Aaryush Gupta`} description={summary} ogImage={`/og/writing/${slug}.png`} path={`/writing/${slug}`} bodyClass="essay-page">
   {!isPaper && <div class="progress" data-reading-progress aria-hidden="true"></div>}
   <main class:list={['wrap', 'essay', { 'essay--paper': isPaper }]}>
-    <header class="essay-head">
+    <header class="essay-head" style={`view-transition-name:piece-${slug};view-transition-class:vt-${shape}`}>
       <p class="mono kicker"><a href="/writing">Writing</a> · {month}</p>
       <h1>{title}</h1>
       <p class="sub">{subtitle}</p>

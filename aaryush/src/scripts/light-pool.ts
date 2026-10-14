@@ -70,6 +70,8 @@ function setMode(m: 'rest' | 'piece' | 'drawer') {
 
 /** Who holds the pool: 'rest', or a named owner ('piece' by default for aimAt, 'drawer' for aimPoint). */
 let owner = 'rest';
+/** The drawer's aim, kept while it is open so a piece that borrows the pool can hand it back. */
+let held: { p: Parameters<typeof aimPoint>[0]; scale: number; intensity: number } | null = null;
 
 export function aimAt(el: Element, scale = 1, intensity = 1, who = 'piece'): void {
   if (!room) return;
@@ -82,6 +84,7 @@ export function aimAt(el: Element, scale = 1, intensity = 1, who = 'piece'): voi
 /** With an owner, only acts if that owner currently holds the pool (so a stale piece:unlit can't snap it away). */
 export function aimRest(who?: string): void {
   if (!room) return;
+  if (who === undefined || who === 'drawer') held = null;
   if (who !== undefined && who !== owner) return;
   owner = 'rest';
   setMode('rest');
@@ -98,6 +101,7 @@ export function aimRest(who?: string): void {
 export function aimPoint(p: { x: number; y: number } | (() => { x: number; y: number }), scale = 1, intensity = 1, who = 'drawer'): void {
   if (!room) return;
   owner = who;
+  if (who === 'drawer') held = { p, scale, intensity };
   setMode('drawer');
   retarget = () => { const q = typeof p === 'function' ? p() : p; setTarget(q.x, q.y, scale, intensity); };
   retarget();
@@ -115,7 +119,11 @@ if (room && poolEl) {
     const el = (e as CustomEvent<{ el?: Element }>).detail?.el;
     if (el) aimAt(el, 1, 1);
   });
-  document.addEventListener('piece:unlit', () => aimRest('piece'));
+  document.addEventListener('piece:unlit', () => {
+    if (owner !== 'piece') return;
+    if (held) aimPoint(held.p, held.scale, held.intensity, 'drawer'); // the drawer is still open: the light goes back to it
+    else aimRest('piece');
+  });
 
   aimRest();
   // layout settles after fonts and on resize: keep the current target honest without starting a second loop

@@ -55,6 +55,9 @@ test('opening the drawer moves the light to it, and closing hands it back', asyn
   await page.goto('/writing');
   const y = () => page.locator('.room').evaluate((r) => parseFloat(getComputedStyle(r).getPropertyValue('--pool-y')));
   await expect.poll(y).toBeGreaterThan(0);
+  // the pool eases to rest; wait until it has stopped before taking the baseline
+  let last = -1;
+  await expect.poll(async () => { const v = await y(); const same = Math.abs(v - last) < 0.5; last = v; return same; }, { timeout: 15000, intervals: [600] }).toBe(true);
   const before = await y();
   await front(page).click();
   await expect.poll(y).toBeGreaterThan(before);
@@ -100,4 +103,19 @@ test('drawer fits at 320 with no horizontal scroll', async ({ page }) => {
   await page.goto('/writing');
   await front(page).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
+test('hovering a piece while the drawer is open borrows the light, and unlighting gives it back to the drawer', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'hover');
+  await page.goto('/writing');
+  await front(page).click();
+  const room = page.locator('.room');
+  await expect(room).toHaveAttribute('data-pool', 'drawer');
+  await page.locator('[data-slug="quiet-singularity"]').hover();
+  await expect(room).toHaveAttribute('data-pool', 'piece');
+  await page.mouse.move(2, 2);
+  await expect(room).toHaveAttribute('data-pool', 'drawer');
+  // closing the drawer afterwards still returns the pool to rest
+  await page.keyboard.press('Escape');
+  await expect(room).toHaveAttribute('data-pool', 'rest');
 });

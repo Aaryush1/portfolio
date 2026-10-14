@@ -22,13 +22,13 @@ function foldHeights(count: number): number[] {
   return [150, ...Array.from({ length: count - 2 }, () => mid), 128];
 }
 const heights = piece.shape === 'letter' ? foldHeights(Math.min(n, 6)) : [];
-const vars: string[] = [];
+const vars: string[] = [`view-transition-name:piece-${piece.slug}`];
 if (place) vars.push(`--rot:${place.rot.toFixed(2)}deg`, `--dx:${place.dx.toFixed(1)}px`, `--dy:${place.dy.toFixed(1)}px`, `--col:${place.col + 1}`, `--row:${Math.round(place.y / 4) + 1}`, `--span:${Math.ceil(place.h / 4)}`);
 heights.forEach((h, i) => vars.push(`--h${i + 1}:${h}px`));
 if (heights.length) vars.push(`--tlast:var(--t${heights.length})`, `--hlast:var(--h${heights.length})`);
 if (piece.shape === 'paper') vars.push(`--n:${Math.min(n, 6)}`);
 ---
-<li class="piece" data-piece data-slug={piece.slug} data-kind={piece.kind} data-shape={piece.shape} data-folds={heights.length || undefined} style={vars.join(';') || undefined}>
+<li class="piece" data-piece data-slug={piece.slug} data-kind={piece.kind} data-shape={piece.shape} data-folds={heights.length || undefined} style={vars.join(';')}>
   <span class="cast" aria-hidden="true"></span>
   {piece.shape === 'letter' && <ObjectLetter folds={heights.length} />}
   {piece.shape === 'paper' && <ObjectPaper sheets={Math.min(n, 6)} />}

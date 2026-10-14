@@ -1,0 +1,49 @@
+/*
+ * Walking into a piece. Cross-document view transitions: the piece on the desk and the head of its essay page share
+ * a view-transition-name (piece-<slug>), and the class (vt-letter | vt-paper | vt-sheet) picks the choreography.
+ * Warm and slow: long durations, ease-out curves with no overshoot. Sheet and unknown kinds keep the default cross-fade.
+ * Browsers without view-transition-class (or without cross-document transitions) ignore all of this and just navigate.
+ */
+::view-transition-group(*.vt-letter) { animation-duration: 1s; animation-timing-function: var(--ease-d); }
+::view-transition-group(*.vt-paper) { animation-duration: .95s; animation-timing-function: var(--ease-d); }
+/* Back (and any piece that is not the one being opened) uses the rest class: a slow plain morph, no hinge or lift. */
+::view-transition-group(*.vt-rest) { animation-duration: .8s; animation-timing-function: var(--ease-d); }
+::view-transition-old(*.vt-letter), ::view-transition-new(*.vt-letter),
+::view-transition-old(*.vt-paper), ::view-transition-new(*.vt-paper) { height: 100%; object-fit: contain; object-position: 50% 50%; }
+
+/* Only the piece being opened (hovered, open or keyboard-focused) carries its kind's class; the rest are vt-rest. */
+.piece { view-transition-class: vt-rest; }
+.piece[data-shape="letter"]:is(:hover, .is-open, :has(:focus-visible)) { view-transition-class: vt-letter; }
+.piece[data-shape="paper"]:is(:hover, .is-open, :has(:focus-visible)) { view-transition-class: vt-paper; }
+.piece[data-shape="sheet"] { view-transition-class: vt-sheet; }
+
+/* Letter: it lifts toward you, then the page unfolds downward from the fold. */
+::view-transition-old(*.vt-letter) { animation: vt-letter-out .6s var(--ease-out) both; transform-origin: 50% 100%; }
+::view-transition-new(*.vt-letter) { animation: vt-letter-in .9s var(--ease-out) .12s both; }
+@keyframes vt-letter-out {
+  to { opacity: 0; transform: perspective(900px) translateY(-14px) rotateX(10deg) scale(1.06); }
+}
+@keyframes vt-letter-in {
+  from { opacity: 0; clip-path: inset(0 0 72% 0); }
+  to { opacity: 1; clip-path: inset(0); }
+}
+
+/* Paper: the stack slides forward, then the cover turns on the staple (the left edge). */
+::view-transition-old(*.vt-paper) { animation: vt-paper-out .8s var(--ease-d) both; transform-origin: 0 50%; }
+::view-transition-new(*.vt-paper) { animation: vt-paper-in .8s var(--ease-out) .15s both; }
+@keyframes vt-paper-out {
+  0% { opacity: 1; transform: perspective(1000px) translateX(0) scale(1) rotateY(0); }
+  35% { opacity: 1; transform: perspective(1000px) translateX(-24px) scale(1.04) rotateY(0); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: perspective(1000px) translateX(-24px) scale(1.04) rotateY(-100deg); }
+}
+@keyframes vt-paper-in {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Reduced motion: navigation is instant (base.css turns the transition off); belt and braces here. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  .piece, .essay-head { view-transition-name: none !important; }
+}

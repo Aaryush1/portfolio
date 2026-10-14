@@ -78,3 +78,29 @@ document.addEventListener('click', (e) => {
   if (!phone()) return;
   if (!(e.target as Element).closest('[data-piece]')) { for (const p of pieces) unlight(p); queueFollow(); }
 });
+
+// Back restores the desk: remember which piece we walked into, and on a back/forward return put focus (and the light) on it.
+const LAST = 'writing:last';
+const remember = (slug: string | undefined) => {
+  if (!slug) return;
+  try { sessionStorage.setItem(LAST, slug); } catch { /* storage blocked: the browser default applies */ }
+};
+for (const el of pieces) el.querySelector('.piece-link')?.addEventListener('click', () => remember(el.dataset.slug));
+addEventListener('pagehide', () => {
+  const f = document.activeElement?.closest<HTMLElement>('[data-piece]');
+  if (f) remember(f.dataset.slug);
+});
+function restoreFocus() {
+  let slug: string | null = null;
+  try { slug = sessionStorage.getItem(LAST); } catch { return; }
+  const el = slug ? pieces.find((p) => p.dataset.slug === slug) : undefined;
+  const link = el?.querySelector<HTMLAnchorElement>('.piece-link');
+  if (!el || !link) return;
+  link.focus({ preventScroll: true });
+  light(el);
+  const r = el.getBoundingClientRect();
+  if (r.bottom < 0 || r.top > innerHeight) el.scrollIntoView({ block: 'center' });
+}
+const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+if (nav?.type === 'back_forward') restoreFocus();
+addEventListener('pageshow', (e) => { if (e.persisted) restoreFocus(); });
