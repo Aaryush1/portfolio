@@ -18,7 +18,6 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
         <span aria-hidden="true">
           <span class="rot-1">{lead}</span>
           <span class="rot-2"><span class="slot" id="slot" data-settled={settledHTML}><span class="slot-w">{settled.before}<em>{settled.em}</em>{settled.after}</span></span><span class="rot-pd">.</span></span>
-          <span class="meas" id="meas"></span>
         </span>
       </p>
       <script is:inline>
@@ -78,15 +77,14 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
 .rot-2{white-space:nowrap;color:var(--text)}
 .slot{
   position:relative;display:inline-block;white-space:nowrap;vertical-align:baseline;
-  -webkit-clip-path:inset(-.5em -.1em -.5em 0);clip-path:inset(-.5em -.1em -.5em 0);
-  transition:width .6s var(--ease-out);
 }
 .slot :global(.slot-w){display:inline-block}
-.slot :global(.slot-w.leave){position:absolute;left:0;top:0}
-.rot :global(em){font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.1em;line-height:1;letter-spacing:-.005em}
+.slot :global(.mw){display:inline-block;white-space:nowrap}
+.slot :global(.mc){display:inline-block;white-space:pre}
+.slot :global(.mc.ghost){position:absolute;margin:0;pointer-events:none}
+.rot :global(em),.slot :global(.mc.em){font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.1em;line-height:1;letter-spacing:-.005em}
 .rot-pd{transition:color 1.2s var(--ease)}
 .rot:global(.is-settled) .rot-pd{color:var(--accent)}
-.meas{position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0;pointer-events:none}
 .lede{margin-top:22px;max-width:31rem;color:var(--text-2);font-size:17px;line-height:1.65}
 @media (max-width:719px){
   .hero-inner{min-height:0;padding:28px 0 40px}
