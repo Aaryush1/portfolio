@@ -1,4 +1,5 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { settled } from './settle';
 
 const NOTE = 'fellow inspector';
 const map = (page: Page) => page.getByRole('dialog', { name: 'Keyboard map' });
@@ -120,6 +121,8 @@ test.describe('E2 keyboard map', () => {
     await page.keyboard.press('g');
     await page.keyboard.press('r');
     await expect(page).toHaveURL(/\/writing$/);
+    // The keymap on the new document only exists once its scripts have run; keys pressed before then are lost.
+    await page.waitForLoadState('load');
     await page.keyboard.press('g');
     await page.keyboard.press('h');
     await expect(page).toHaveURL(/\/#hero$/);
@@ -234,14 +237,17 @@ test.describe('E3 404 sheet', () => {
     expect(await row.locator('s').count()).toBe(1);
   });
 
-  test('every register link works', async ({ page }) => {
-    await page.goto('/nope');
-    await page.locator('[data-register] a', { hasText: 'Work' }).click();
-    await expect(page).toHaveURL(/\/#work$/);
-    await page.goto('/nope');
-    await page.locator('[data-register] a', { hasText: 'Writing' }).click();
-    await expect(page).toHaveURL(/\/writing$/);
-  });
+  // One test per link: the old single test navigated 404 -> home -> 404 -> /writing in one page, and WebKit's renderer
+  // crashed ("Page crashed") on the hop away from the canvas-heavy home page under load. Each link now gets a fresh page.
+  for (const [label, url] of [['Work', /\/#work$/], ['Writing', /\/writing$/]] as const) {
+    test(`register link works: ${label}`, async ({ page }) => {
+      await page.goto('/nope');
+      // The page script inserts the "not issued" row above the links after load; clicking before that lands on a moving target.
+      await expect(page.locator('[data-register] [data-missing]')).toBeAttached();
+      await page.locator('[data-register] a', { hasText: label }).click();
+      await expect(page).toHaveURL(url);
+    });
+  }
 
   test('a path containing <script> renders as literal text', async ({ page }) => {
     let dialogs = 0;
@@ -391,14 +397,21 @@ test.describe('E5 hero topography follows the clock', () => {
     expect(html.includes('class="dp-tag"')).toBe(false);
   });
 
-  test('hero text keeps its contrast in the shifted periods', async ({ browser }) => {
-    const { default: AxeBuilder } = await import('@axe-core/playwright');
-    for (const d of ['morning', 'evening', 'night']) {
+  // One test per period: three browser contexts plus three axe runs in one test is slow enough on a loaded
+  // machine to hit the 30s budget. Each also waits for the finite hero animations to finish before measuring.
+  for (const d of ['morning', 'evening', 'night']) {
+    test(`hero text keeps its contrast in the ${d} period`, async ({ browser }) => {
+      const { default: AxeBuilder } = await import('@axe-core/playwright');
       const { page, ctx } = await forced(browser, d);
-      await expect(field(page)).toHaveAttribute('data-daypart', d);
-      const r = await new AxeBuilder({ page }).include('#hero').withRules(['color-contrast']).analyze();
-      expect(r.violations.map((v) => v.id), d).toEqual([]);
-      await ctx.close();
-    }
-  });
+      try {
+        await expect(field(page)).toHaveAttribute('data-daypart', d);
+        await settled(page);
+        const r = await new AxeBuilder({ page }).include('#hero').withRules(['color-contrast']).analyze();
+        expect(r.violations.map((v) => v.id), d).toEqual([]);
+      } finally {
+        await ctx.close();
+      }
+    });
+  }
+
 });

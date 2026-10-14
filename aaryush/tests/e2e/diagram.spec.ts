@@ -2,33 +2,50 @@ import { expect, test } from '@playwright/test';
 
 const svg = (page: import('@playwright/test').Page) => page.locator('dialog#popup svg.dg');
 
+// The diagram advances by rAF frames (dt capped at 120ms so a backgrounded tab doesn't jump), so under heavy parallel
+// load a throttled WebKit runs the animation slower than wall-clock and a wall-clock wait for "closed" races.
+// A paused Playwright clock drives timers and rAF in fixed 16ms steps instead, independent of machine load.
+async function freezeClock(page: import('@playwright/test').Page) {
+  await page.clock.install({ time: 0 });
+  // install() lets the fake clock run until it is paused, so pause far enough ahead that this can't land in the past.
+  await page.clock.pauseAt(60_000);
+}
+const step = (page: import('@playwright/test').Page, ms: number) => page.clock.runFor(ms);
+async function runUntilClosed(page: import('@playwright/test').Page, limitMs = 15000) {
+  for (let t = 0; t < limitMs; t += 250) {
+    if (/\bclosed\b/.test((await svg(page).getAttribute('class')) ?? '')) return;
+    await step(page, 250);
+  }
+  await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 1 });
+}
+
 test('diagram draws, closes the loop, and pulses nodes as the dot passes', async ({ page }) => {
+  await freezeClock(page);
   await page.goto('/work/cylerity-intake');
+  await step(page, 200); // the 160ms start timer
   await expect(svg(page)).toHaveClass(/\brun\b/);
-  await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 15000 });
-  const seen = await page.evaluate(() => new Promise<{ node: number; ok: boolean; hitNodes: number[] }>((resolve, reject) => {
-    const el = document.querySelector('dialog#popup svg.dg') as SVGSVGElement;
-    const rt = JSON.parse(el.dataset.runtime!) as { hits: { node: number }[] };
-    const hitNodes = rt.hits.map((h) => h.node);
-    const t0 = performance.now();
-    const poll = () => {
+  await runUntilClosed(page);
+  // Step frame by frame until a node is hit, then check the dot is on that node at that moment.
+  let seen: { node: number; ok: boolean; hitNodes: number[] } | null = null;
+  for (let i = 0; i < 1500 && !seen; i++) {
+    await step(page, 16);
+    seen = await page.evaluate(() => {
+      const el = document.querySelector('dialog#popup svg.dg') as SVGSVGElement;
       const g = el.querySelector('g.node.hit') as SVGGElement | null;
-      if (g) {
-        const b = g.getBoundingClientRect();
-        const d = el.querySelector('.pulse')!.getBoundingClientRect();
-        const cx = d.x + d.width / 2, cy = d.y + d.height / 2, m = 8;
-        return resolve({ node: Number(g.dataset.node), hitNodes, ok: cx >= b.left - m && cx <= b.right + m && cy >= b.top - m && cy <= b.bottom + m });
-      }
-      if (performance.now() - t0 > 10000) return reject(new Error('no hit'));
-      requestAnimationFrame(poll);
-    };
-    poll();
-  }));
-  expect(seen.hitNodes).toContain(seen.node);
-  expect(seen.ok).toBe(true);
+      if (!g) return null;
+      const rt = JSON.parse(el.dataset.runtime!) as { hits: { node: number }[] };
+      const b = g.getBoundingClientRect();
+      const d = el.querySelector('.pulse')!.getBoundingClientRect();
+      const cx = d.x + d.width / 2, cy = d.y + d.height / 2, m = 8;
+      return { node: Number(g.dataset.node), hitNodes: rt.hits.map((h) => h.node), ok: cx >= b.left - m && cx <= b.right + m && cy >= b.top - m && cy <= b.bottom + m };
+    });
+  }
+  expect(seen, 'a node was hit').not.toBeNull();
+  expect(seen!.hitNodes).toContain(seen!.node);
+  expect(seen!.ok).toBe(true);
   const pos = () => page.locator('dialog#popup .pulse').evaluate((c) => `${c.getAttribute('cx')},${c.getAttribute('cy')}`);
   const first = await pos();
-  await page.waitForTimeout(400);
+  await step(page, 400);
   expect(await pos()).not.toBe(first);
 });
 
@@ -68,14 +85,17 @@ test('reopening does not stack loops', async ({ page }) => {
 });
 
 test('pauses when hidden', async ({ page }) => {
+  await freezeClock(page);
   await page.goto('/work/cylerity-intake');
-  await expect(svg(page)).toHaveClass(/closed/, { timeout: 15000 });
+  await step(page, 200);
+  await runUntilClosed(page);
+  await step(page, 400); // the dot is moving by now
   await page.evaluate(() => {
     Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
     document.dispatchEvent(new Event('visibilitychange'));
   });
   const a = await page.locator('dialog#popup .pulse').getAttribute('cy');
-  await page.waitForTimeout(600);
+  await step(page, 600);
   const b = await page.locator('dialog#popup .pulse').getAttribute('cy');
   expect(b).toBe(a);
 });
@@ -101,12 +121,16 @@ for (const slug of ['cylerity-intake', 'ready-rebound-loop', 'umn-launchpad', 's
   });
 }
 
-test('skale platform page and home pop-up render the diagram with its title', async ({ page }) => {
+test('skale platform page renders the diagram with its title and closes its loop', async ({ page }) => {
+  await freezeClock(page);
   await page.goto('/work/skale-platform');
+  await step(page, 200);
   await expect(svg(page)).toHaveClass(/\brun\b/);
   await expect(svg(page).locator('title')).toHaveText('Skale.win career platform system diagram');
-  // 30s tolerates webkit running slowly under full parallel load (the Skale loop starts at 5.4s).
-  await expect(svg(page)).toHaveClass(/\bclosed\b/, { timeout: 30000 });
+  await runUntilClosed(page, 20000); // the Skale loop starts at 5.4s of animation time
+});
+
+test('skale platform home pop-up renders the diagram with its title', async ({ page }) => {
   await page.goto('/');
   await page.locator('#sys-skale-platform').click();
   await expect(page.locator('dialog#popup')).toBeVisible();

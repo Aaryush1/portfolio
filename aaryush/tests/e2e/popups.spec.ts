@@ -1,3 +1,4 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
 const dialog = (page: import('@playwright/test').Page) => page.locator('dialog#popup');
@@ -55,19 +56,30 @@ test('backdrop click and close button both close', async ({ page }) => {
   await expect(page).toHaveURL(/\/$/);
 });
 
-test('every card and inside-link opens a real pop-up (no stubs)', async ({ page }) => {
+// One test per pop-up: a single loop over every card runs 10+ open/close cycles, which on a loaded machine
+// (WebKit especially) legitimately takes longer than the 30s test budget even though nothing is wrong.
+const contentIds = (dir: string, keep: (src: string) => boolean = () => true) =>
+  readdirSync(`src/content/${dir}`).filter((f) => f.endsWith('.md') && keep(readFileSync(`src/content/${dir}/${f}`, 'utf8'))).map((f) => f.replace(/\.md$/, ''));
+const popupSlugs = [...contentIds('companies', (src) => !/^kind: group$/m.test(src)), ...contentIds('systems')];
+
+test('the pop-up slugs under test match the links on the page', async ({ page }) => {
   await page.goto('/');
   const hrefs = await page.locator('main [data-popup-link]').evaluateAll((els) => els.map((e) => e.getAttribute('href')!));
-  for (const href of hrefs) {
-    await page.locator(`main [data-popup-link][href="${href}"]`).first().click();
-    await expect(dialog(page), href).toBeVisible();
+  expect([...new Set(hrefs)].sort()).toEqual(popupSlugs.map((s) => `/work/${s}`).sort());
+});
+
+for (const slug of popupSlugs) {
+  test(`card opens a real pop-up (no stubs): ${slug}`, async ({ page }) => {
+    await page.goto('/');
+    await page.locator(`main [data-popup-link][href="/work/${slug}"]`).first().click();
+    await expect(dialog(page)).toBeVisible();
     const text = await dialog(page).innerText();
-    expect(text, href).not.toMatch(/coming|write-up soon|lorem/i);
-    expect(text.length, href).toBeGreaterThan(200);
+    expect(text).not.toMatch(/coming|write-up soon|lorem/i);
+    expect(text.length).toBeGreaterThan(200);
     await page.keyboard.press('Escape');
     await expect(dialog(page)).toBeHidden();
-  }
-});
+  });
+}
 
 test('double click opens once', async ({ page }) => {
   await page.goto('/');
@@ -85,8 +97,8 @@ test('modifier click is not intercepted', async ({ page, context }) => {
     context.waitForEvent('page'),
     page.locator('#sys-univise').click({ modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'] }),
   ]);
-  await popup.waitForLoadState();
-  expect(new URL(popup.url()).pathname).toBe('/work/univise');
+  // The new tab starts at about:blank; waitForLoadState() would resolve on that, so wait for the real navigation.
+  await popup.waitForURL('**/work/univise');
   await expect(dialog(page)).toBeHidden();
 });
 

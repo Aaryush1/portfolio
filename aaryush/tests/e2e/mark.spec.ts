@@ -6,9 +6,22 @@ const penOffset = (page: import('@playwright/test').Page, cls: string) =>
 const stopScale = (page: import('@playwright/test').Page) =>
   page.locator(`${svg} .stop`).evaluate((el) => getComputedStyle(el).transform);
 
+// is-playing lasts ~1.4s and page.goto() can resolve after that under parallel load, so polling for the class
+// afterwards is a race. Record it the moment it is applied and assert on the recording instead.
+const recordPlaying = (page: import('@playwright/test').Page) =>
+  page.addInitScript(() => {
+    (window as any).__markPlayed = false;
+    new MutationObserver((muts) => {
+      for (const m of muts) if ((m.target as Element).classList?.contains('is-playing')) (window as any).__markPlayed = true;
+    }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  });
+const expectPlayed = (page: import('@playwright/test').Page) =>
+  page.waitForFunction(() => (window as any).__markPlayed === true);
+
 test('mark draws on first load and ends in the drawn state', async ({ page }) => {
+  await recordPlaying(page);
   await page.goto('/');
-  await expect(page.locator(svg)).toHaveClass(/is-playing/);
+  await expectPlayed(page);
   await expect(page.locator(svg)).not.toHaveClass(/is-playing/, { timeout: 2500 });
   await expect(page.locator('html')).not.toHaveClass(/mark-first/);
   expect(parseFloat(await penOffset(page, '.pen-a'))).toBe(0);
@@ -31,8 +44,9 @@ test('mark still plays when sessionStorage throws', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(window, 'sessionStorage', { get() { throw new Error('blocked'); } });
   });
+  await recordPlaying(page);
   await page.goto('/');
-  await expect(page.locator(svg)).toHaveClass(/is-playing/);
+  await expectPlayed(page);
   await expect(page.locator(svg)).not.toHaveClass(/is-playing/, { timeout: 2500 });
 });
 
