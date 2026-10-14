@@ -132,8 +132,7 @@ test('mini lens stays pinned on a 375px phone and a tap zooms it', async ({ brow
   const context = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true });
   const page = await context.newPage();
   await page.goto('/');
-  await row(page, 1).scrollIntoViewIfNeeded();
-  const header = (await page.locator('header').first().boundingBox())!;
+  const header = (await page.locator('header#top').boundingBox())!;
   const lens = fig(page);
   // scroll until L4 is in view
   await row(page, 4).scrollIntoViewIfNeeded();
@@ -154,5 +153,23 @@ test('mini lens stays pinned on a 375px phone and a tap zooms it', async ({ brow
   await expectZoomAbove(lens);
   await row(page, 4).locator('h3').tap();
   await expect(lens).toHaveAttribute('data-zoom', '0', { timeout: SETTLE });
+  await context.close();
+});
+
+test('a chip reached by keyboard on a 375px phone is not hidden under the pinned lens', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 375, height: 812 } });
+  const page = await context.newPage();
+  await page.goto('/');
+  await row(page, 1).scrollIntoViewIfNeeded();
+  for (const n of [3, 4]) {
+    const chip = row(page, n).locator('a.chip').first();
+    // park the chip behind the band's footprint (Shift+Tab from the row below lands on it from there)
+    await chip.evaluate((el) => window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior: 'instant' }));
+    await chip.focus(); // focus must scroll it out from under the band
+    await expect.poll(async () => {
+      const band = (await fig(page).boundingBox())!, box = (await chip.boundingBox())!;
+      return box.y >= band.y + band.height && box.y + box.height <= 812 && band.y >= 0;
+    }, { message: `L${n} chip visible below the pinned lens`, timeout: 5000 }).toBe(true);
+  }
   await context.close();
 });
