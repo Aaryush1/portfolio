@@ -68,15 +68,22 @@ function setMode(m: 'rest' | 'piece' | 'drawer') {
   if (room) room.dataset.pool = m;
 }
 
-export function aimAt(el: Element, scale = 1, intensity = 1): void {
+/** Who holds the pool: 'rest', or a named owner ('piece' by default for aimAt, 'drawer' for aimPoint). */
+let owner = 'rest';
+
+export function aimAt(el: Element, scale = 1, intensity = 1, who = 'piece'): void {
   if (!room) return;
+  owner = who;
   setMode('piece');
   retarget = () => { const r = rel(el); setTarget(r.x + r.w / 2, r.y + r.h / 2, scale, intensity); };
   retarget();
 }
 
-export function aimRest(): void {
+/** With an owner, only acts if that owner currently holds the pool (so a stale piece:unlit can't snap it away). */
+export function aimRest(who?: string): void {
   if (!room) return;
+  if (who !== undefined && who !== owner) return;
+  owner = 'rest';
   setMode('rest');
   retarget = () => {
     const desk = room.querySelector('.desk');
@@ -87,10 +94,12 @@ export function aimRest(): void {
   retarget();
 }
 
-export function aimPoint(x: number, y: number, scale = 1, intensity = 1): void {
+/** A room-relative point, or a function returning one (re-evaluated whenever the layout changes). */
+export function aimPoint(p: { x: number; y: number } | (() => { x: number; y: number }), scale = 1, intensity = 1, who = 'drawer'): void {
   if (!room) return;
+  owner = who;
   setMode('drawer');
-  retarget = () => setTarget(x, y, scale, intensity);
+  retarget = () => { const q = typeof p === 'function' ? p() : p; setTarget(q.x, q.y, scale, intensity); };
   retarget();
 }
 
@@ -106,7 +115,7 @@ if (room && poolEl) {
     const el = (e as CustomEvent<{ el?: Element }>).detail?.el;
     if (el) aimAt(el, 1, 1);
   });
-  document.addEventListener('piece:unlit', () => aimRest());
+  document.addEventListener('piece:unlit', () => aimRest('piece'));
 
   aimRest();
   // layout settles after fonts and on resize: keep the current target honest without starting a second loop

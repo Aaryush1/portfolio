@@ -22,14 +22,14 @@ if (canvas && room && area && ctx) {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const rand = mulberry32(0x5eed);
   const count = innerWidth <= 700 ? 60 : 90;
+  // x, y are ROOM-relative pixels, so resizing the canvas (a paper opening) never moves a mote. They start as
+  // fractions of the first domain and are mapped on the first resize().
   const motes = Array.from({ length: count }, () => ({
     x: rand(), y: rand(), vx: (rand() - 0.5) * 5, vy: -1 - rand() * 3, r: 0.6 + rand() * 1.1, p: rand() * 6.28,
-  })); // x, y start as fractions; they become pixels on the first resize()
-  let W = 0, H = 0, ox = 0, oy = 0, scale = 1, sized = false;
-  const pool = { x: 0, y: 0, i: 0, s: 1 };
-  onMove((x, y, i, s) => { pool.x = x - ox; pool.y = y - oy; pool.i = i; pool.s = s; });
-  const peak = () => Math.min(1, parseFloat(getComputedStyle(room).getPropertyValue('--pool-peak') || '1') + 0.3);
-  let pk = 1;
+  }));
+  let W = 0, H = 0, ox = 0, oy = 0, sized = false;
+  const pool = { x: 0, y: 0, i: 0, s: 1 }; // room-relative, as light-pool reports it
+  onMove((x, y, i, s) => { pool.x = x; pool.y = y; pool.i = i; pool.s = s; });
 
   function resize() {
     const a = room!.getBoundingClientRect(), b = area!.getBoundingClientRect();
@@ -37,17 +37,14 @@ if (canvas && room && area && ctx) {
     const nx = Math.max(0, b.left - a.left - pad), ny = Math.max(0, b.top - a.top - pad);
     const nw = Math.min(a.width - nx, b.width + pad * 2), nh = b.height + pad * 2;
     if (nw < 1 || nh < 1) return;
-    const rx = sized ? nw / W : nw, ry = sized ? nh / H : nh;
-    for (const m of motes) { m.x *= rx; m.y *= ry; }
-    pool.x += ox - nx; pool.y += oy - ny;
+    if (!sized) for (const m of motes) { m.x = nx + m.x * nw; m.y = ny + m.y * nh; }
     ox = nx; oy = ny; W = nw; H = nh; sized = true;
     let dpr = Math.min(devicePixelRatio || 1, 2);
     if (W * H * dpr * dpr > 3_000_000) dpr = 1; // big phone columns: keep the canvas affordable
-    scale = dpr;
-    canvas!.width = Math.round(W * dpr); canvas!.height = Math.round(H * dpr);
+    const pw = Math.round(W * dpr), ph = Math.round(H * dpr);
+    if (canvas!.width !== pw || canvas!.height !== ph) { canvas!.width = pw; canvas!.height = ph; }
     canvas!.style.cssText = `left:${nx}px;top:${ny}px;width:${W}px;height:${H}px`;
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-    pk = peak();
   }
 
   let raf = 0, last = 0, lastDraw = 0, visible = false;
@@ -59,13 +56,13 @@ if (canvas && room && area && ctx) {
     const sg = 150 * pool.s;
     for (const m of motes) {
       m.x += m.vx * dt + Math.sin(t / 4000 + m.p) * 0.06; m.y += m.vy * dt; m.p += dt * 0.4;
-      if (m.y < -5) { m.y = H + 5; m.x = rand() * W; }
-      if (m.x < -5) m.x = W + 5; else if (m.x > W + 5) m.x = -5;
+      if (m.y < oy - 5) { m.y = oy + H + 5; m.x = ox + rand() * W; } else if (m.y > oy + H + 5) { m.y = oy - 5; m.x = ox + rand() * W; }
+      if (m.x < ox - 5) m.x = ox + W + 5; else if (m.x > ox + W + 5) m.x = ox - 5;
       const dx = m.x - pool.x, dy = m.y - pool.y;
-      const inf = Math.exp(-(dx * dx + dy * dy) / (2 * sg * sg)) * pool.i * pk;
+      const inf = Math.exp(-(dx * dx + dy * dy) / (2 * sg * sg)) * pool.i; // the pool's peak is already 1 or more
       if (inf < 0.04) continue;
       ctx!.fillStyle = `rgba(255, 226, 170, ${(inf * (0.35 + 0.3 * Math.sin(m.p * 2))).toFixed(3)})`;
-      ctx!.beginPath(); ctx!.arc(m.x, m.y, m.r, 0, 6.283); ctx!.fill();
+      ctx!.beginPath(); ctx!.arc(m.x - ox, m.y - oy, m.r, 0, 6.283); ctx!.fill();
     }
   }
 
@@ -81,6 +78,10 @@ if (canvas && room && area && ctx) {
   reduce.addEventListener('change', sync);
   new ResizeObserver(() => { resize(); sync(); }).observe(room);
   document.fonts?.ready.then(() => { resize(); sync(); });
-  addEventListener('pagehide', () => { visible = false; sync(); });
-  addEventListener('pageshow', () => { resize(); });
+  // after a back/forward-cache restore the observers may not re-fire: re-derive visibility from the layout
+  addEventListener('pageshow', () => {
+    const r = room.getBoundingClientRect();
+    visible = r.bottom > 0 && r.top < innerHeight;
+    resize(); sync();
+  });
 }

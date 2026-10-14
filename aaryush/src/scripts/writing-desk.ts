@@ -47,7 +47,7 @@ function follow() {
   const best = pieces[nearestToCenter(pieces.map((p) => p.getBoundingClientRect()), innerHeight)];
   if (best && !isLit(best)) light(best, false);
 }
-const queueFollow = () => { if (!following) following = requestAnimationFrame(follow); };
+const queueFollow = () => { if (!following && phone() && !reduce.matches) following = requestAnimationFrame(follow); };
 addEventListener('scroll', queueFollow, { passive: true });
 addEventListener('resize', queueFollow);
 queueFollow();

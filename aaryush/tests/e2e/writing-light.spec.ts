@@ -37,18 +37,37 @@ test('leaving a piece returns the pool to rest', async ({ page }) => {
   await expect.poll(async () => Math.abs((await pool(page)).x - rest.x), { timeout: 8000 }).toBeLessThan(2);
 });
 
-test('the pool settles: the light loop stops when nothing is moving', async ({ page }) => {
+test('the pool settles: after a hover the light loop stops and schedules nothing more', async ({ page }) => {
   await page.addInitScript(() => {
-    (window as any).__rafFns = new Set();
+    (window as any).__n = 0;
     const raf = window.requestAnimationFrame.bind(window);
-    window.requestAnimationFrame = (cb) => { (window as any).__rafFns.add(cb); return raf(cb); };
+    window.requestAnimationFrame = (cb) => { (window as any).__n++; return raf(cb); };
   });
   await page.goto('/writing');
-  await page.locator('.room').hover(); await page.waitForTimeout(3500);
-  const a = await page.evaluate(() => (window as any).__rafFns.size);
-  await page.waitForTimeout(1000);
-  const b = await page.evaluate(() => (window as any).__rafFns.size);
-  expect(b).toBe(a); // no new distinct rAF callbacks once settled (dust is one stable loop)
+  const count = () => page.evaluate(() => (window as any).__n as number);
+  const before = await count();
+  await page.locator('[data-slug="quiet-singularity"]').hover();
+  await expect.poll(async () => (await count()) - before, { message: 'hover starts the light loop' }).toBeGreaterThan(5);
+  // wait until the pool has stopped moving, then silence the dust (the only other loop)
+  let last = await pool(page);
+  await expect.poll(async () => { const p = await pool(page); const same = p.x === last.x && p.y === last.y && p.i === last.i; last = p; return same; }, { timeout: 15000, intervals: [600] }).toBe(true);
+  await page.evaluate(() => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
+  await expect(page.locator('canvas.dust')).toHaveAttribute('data-dust', 'paused');
+  await page.waitForTimeout(400); // a pending frame may still land
+  const n = await count();
+  await page.waitForTimeout(1500);
+  expect(await count()).toBe(n); // a settled pool costs nothing
+});
+
+test('dust runs again after going to an essay and coming back', async ({ page }) => {
+  await page.goto('/writing');
+  const d = page.locator('canvas.dust');
+  await expect(d).toHaveAttribute('data-dust', 'running');
+  await page.locator('[data-slug="quiet-singularity"] .piece-link').click();
+  await expect(page).toHaveURL(/\/writing\/quiet-singularity/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/writing\/?$/);
+  await expect(page.locator('canvas.dust')).toHaveAttribute('data-dust', 'running');
 });
 
 test('once settled and dust paused, nothing at all schedules frames', async ({ page }) => {
@@ -58,7 +77,8 @@ test('once settled and dust paused, nothing at all schedules frames', async ({ p
     window.requestAnimationFrame = (cb) => { (window as any).__n++; return raf(cb); };
   });
   await page.goto('/writing');
-  await page.waitForTimeout(3500);
+  let last = await pool(page); // the fade-in takes a couple of seconds; wait for it to finish
+  await expect.poll(async () => { const p = await pool(page); const same = p.i === last.i; last = p; return same; }, { timeout: 15000, intervals: [600] }).toBe(true);
   await page.evaluate(() => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
   await expect(page.locator('canvas.dust')).toHaveAttribute('data-dust', 'paused');
   await page.waitForTimeout(300);
