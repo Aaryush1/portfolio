@@ -23,7 +23,7 @@ const { title = site.title, description = site.description, ogImage = '/og/home.
     <meta name="color-scheme" content="dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <Seo title={title} description={description} ogImage={ogImage} path={path} />
-    <script is:inline>document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {}</script>
+    <script is:inline>document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {} try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { var f = 0; try { f = sessionStorage.getItem('mark-played'); sessionStorage.setItem('mark-played', '1'); } catch (e) {} if (!f) document.documentElement.classList.add('mark-first'); } } catch (e) {}</script>
     <slot name="head" />
   </head>
   <body class={bodyClass} data-home-title={site.title}>

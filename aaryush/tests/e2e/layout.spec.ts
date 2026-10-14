@@ -35,12 +35,18 @@ test('header mark links home and has an accessible name', async ({ page }) => {
   const mark = page.locator('header .mark');
   await expect(mark).toHaveAttribute('href', '/');
   await expect(mark).toHaveAccessibleName(/Aaryush Gupta/);
-  await expect(mark.locator('.mark-sq')).toHaveCount(0);
   await expect(mark.locator('svg')).toHaveCount(1);
+  await expect(mark.locator('svg .stop')).toHaveCount(1);
+  await expect(mark.locator('svg rect')).toHaveCount(0);
 });
 
 test('favicon is served', async ({ request }) => {
   const res = await request.get('/favicon.svg');
   expect(res.status()).toBe(200);
-  expect(await res.text()).toContain('<svg');
+  const svg = await res.text();
+  expect(svg).toContain('<svg');
+  // new "ag." mark: amber full stop circle plus glyph outlines; fails against the old Node favicon
+  expect(svg).toMatch(/<circle[^>]*fill="#F2B544"/);
+  expect(svg).toMatch(/<path[^>]*fill="#E6E7EA"[^>]*d="M[^"]{200,}"/);
+  expect(svg).not.toContain('<rect x="2.5"');
 });
