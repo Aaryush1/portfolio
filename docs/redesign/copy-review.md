@@ -225,7 +225,7 @@ Lead:
 
 Nine files are drafts. Each shows the frontmatter text fields (everything that renders as copy) and the body in full. Fields like `name`, `role`, `start`, `end`, `order`, `company`, `diagram`, `legend` kinds and `ogDescription` are listed where they affect what a visitor reads. Edit the quoted text in place.
 
-Not drafts (already approved, no action): `systems/skale-platform.md`, `systems/smartbenai.md`, `systems/univise.md`, `writing/bigger-than-electricity.md`, `writing/quiet-singularity.md`.
+Not drafts (already approved, no action): `systems/smartbenai.md`, `systems/univise.md`, `writing/bigger-than-electricity.md`, `writing/quiet-singularity.md`.
 
 ### 6.1 Gupta Advisory
 
@@ -355,7 +355,7 @@ Note: the last paragraph repeats the footer lead (section 10) almost word for wo
 
 **Body:**
 
-> We set out to reconstruct what hiring is as a whole. The resume has been the standard for decades, but it's a flat, low-resolution signal of what a person can actually do. We used higher-dimensional embedding models to capture real capability: not keywords on a page, but what someone is genuinely able to contribute.
+> We set out to reconstruct what hiring is as a whole. The resume has been the standard for centuries, but it's a flat, low-resolution signal of what a person can actually do. We used higher-dimensional embedding models to capture real capability: not keywords on a page, but what someone is genuinely able to contribute.
 >
 > The platform covered everything a career needs: understand how to be better, upskill, and find the right opportunities. The business model was white-label and enterprise hiring.
 >
@@ -548,6 +548,33 @@ Note: the last paragraph repeats the footer lead (section 10) almost word for wo
 > Automation handles the volume and humans handle judgment. Confidence scoring flags low-certainty items for human review automatically, and the whole system was built around healthcare privacy requirements from day one.
 >
 > The result is clean, structured data with human oversight where it matters. Automation enhances accuracy instead of introducing risk.
+
+### 6.12 Skale.win: Career platform (rewritten after review round 1; draft)
+
+**Source:** `aaryush/src/content/systems/skale-platform.md` (has the technical diagram)
+
+**summary:**
+
+> AI interviews tailored to the job you want, feedback after every one, and a skills model that recommends jobs and aims the next interview at where you need the most help.
+
+**caption:**
+
+> Every interview sharpens the profile, and the person.
+
+**facts:**
+
+- Job data: Perplexity, structured from a job link
+- Voice loop: Speech to text → OpenRouter → text to speech, under 500ms a turn
+- Profile: Skills and preference embeddings
+- Model: White-label & enterprise hiring
+
+**Body:**
+
+> Hiring runs on resumes: a flat, low-resolution signal of what someone can actually do.
+>
+> The platform started with an AI interview, a quick five minutes or a full thirty. A job link went through Perplexity and came back as structured requirements; without one, an industry or nothing at all was enough. The interview itself ran as a voice loop, speech to text into a model on OpenRouter and back out as speech, in under 500 milliseconds a turn, and every answer reshaped the next question. Each interview was scored on core competencies plus categories generated for that conversation, and the results became specific, actionable feedback and an embedded profile of the person's skills and preferences.
+>
+> That model recommended jobs and aimed the next interview at the weak spots. The more someone used it, the sharper their profile got, and the better they got.
 
 ---
 
