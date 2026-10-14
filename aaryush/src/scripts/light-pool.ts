@@ -3,8 +3,6 @@
  * frame loop stops the moment it has settled, so a still room costs nothing. Every aim* call restarts it.
  * State is mirrored as --pool-x/-y/-s/-i on .room (registered non-inheriting, so writing them is cheap).
  */
-import { currentDaypart } from '../lib/daypart';
-import { roomLight } from '../lib/room-light';
 
 type MoveCb = (x: number, y: number, i: number, s: number) => void;
 
@@ -104,15 +102,6 @@ export function onMove(cb: MoveCb): () => void {
 }
 
 if (room && poolEl) {
-  const light = roomLight(currentDaypart(document.documentElement));
-  room.dataset.daypart = currentDaypart(document.documentElement);
-  room.style.setProperty('--window-rgb', light.windowColor.join(', '));
-  room.style.setProperty('--window-alpha', String(light.windowAlpha));
-  room.style.setProperty('--pool-peak', String(light.poolPeak));
-  room.style.setProperty('--shadow-x', `${light.windowOffset.x}px`);
-  room.style.setProperty('--shadow-y', `${light.windowOffset.y}px`);
-  room.style.setProperty('--shadow-blur', `${light.shadowBlur}px`);
-
   document.addEventListener('piece:lit', (e) => {
     const el = (e as CustomEvent<{ el?: Element }>).detail?.el;
     if (el) aimAt(el, 1, 1);

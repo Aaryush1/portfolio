@@ -4,7 +4,8 @@
 // from the previous hero drawing; tests/e2e/hero.spec.ts depends on it.
 // The look follows the visitor's local hour (src/lib/daypart.ts, spec E5).
 
-import { daypartFor, fieldParams, isDaypart, nextPreview, type Daypart, type FieldParams, type Rgba } from '../lib/daypart';
+import { daypartFor, fieldParams, isDaypart, type Daypart, type FieldParams, type Rgba } from '../lib/daypart';
+import { getOverride } from './daypart-override';
 
 const hero = document.getElementById('hero');
 const cv = document.getElementById('field') as HTMLCanvasElement | null;
@@ -84,18 +85,18 @@ if (hero && cv && ctx) {
   let visible = true, ready = false;
 
   // ---------- day period (E5) ----------
-  let preview: Daypart | null = null;
   let part: Daypart | null = null;
   let params: FieldParams = fieldParams('afternoon');
   let minorStroke = '', majorStroke = '', amberStroke = '', warmStroke = '';
   let minorLevels: number[] = [], majorLevels: number[] = [];
   let tag: HTMLElement | null = null, tagTimer = 0;
 
-  // Precedence: keyboard preview, then data-daypart on <html> (tests), then ?daypart= (dev builds only), then the clock.
+  // Precedence: data-daypart on <html> (tests), then the shared `t` preview, then ?daypart= (dev builds only), then the clock.
   function resolvePart(): Daypart {
-    if (preview) return preview;
     const forced = root.getAttribute('data-daypart');
     if (isDaypart(forced)) return forced;
+    const override = getOverride();
+    if (override) return override;
     if (import.meta.env.DEV) {
       const q = new URLSearchParams(location.search).get('daypart');
       if (isDaypart(q)) return q;
@@ -131,14 +132,11 @@ if (hero && cv && ctx) {
     tagTimer = window.setTimeout(() => { el.remove(); if (tag === el) tag = null; }, 2200);
   }
 
-  // Task 23's keyboard map calls this on `t`: morning, afternoon, evening, night, then auto.
-  (window as unknown as { __heroDaypart?: () => string }).__heroDaypart = () => {
-    preview = nextPreview(preview);
+  // The shared `t` preview (daypart-override.ts) announces each step; the field follows and shows its label.
+  document.addEventListener('daypart:change', (e) => {
     applyPart();
-    const name = preview ?? 'auto';
-    showTag(name);
-    return name;
-  };
+    showTag((e as CustomEvent<{ name: string }>).detail.name);
+  });
 
   cv.dataset.running = 'false';
 

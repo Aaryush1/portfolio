@@ -815,7 +815,7 @@ Edited version (leave blank to keep):
 
 ### 14b. Keyboard map labels
 
-Opened with `?`. The last row appears only when the hero's time preview exists.
+Opened with `?`. The last row appears only on pages with a time-of-day preview (the home field and the writing room).
 
 Current:
 
@@ -826,7 +826,7 @@ Current:
 - g w : Go to work
 - g r : Go to writing
 - g c : Go to contact
-- t : Step the field through the day
+- t : Step the time of day
 
 Edits:
 

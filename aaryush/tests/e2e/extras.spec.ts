@@ -180,7 +180,7 @@ test.describe('E2 keyboard map', () => {
     await page.goto('/');
     await page.keyboard.press('?');
     await expect(map(page)).toBeVisible();
-    await expect(map(page).getByText('Step the field')).toBeVisible();
+    await expect(map(page).getByText('Step the time of day')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(map(page)).toBeHidden();
     await page.keyboard.press('t');
@@ -189,9 +189,9 @@ test.describe('E2 keyboard map', () => {
 
   test('t does nothing while the map is open, and with no hook the row is hidden', async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => { delete (window as any).__heroDaypart; });
+    await page.evaluate(() => { delete (window as any).__heroDaypart; delete (window as any).__daypart; });
     await page.keyboard.press('?');
-    await expect(map(page).getByText('Step the field')).toBeHidden();
+    await expect(map(page).getByText('Step the time of day')).toBeHidden();
     await page.keyboard.press('Escape');
     const before = await page.locator('#field').getAttribute('data-daypart');
     await page.keyboard.press('t'); // no hook: must not throw

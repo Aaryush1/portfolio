@@ -35,7 +35,7 @@ export const keyMap = {
     { keys: 'g r', action: 'Go to writing' },
     { keys: 'g c', action: 'Go to contact' },
   ],
-  time: { keys: 't', action: 'Step the field through the day' },
+  time: { keys: 't', action: 'Step the time of day' },
 } as const;
 
 /** Draft copy for the 404 page (copy review sections 12 and 14). */

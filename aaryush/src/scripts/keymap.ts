@@ -7,8 +7,10 @@ if (dialog && !(window as unknown as Record<string, unknown>).__agKeys) {
 }
 
 type TimeHook = () => void;
+// Any page with a daypart consumer (home field, writing room) installs window.__daypart; __heroDaypart is an alias.
 const timeHook = (): TimeHook | null => {
-  const f = (window as unknown as { __heroDaypart?: unknown }).__heroDaypart;
+  const w = window as unknown as { __daypart?: { cycle?: unknown }; __heroDaypart?: unknown };
+  const f = typeof w.__daypart?.cycle === 'function' ? w.__daypart.cycle : w.__heroDaypart;
   return typeof f === 'function' ? (f as TimeHook) : null;
 };
 

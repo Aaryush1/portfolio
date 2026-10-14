@@ -114,3 +114,12 @@ describe('currentDaypart', () => {
     expect(currentDaypart(root(), new Date(NaN))).toBe('afternoon');
   });
 });
+
+describe('currentDaypart with a preview override', () => {
+  const root = (attr?: string) => ({ getAttribute: () => attr ?? null }) as unknown as Element;
+  it('uses the override over the clock, and the data-daypart hook over both', () => {
+    expect(currentDaypart(root(), new Date(2026, 9, 14, 13), 'night')).toBe('night');
+    expect(currentDaypart(root('morning'), new Date(2026, 9, 14, 13), 'night')).toBe('morning');
+    expect(currentDaypart(root(), new Date(2026, 9, 14, 13), null)).toBe('afternoon');
+  });
+});
