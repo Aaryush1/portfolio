@@ -124,9 +124,16 @@ html.locked .bg i{animation-play-state:paused} /* a pop-up covers the page: stop
 .more:hover{color:#fff}
 .more:hover svg{transform:translateX(4px)}
 
-/* writing teaser memory (Task 8): the ribbon is absolute, so nothing shifts when it appears */
-#writing .post .ribbon{position:absolute;left:0;top:26px;bottom:26px;width:2px;height:auto;border-radius:1px;background:var(--accent);pointer-events:none}
-@media(min-width:900px){#writing .post .ribbon{left:2px}}
+/* writing teaser memory: hover devices get an amber ribbon in the margin, shown only while the pick-up link is hovered or focused;
+   touch devices get a small dot beside the date instead. Neither is ever inside the title's box. */
+#writing .post .ribbon{position:absolute;left:-12px;top:26px;height:calc((100% - 52px) * var(--rib,1));width:2px;border-radius:1px;background:var(--accent);pointer-events:none;opacity:0;transition:opacity .25s var(--ease)}
+@media(min-width:900px){#writing .post .ribbon{left:4px}}
+#writing .post.show-rib .ribbon{opacity:1}
+@media(prefers-reduced-motion:reduce){#writing .post .ribbon{transition:none}}
+@media(hover:none){
+  #writing .post .ribbon{display:none}
+  #writing .post.seen time::after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;border-radius:50%;background:var(--accent);vertical-align:middle}
+}
 .more-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 28px}
 .pickup-home{margin-top:16px;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
 .pickup-home[hidden]{display:none}

@@ -1,9 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { notFound } from '../data/console';
+import '../styles/writing-room.css';
 ---
 <BaseLayout title="Sheet not in set — Aaryush Gupta" description="This page doesn't exist." ogImage="/og/home.png" path="/404">
-  <main class="sec"><div class="wrap">
+  <script slot="head" is:inline>if (location.pathname.indexOf('/writing/') === 0) document.documentElement.setAttribute('data-room404', '');</script>
+  <main class="sec site404"><div class="wrap">
     <div class="sec-head mono"><span class="n">§ 404</span><span>{notFound.strip}</span><span class="f">Sheet — / —</span></div>
     <h1 class="h2" style="margin-top:44px">{notFound.heading}</h1>
     <ol class="register" data-register>
@@ -12,7 +14,29 @@ import { notFound } from '../data/console';
       ))}
     </ol>
   </div></main>
+  <main class="sec room room404" data-daypart="afternoon">
+    <div class="light" aria-hidden="true"><div class="window"><i></i><i></i></div><div class="pool"><i></i><i></i></div><canvas class="dust" data-dust="paused"></canvas></div>
+    <div class="wrap">
+      <header class="room-head"><h1 class="room-kicker mono">Not on the desk.</h1></header>
+      <div class="desk-wrap">
+        <div class="crumple" aria-hidden="true"><span class="shade"></span><span class="body"><i class="f1"></i><i class="f2"></i><i class="f3"></i><i class="f4"></i></span></div>
+        <p class="back"><a href="/writing">Back to the desk</a></p>
+      </div>
+    </div>
+  </main>
 </BaseLayout>
+<script>
+  if (location.pathname.indexOf('/writing/') === 0) {
+    document.title = 'Not on the desk — Aaryush Gupta';
+    document.documentElement.setAttribute('data-room404', '');
+    import('../scripts/light-pool').then(({ aimAt }) => {
+      const c = document.querySelector('.crumple');
+      if (c) aimAt(c, 1, 1);
+    });
+    import('../scripts/room-clock');
+    import('../scripts/dust');
+  }
+</script>
 <script>
   import { notFound } from '../data/console';
   import { displayPath, insertIndex } from '../lib/sheet404';
@@ -36,6 +60,23 @@ import { notFound } from '../data/console';
     list.insertBefore(li, rows[at] ?? null);
   }
 </script>
+<style is:global>
+.room404{display:none}
+html[data-room404] .room404{display:block}
+html[data-room404] .site404{display:none}
+.room404 .desk-wrap{display:grid;justify-items:center;gap:40px;padding:90px 0 200px}
+.crumple{position:relative;width:150px;height:128px;margin-top:40px}
+.crumple .shade{position:absolute;inset:10% 6% 0;background:#000;border-radius:40%;filter:blur(calc(var(--shadow-blur,24px) + 2px));opacity:.6;transform:translate(calc(12px + var(--shadow-x,0px)),calc(18px + var(--shadow-y,0px)))}
+.crumple .body{position:absolute;inset:0;background:#2a2c34;clip-path:polygon(8% 30%,22% 6%,46% 14%,70% 2%,92% 24%,98% 52%,86% 82%,62% 98%,36% 90%,12% 94%,2% 62%)}
+.crumple i{position:absolute;inset:0}
+.crumple .f1{background:#3a3c45;clip-path:polygon(22% 6%,46% 14%,40% 46%,8% 30%)}
+.crumple .f2{background:#1e2026;clip-path:polygon(46% 14%,70% 2%,92% 24%,58% 50%,40% 46%)}
+.crumple .f3{background:#32343c;clip-path:polygon(40% 46%,58% 50%,98% 52%,86% 82%,62% 98%,36% 90%)}
+.crumple .f4{background:#24262d;clip-path:polygon(8% 30%,40% 46%,36% 90%,12% 94%,2% 62%)}
+.room404 .back{margin:0;position:relative;z-index:2}
+.room404 .back a{display:inline-block;min-height:44px;padding:12px 4px;font:400 13px/1.4 var(--mono);letter-spacing:.06em;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--line-2)}
+.room404 .back a:hover,.room404 .back a:focus-visible{color:#fff;border-color:var(--accent)}
+</style>
 <style>
 .register{list-style:none;margin:44px 0 0;padding:0;max-width:34rem;border:1px solid var(--line-2)}
 .register :global(li){display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:0 14px;border-top:1px solid var(--line);font:400 13px/1.4 var(--mono)}

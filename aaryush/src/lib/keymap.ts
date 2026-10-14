@@ -84,3 +84,19 @@ export function createTypedSequence(word: string, opts: { now?: () => number; ga
     },
   };
 }
+
+/**
+ * Arrow keys on the writing desk (E15). `current` is the index of the lit piece in visual order, -1 for none.
+ * Same guards as every shortcut, and a pop-up blocks it too. The ends stop rather than wrap.
+ */
+export function deskKey(e: KeyInput, count: number, current: number): { to: number } | { open: number } | null {
+  if (count <= 0 || shortcutBlocked(e) || e.popupOpen) return null;
+  switch (e.key) {
+    case 'ArrowRight': return { to: current < 0 ? 0 : Math.min(current + 1, count - 1) };
+    case 'ArrowLeft': return { to: current < 0 ? count - 1 : Math.max(current - 1, 0) };
+    case 'Home': return { to: 0 };
+    case 'End': return { to: count - 1 };
+    case 'Enter': return current >= 0 ? { open: current } : null;
+    default: return null;
+  }
+}

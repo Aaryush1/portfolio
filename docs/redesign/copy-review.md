@@ -996,6 +996,41 @@ Edits:
 
 ---
 
+## 17. Revision block and the writing room's 404
+
+### 17a. Revision block (E14)
+
+Source: `aaryush/src/data/revisions.ts`, shown from the hero title block's "Last deploy" cell.
+
+**Approved by Aaryush 2026-10-14** (exact text; dates are year.month only):
+
+| Rev | Date | Description |
+| --- | --- | --- |
+| G | 2026.10 | A contact card that remembers where you met. |
+| F | 2026.10 | The writing room. |
+| E | 2026.10 | The hero learns to rearrange itself. |
+| D | 2026.10 | Topography and light replace the grid. A new mark. |
+| C | 2026.10 | Redrawn as a set of sheets. Systems you can open. |
+| B | 2026.02 | Repositioned around AI. The writing begins. |
+| A | 2025.08 | Rebuilt in Astro. Works on phones. |
+
+Column headers (Rev, Date, Description) come from the spec.
+
+### 17b. The writing room's 404 (E16)
+
+Source: `aaryush/src/pages/404.astro` (the room shows only for /writing/<unknown>). Draft, written by Claude, not yet approved.
+
+- Heading (the page's only h1, small and quiet like the desk's kicker): Not on the desk.
+- Link: Back to the desk (from the spec)
+
+Edits:
+
+```
+(any changes)
+```
+
+---
+
 ## Sign-off
 
 - [ ] I have reviewed every block above.

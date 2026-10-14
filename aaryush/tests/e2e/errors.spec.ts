@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-for (const path of ['/work/does-not-exist', '/writing/nope', '/definitely/not/here']) {
+for (const path of ['/work/does-not-exist', '/definitely/not/here']) {
   test(`${path} shows the designed 404`, async ({ page }) => {
     const res = await page.goto(path);
     expect(res?.status()).toBe(404);

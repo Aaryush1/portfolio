@@ -32,6 +32,9 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | **Type `ag.`** | Every page, outside text fields | The header logo draws itself on again. | ✅ |
 | **The lamp warms while you read** | Essay pages | The warm light behind the page grows, very slowly, the longer you read. It never touches the text. | ✅ |
 | **Signed prints** | Home, Ctrl+P | The printed drawing sheet carries a small pencil "ag." in its title block. | ✅ |
+| **The revision block** | Home hero, desktop | Click (or Tab to and press Enter on) the "Last deploy" cell of the title block. A drawing-style revision block opens with Rev · Date · Description, newest first. Esc, an outside click, or a second click closes it. | ✅ |
+| **Arrow keys walk the desk** | /writing | With no text field focused, ← and → move the light and the keyboard focus from piece to piece, Home and End jump to the ends, and Enter opens the lit piece. Under reduced motion the light jumps. | ✅ |
+| **The writing room's own 404** | /writing/anything-unknown | The dim desk in the current daypart's light, one crumpled sheet in the pool of light, and a quiet "Back to the desk". The status is a real 404. | ✅ |
 
 ## Adding a new one
 

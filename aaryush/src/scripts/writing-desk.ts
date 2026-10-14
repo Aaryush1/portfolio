@@ -3,7 +3,9 @@
  * Everything visual is CSS; this only sets classes, a little pointer tilt, and announces piece:lit / piece:unlit.
  * CSS hover/:has(:focus-visible) already covers the case where this script never runs.
  */
+import { deskKey, isEditableTarget } from '../lib/keymap';
 import { nearestToCenter } from '../lib/room-light';
+import { aimAt } from './light-pool';
 import { lastOpened, noteLast } from '../lib/writing-memory';
 import { canWalk, clearWalk, isWalking, prefetchPiece, walkIn } from './walk-in';
 
@@ -109,3 +111,36 @@ function restoreFocus() {
 const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
 if (nav?.type === 'back_forward') restoreFocus();
 addEventListener('pageshow', (e) => { if (e.persisted) { clearWalk(); restoreFocus(); } });
+
+// E15: arrow keys walk the desk. Left and right move the light and the keyboard focus through the pieces in visual (DOM)
+// order, Home and End jump to the ends, and Enter opens the lit piece when focus is not already on its link (which opens
+// natively). It sits beside Tab, not instead of it, and only acts when focus is on the page itself or on a piece.
+document.addEventListener('keydown', (e) => {
+  if (e.defaultPrevented) return;
+  const t = e.target as Element | null;
+  if (t && t !== document.body && t !== document.documentElement && !t.closest('[data-piece]')) return;
+  const focused = pieces.findIndex((p) => p.contains(document.activeElement));
+  const current = focused >= 0 ? focused : pieces.findIndex((p) => p.classList.contains('is-open'));
+  const move = deskKey({
+    key: e.key, ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey, isComposing: e.isComposing, keyCode: e.keyCode,
+    editable: isEditableTarget(e.target),
+    popupOpen: !!document.querySelector('dialog[open]'),
+    mapOpen: !!(document.getElementById('keymap') as HTMLDialogElement | null)?.open,
+  }, pieces.length, current);
+  if (!move) return;
+  if ('open' in move) {
+    if (t?.closest('a, button')) return; // native Enter on the focused link
+    e.preventDefault();
+    pieces[move.open].querySelector<HTMLAnchorElement>('.piece-link')?.click();
+    return;
+  }
+  e.preventDefault();
+  const el = pieces[move.to];
+  const link = el.querySelector<HTMLAnchorElement>('.piece-link');
+  if (!link) return;
+  link.focus({ preventScroll: true });
+  light(el);
+  aimAt(el, 1, 1);
+  const r = el.getBoundingClientRect();
+  if (r.bottom < 0 || r.top > innerHeight) el.scrollIntoView({ block: 'center', behavior: reduce.matches ? 'auto' : 'smooth' });
+});

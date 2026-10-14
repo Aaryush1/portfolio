@@ -123,7 +123,12 @@ if (rows.length) {
   for (const row of rows) {
     const s = row.dataset.slug ?? '';
     if (!pickup(s, Number(row.dataset.total) || 0)) continue;
-    row.appendChild(ribbon());
+    const r = ribbon();
+    const e = mem.pieces[s];
+    const total = Number(row.dataset.total) || 0;
+    r.style.setProperty('--rib', String(e && total > 0 ? Math.min(1, (e.sec + 1) / total) : 1));
+    row.appendChild(r);
+    row.classList.add('seen');
     const t = mem.pieces[s]?.t ?? 0;
     if (!best || t > best.t) best = { row, t };
   }
@@ -133,6 +138,14 @@ if (rows.length) {
     link.textContent = 'Pick up where you left off';
     link.setAttribute('aria-label', `Pick up where you left off: ${best.row.dataset.title ?? ''}`);
     link.hidden = false;
+    // the ribbon (hover devices) shows only while the link is hovered or focused
+    const target = best.row;
+    const show = () => target.classList.add('show-rib');
+    const hide = () => target.classList.remove('show-rib');
+    link.addEventListener('pointerenter', show);
+    link.addEventListener('pointerleave', hide);
+    link.addEventListener('focus', show);
+    link.addEventListener('blur', hide);
   }
 }
 

@@ -1,6 +1,7 @@
 ---
 import ContactActions from '../ContactActions.astro';
 import TitleBlock from './TitleBlock.astro';
+import RevisionBlock from './RevisionBlock.astro';
 import { site } from '../../data/site';
 const { lead, subjects, settled, lede } = site.hero;
 const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em>${settled.after}</span>`;
@@ -33,6 +34,7 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
   </div>
   <div class="wrap hero-foot enter d5">
     <TitleBlock />
+    <RevisionBlock />
   </div>
   <div class="ruler" aria-hidden="true"></div>
 </section>

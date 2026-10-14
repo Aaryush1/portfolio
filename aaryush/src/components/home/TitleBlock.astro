@@ -7,6 +7,7 @@ const { sheet } = site;
 const date = lastDeploy();
 const sha = lastCommit();
 // The drawing-sheet title block: five rows, shared by the hero (screen) and the printed sheet (print.css restyles it).
+// E14: the cell takes focus and opens the revision block (scripts/revisions.ts). It has no role of its own, because a role on a dl row breaks the list.
 // E10: the commit is revealed on hover or focus. It always takes its space (opacity only), so nothing moves.
 // E13: the printed sheet adds a print-only "Signed" cell with the pencil-grey mark.
 ---
@@ -14,8 +15,8 @@ const sha = lastCommit();
   <div><dt>Dwg. no.</dt><dd>{sheet.dwg}</dd></div>
   <div><dt>Sheet</dt><dd>{sheet.sheet}</dd></div>
   <div><dt>Region</dt><dd>{sheet.region}</dd></div>
-  <div class:list={['dep']} role={sha ? 'group' : undefined} tabindex={sha ? 0 : undefined} aria-label={sha ? `Last deploy ${date}, commit ${sha}` : undefined}>
-    <dt>Last deploy</dt><dd>{date}{sha && <span class="sha" aria-hidden="true"> · {sha}</span>}</dd>
+  <div class="dep" tabindex="0">
+    <dt>Last deploy</dt><dd>{date}{sha && <span class="sha"> · {sha}</span>}</dd>
   </div>
   <div><dt>Scale</dt><dd>{sheet.scale}</dd></div>
   {signed && <div class="signed print-only"><dt>Signed</dt><dd><Mark signature maskId="mark-sign" size={22} /></dd></div>}

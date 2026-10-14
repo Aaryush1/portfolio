@@ -74,9 +74,9 @@ test.describe('E9 "Save contact" becomes "Saved."', () => {
 test.describe('E10 the deploy hash', () => {
   test('Last deploy is named with the build commit, and that commit is the real short SHA', async ({ page }) => {
     await page.goto('/');
-    // located by place, not role: E14's revision script turns the same cell into a button
+    // located by place, not role. The cell has no role (a role on a dl row fails axe); its text carries the date and commit.
     const cell = page.locator('#hero .dep');
-    await expect(cell).toHaveAccessibleName(`Last deploy ${new Date().getFullYear()}.${String(new Date().getMonth() + 1).padStart(2, '0')}, commit ${gitShort()}`);
+    await expect(cell).toContainText(`${new Date().getFullYear()}.${String(new Date().getMonth() + 1).padStart(2, '0')} · ${gitShort()}`);
   });
 
   test('focus and hover reveal the hash, and nothing around it moves', async ({ page }) => {
