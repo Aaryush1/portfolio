@@ -115,9 +115,9 @@ Each feature works without JavaScript, or degrades to nothing. Each respects `pr
 - **The person who scans:**
   - They land on the home page as normal, and nothing on the page announces the context.
   - The params are read once, kept in `sessionStorage`, and stripped from the address bar with `history.replaceState`, so they don't end up in shared links.
-  - Any "Save contact" button then builds the vCard at runtime. It has the usual fields: name, email and phone assembled from parts, as today, plus the URL. It adds a `NOTE`, for example: "Met at Madison AI Week · Tue, Oct 14, 2026 · Talked about: Engineering loop (aaryush.com/work/ready-rebound-loop)".
+  - Any "Save contact" button then builds the vCard at runtime. It has the usual fields: name, email and phone assembled from parts, as today, plus the URL. It adds a `NOTE`, for example: "Met at Madison AI Week · Tue, Oct 14, 2026 · Talked about: Engineering loop, pricing AI agents". Topic chips appear by name only; the note contains no links.
   - The date comes from the scanner's device at save time.
-  - Without params, the vCard still gets "Saved Tue, Oct 14, 2026 from aaryush.com".
+  - Without params, the vCard still gets "Saved Tue, Oct 14, 2026".
 - **No follow-up nudge:** the note never tells them what to write.
 - **Acceptance criteria:**
   - **Escaping:** the `note` value follows the same rules as `where`, but is capped at 80 characters. The `where` value is trimmed, capped at 60 characters and vCard-escaped. Backslash, comma, semicolon and newline are escaped per RFC 6350.
