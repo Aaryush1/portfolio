@@ -801,22 +801,35 @@ Edits:
 
 ### 14a. Console note
 
-Shown once per page load when DevTools is open. The ASCII drawing is the Engineering loop (ticket, spec and decisions, implement and review, docs, PR, browser QA, back to a person).
+Shown once per page load when DevTools is open. The ASCII drawing is the approved conversation loop: an idea, a conversation, spec, build and review, "not quite.", shipped.
 
-Current:
+**Approved by Aaryush 2026-10-14.** Replaces the earlier draft (under 8 lines, the Engineering loop). No contact details.
 
 ```
 Hello, fellow inspector.
-This site is built the way I build most things: a ticket, a spec, a loop of build and review, and a person at both ends.
-The loop is below. Nothing on this page phones home.
+
+This site was built by talking.
+No tickets. An idea, a conversation, and Claude, which asked
+questions, drew options, built them, reviewed its own work,
+and tried again until it felt right.
+Most of the best parts came out of the back-and-forth.
+
 Press ? for the keyboard map.
 — ag.
-```
 
-Edited version (leave blank to keep):
-
-```
-(your text; keep it under 8 lines, no contact details)
+   an idea
+      |
+      v
+   a conversation <--------------+
+      |                          |
+      v                          |
+   spec --> build <==> review    |
+                 |               |
+                 v               |
+           "not quite." ---------+
+                 |
+                 v
+              shipped
 ```
 
 ### 14b. Keyboard map labels

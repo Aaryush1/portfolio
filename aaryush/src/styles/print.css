@@ -91,4 +91,11 @@ html:has(body.home){page:home}
   body.home.home .tblock > div:first-child{border-left:0}
   body.home.home .tblock dt{font:400 5.5pt/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase}
   body.home.home .tblock dd{margin-top:1.5pt;font:400 8pt/1.3 var(--mono);letter-spacing:.02em}
+  /* E13: the signed sheet has a sixth, pencil-grey cell. The mark is always fully drawn on paper (no JS draw-on). */
+  body.home.home .tblock--signed{grid-template-columns:repeat(6,auto)}
+  body.home.home .tblock .signed{display:block}
+  body.home.home .tblock .signed .mark-svg{color:#6b6b6b !important}
+  body.home.home .tblock .signed .mark-svg .pen,body.home.home .tblock .signed .mark-svg .rule{stroke-dashoffset:0 !important}
+  body.home.home .tblock .signed .mark-svg .stop{transform:none !important;fill:#6b6b6b !important}
+  body.home.home .tblock .signed dd{padding-top:1pt}
 }

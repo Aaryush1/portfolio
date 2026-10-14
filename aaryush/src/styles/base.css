@@ -38,6 +38,10 @@ svg{display:block}
 @media (max-width:759px){.bg .l1{left:55%}}
 .bg .grain{position:absolute;inset:0;background:url(/grain.png) 0 0/160px 160px;opacity:.4}
 .essay-page .bg .grain{opacity:.22}
+/* E12: the warm light grows with reading (--warm, set by scripts/lamp.ts): its gradient alpha rises by up to 6% at full.
+   Opacity cannot go past 1, so the strength is written into the gradient. Background only, never text. */
+.essay-page .bg .l1{--lamp:calc(1 + var(--warm,0) * .06);
+  background:radial-gradient(closest-side, rgba(255,214,150,calc(.085 * var(--lamp))), rgba(255,214,150,calc(.029 * var(--lamp))) 50%, rgba(255,214,150,0))}
 @keyframes drift-a{from{transform:translate(-7vw,-8vh) scale(4)}to{transform:translate(7vw,8vh) scale(4)}}
 @keyframes drift-b{from{transform:translate(9vw,-6vh) scale(4)}to{transform:translate(-9vw,6vh) scale(4)}}
 @keyframes drift-c{from{transform:translate(-20vw,0) scale(4)}to{transform:translate(20vw,0) scale(4)}}

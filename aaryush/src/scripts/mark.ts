@@ -1,6 +1,9 @@
 // Header mark "ag.": replays the draw-on animation on hover/focus of the home link, and tidies up the
 // first-visit state. The first-visit class (html.mark-first) is decided synchronously in BaseLayout's head
 // script so the mark never flashes drawn-then-blank. See Mark.astro for the animation itself.
+// E11: typing `ag.` anywhere (outside text fields) replays the same draw-on. Unexplained, and nothing under reduced motion.
+import { onTypedWord } from './typed-words';
+
 const root = document.documentElement;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -40,6 +43,7 @@ function init() {
 
   if (matchMedia('(hover: hover) and (pointer: fine)').matches) link.addEventListener('pointerenter', play);
   link.addEventListener('focus', () => { if (link.matches(':focus-visible')) play(); });
+  onTypedWord('ag.', play);
 }
 
 init();

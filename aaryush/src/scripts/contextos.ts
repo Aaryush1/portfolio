@@ -4,8 +4,8 @@
  * morph (./morph). Repeats while it runs are ignored. Reduced motion: the caret stays still, and the word takes one
  * instant amber tint instead. Nothing announces either part.
  */
-import { createTypedSequence, isEditableTarget } from '../lib/keymap';
 import { changedLetters, morphTiming } from '../lib/morph-timing';
+import { onTypedWord } from './typed-words';
 import { createMorph } from './morph';
 
 const WORD = 'contextOS';
@@ -61,21 +61,6 @@ if (line && word && dot) {
     whenVisible(play);
   }
 
-  // The matcher applies the shared guards (fields, modifiers, composition) and treats any open dialog as blocking.
-  const seq = createTypedSequence(WORD);
-  document.addEventListener('keydown', (e) => {
-    if (e.repeat) return;
-    const hit = seq.handle({
-      key: e.key,
-      ctrlKey: e.ctrlKey,
-      metaKey: e.metaKey,
-      altKey: e.altKey,
-      isComposing: e.isComposing,
-      keyCode: e.keyCode,
-      editable: isEditableTarget(e.target),
-      popupOpen: !!document.querySelector('dialog[open]'),
-      mapOpen: false,
-    });
-    if (hit) trigger();
-  });
+  // The shared typed-word listener applies the guards (fields, modifiers, composition, open pop-ups).
+  onTypedWord(WORD, trigger);
 }

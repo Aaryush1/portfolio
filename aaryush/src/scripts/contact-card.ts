@@ -2,7 +2,30 @@
 // and builds the vCard at click time. Nothing here touches the network or localStorage.
 import { cleanMeet, hasMeetParams, parseMeet, stripMeetParams, type Known, type Meet } from '../lib/meet';
 import { buildNote, buildVCard, formatSavedDate } from '../lib/vcard';
+import { changedLetters, morphTiming } from '../lib/morph-timing';
+import { createMorph } from './morph';
 import { decode, emailOf, phoneOf } from './obf';
+
+// E9: after the download, "Save contact" morphs to "Saved." (the hero's shared-letter morph) and shows the saved state.
+const SAVE = 'Save contact';
+const SAVED = 'Saved.';
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Called only once the download has been triggered. Once per page load: a repeat click downloads again, quietly. */
+function markSaved(a: HTMLAnchorElement) {
+  if (a.classList.contains('is-saved')) return;
+  a.classList.add('is-saved');
+  a.setAttribute('aria-label', 'Contact saved');
+  const status = a.closest('.cta')?.querySelector('[data-save-status]');
+  if (status) status.textContent = 'Contact saved';
+  const slot = a.querySelector<HTMLElement>('.save-label');
+  if (!slot) return;
+  if (reducedMotion) { slot.textContent = SAVED; return; }
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#F2B544';
+  const morph = createMorph(slot, getComputedStyle(slot).color, accent);
+  morph.build([[SAVE, false]]); // the current label as letters, then morph it to the saved one
+  morph.transition([[SAVED, false]], true, morphTiming(changedLetters(SAVE, SAVED)));
+}
 
 const KEY = 'meet-context';
 
@@ -78,5 +101,6 @@ function download(url: string, filename: string) {
     } catch { return; } // fall back to the static .vcf
     e.preventDefault(); // only now: the card and its URL exist
     download(url, a.getAttribute('download') || 'contact.vcf');
+    markSaved(a); // E9: only after the download has been triggered
   });
 }

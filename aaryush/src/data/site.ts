@@ -57,4 +57,11 @@ export function lastDeploy(built = new Date()): string {
   return `${built.getFullYear()}.${String(built.getMonth() + 1).padStart(2, '0')}`;
 }
 
+// Replaced at build time by astro.config.mjs (Vite define). '' when git was unavailable, so the hash is simply absent.
+declare const __GIT_SHA__: string | undefined;
+/** Short git SHA of this build (E10): shown on hover or focus of "Last deploy". */
+export function lastCommit(): string {
+  return typeof __GIT_SHA__ === 'string' ? __GIT_SHA__ : '';
+}
+
 export type Site = typeof site;

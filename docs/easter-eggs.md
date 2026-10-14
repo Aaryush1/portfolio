@@ -13,7 +13,7 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | **Time preview** | Home and /writing | Press `t` to step through morning, afternoon, evening, night and back to auto. The override carries across pages for the session. | ✅ |
 | **Keyboard map** | Every page | Press `?`. | ✅ |
 | **Section shortcuts** | Every page | `g h` hero · `g l` How AI fits · `g w` work · `g r` writing · `g c` contact. | ✅ |
-| **Console note** | DevTools, every page | A note signed "— ag." with the engineering loop drawn in ASCII. | ✅ |
+| **Console note** | DevTools, every page | How this site was built, as a conversation. A note signed "— ag.", with the loop drawn in ASCII. | ✅ |
 | **404 as a missing sheet** | Any bad URL | "Sheet not in set." The requested path is struck through in the drawing register as "Not issued". | ✅ |
 | **Print as a drawing sheet** | Home, Ctrl+P | Prints a black-on-white drawing sheet with a title block. Contact details are assembled only while printing. | ✅ |
 | **A contact card that remembers where you met** | /qr, then Save contact | You type where you met and tap what you talked about. The QR redraws live, and the scanner's saved contact gets a note: "Met at … · date · Talked about …". | ✅ |
@@ -27,6 +27,11 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | **General notes** | Home hero, 9pm–7am (footer on phones) | Pencilled "GENERAL NOTES 1. It's past nine. 2. So are you." | ✅ |
 | **contextOS caret** | Home timeline, "Next" line | An amber caret blinks where the period was, as if the name is still being typed. | ✅ |
 | **Type `contextos`** | Home, anywhere outside text fields | The contextOS word re-types itself once with the hero's morph. | ✅ |
+| **"Save contact" becomes "Saved."** | Home hero and footer | After the vCard downloads, the label morphs to "Saved." with an amber hairline and a check. Back to normal on the next page load. | ✅ |
+| **The deploy hash** | Home hero title block, desktop | Hover or focus "Last deploy" to see the commit it was built from. | ✅ |
+| **Type `ag.`** | Every page, outside text fields | The header logo draws itself on again. | ✅ |
+| **The lamp warms while you read** | Essay pages | The warm light behind the page grows, very slowly, the longer you read. It never touches the text. | ✅ |
+| **Signed prints** | Home, Ctrl+P | The printed drawing sheet carries a small pencil "ag." in its title block. | ✅ |
 
 ## Adding a new one
 

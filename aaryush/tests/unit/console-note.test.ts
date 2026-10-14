@@ -2,15 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { consoleNote } from '../../src/data/console';
 import { buildNote, logNote } from '../../src/lib/console-note';
 
+// The approved console note (copy-review section 14, approved by Aaryush 2026-10-14).
 describe('console note', () => {
-  it('has under 8 lines of text, signs off, and points at the keyboard map', () => {
-    expect(consoleNote.text.length).toBeLessThan(8);
+  it('is the approved text, signed, and points at the keyboard map', () => {
+    expect(consoleNote.text[0]).toBe('Hello, fellow inspector.');
+    expect(consoleNote.text).toContain('This site was built by talking.');
+    expect(consoleNote.text).toContain('Press ? for the keyboard map.');
     expect(consoleNote.text.at(-1)).toBe('— ag.');
-    expect(consoleNote.text.join(' ')).toContain('?');
   });
-  it('draws the engineering loop', () => {
+  it('draws the approved conversation loop', () => {
     const art = consoleNote.art.join('\n');
-    for (const s of ['Ticket', 'Spec & decisions', 'Implement', 'Review', 'Docs', 'PR', 'Browser QA', 'person']) expect(art).toContain(s);
+    for (const s of ['an idea', 'a conversation', 'spec --> build <==> review', '"not quite."', 'shipped']) expect(art).toContain(s);
+    expect(consoleNote.art.every((l) => l.length < 60)).toBe(true);
   });
   it('uses at most two %c styles and no stray format specifiers', () => {
     const [fmt, ...styles] = buildNote();

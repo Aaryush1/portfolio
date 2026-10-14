@@ -29,7 +29,8 @@ test.describe('E1 console note', () => {
     await page.goto('/');
     await expect.poll(() => logs.length).toBeGreaterThan(0);
     const text = logs.find((l) => l.includes(NOTE))!;
-    expect(text).toContain('Browser QA');
+    expect(text).toContain('This site was built by talking.');
+    expect(text).toContain('shipped');
     expect(text).toContain('?');
     expect(text).toContain('— ag.');
     for (const s of ['@', 'outlook', '949', '331', '2850', 'mailto', 'tel:']) expect(text.toLowerCase()).not.toContain(s);

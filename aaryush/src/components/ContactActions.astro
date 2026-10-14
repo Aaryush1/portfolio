@@ -11,6 +11,7 @@ const family = rest.join(' ');
 // Selector dependency (E4): the print contact lines (scripts/site.ts, beforeprint) read the HERO instance's
 // [data-obf][data-v] anchors, so keep that markup and the data-contact="hero" wrapper stable.
 // Email and phone: parts are reversed and joined with "|", so neither the address nor the number appears in HTML.
+// E9: after the download, the label morphs to "Saved." (scripts/contact-card.ts). The status line is the polite announcement.
 const enc = (parts: readonly string[]) => [...parts].reverse().join('|');
 const links = [
   { label: 'Email', href: undefined, icon: 'mail', obf: 'mail', v: enc(c.emailParts) },
@@ -20,7 +21,8 @@ const links = [
 ] as const;
 ---
 <div class="cta" data-contact={variant}>
-  <a class="btn btn-primary" href={c.vcard} download="Aaryush Gupta.vcf" data-vcard data-given={given} data-family={family} data-url={site.url}><Icon name="card" />Save contact</a>
+  <a class="btn btn-primary" href={c.vcard} download="Aaryush Gupta.vcf" data-vcard data-given={given} data-family={family} data-url={site.url}><Icon name="card" class="ic-card" /><Icon name="check" class="ic-check" /><span class="save-label">Save contact</span></a>
+  <span class="sr-only" role="status" aria-live="polite" data-save-status></span>
   <span class="sep-v" aria-hidden="true"></span>
   <div class="icons">
     {links.map((l) => (
@@ -35,12 +37,22 @@ const links = [
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:10px;height:44px;padding:0 18px 0 16px;
   border-radius:10px;font-size:15px;font-weight:500;letter-spacing:-.005em;white-space:nowrap;
-  transition:background-color .2s var(--ease),transform .2s var(--ease);
+  transition:background-color .2s var(--ease),transform .2s var(--ease),box-shadow .3s var(--ease);
 }
 .btn :global(svg){width:17px;height:17px}
+.btn :global(.ic-check){display:none}
 .btn-primary{background:var(--text);color:#0A0B0E}
 .btn-primary:hover{background:#fff}
 .btn-primary:active{transform:translateY(1px)}
+/* E9: the saved state. An amber hairline, the check icon, and a slightly dimmed fill. Only until the next page load. */
+.btn-primary.is-saved,.btn-primary.is-saved:hover{background:color-mix(in srgb,var(--text) 80%,var(--bg));box-shadow:inset 0 0 0 1px var(--accent)}
+.btn-primary.is-saved :global(.ic-card){display:none}
+.btn-primary.is-saved :global(.ic-check){display:block}
+/* the morph's letters (shared with the hero, see scripts/morph.ts) */
+.btn-primary .save-label{position:relative;display:inline-block}
+.btn-primary :global(.mw){display:inline-block;white-space:nowrap}
+.btn-primary :global(.mc){display:inline-block;white-space:pre}
+.btn-primary :global(.mc.ghost){position:absolute;margin:0;pointer-events:none}
 .icons{display:flex;gap:8px}
 .ico{
   position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;
