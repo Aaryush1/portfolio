@@ -888,6 +888,8 @@ Each piece is an object on a desk. Its `why` line is written on the object, and 
 
 ### 16a. "Why I wrote this" lines
 
+**Approved by Aaryush 2026-10-14: keep both current lines as written.**
+
 Current:
 
 - This Is Bigger Than Electricity (letter): I failed to explain this to my family for years. This is the attempt.
@@ -900,6 +902,8 @@ Edits:
 ```
 
 ### 16b. Breakdown phrases
+
+**Approved by Aaryush 2026-10-14: keep current letter folds and paper sections.**
 
 Letter: one phrase per fold, labels only. Paper: one label and one gist (five words or fewer) per section.
 
