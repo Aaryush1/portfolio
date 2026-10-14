@@ -305,3 +305,52 @@ html.js .desk-wrap { position: relative; }
 @media (max-width: 700px), (hover: none) {
   .night-note { position: static; display: block; width: fit-content; margin: 34px 0 0 10px; transform: rotate(-3deg); }
 }
+
+/* ---------- the drawer: "writing I'm working on" (Task 5) ---------- */
+/* No JS: the contents are a plain list under their heading, and there is no front to press. */
+.drawer { position: relative; z-index: 4; width: min(640px, 92vw); margin: 0 auto; }
+.drawer-front { display: none; }
+.drawer-list { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-end; justify-content: center; padding: 26px 28px 0; }
+.drawer-head { margin: 0 0 14px; text-align: center; font: italic 400 17px/1.2 var(--serif); color: var(--text-2); }
+.folder { position: relative; width: 170px; height: 132px; margin-bottom: -4px; }
+.folder .tab { position: absolute; left: 0; top: 0; height: 22px; padding: 6px 12px 0; border-radius: 4px 4px 0 0; background: #262320; font: 500 11px/1 var(--mono); letter-spacing: .06em; color: var(--text); }
+.folder .fb { position: absolute; left: 0; right: 0; top: 21px; bottom: 0; background: linear-gradient(180deg, #2b2723, #201d1a); border-radius: 0 4px 0 0; }
+/* a redacted paper: kind and rough length only, with black bars standing in for text */
+.redacted { position: relative; width: 150px; height: 150px; margin-bottom: -4px; padding: 14px; border-radius: 2px 2px 0 0; background: linear-gradient(180deg, #191b21, #14161a); display: flex; flex-direction: column; gap: 7px; }
+.redacted .k { font: 500 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+.redacted .bars { display: flex; flex-direction: column; gap: 7px; margin-top: 6px; }
+.redacted .bars i { display: block; height: 9px; width: 100%; border-radius: 1px; background: #050608; }
+.redacted .bars i.m { width: 82%; }
+.redacted .bars i.s { width: 60%; }
+.redacted .t { margin-top: auto; font: 400 12px/1.3 var(--mono); color: var(--text-3); }
+
+/* with JS: the contents slide up out of the front, closed until focus, click or Enter opens them */
+/* with JS the contents rise above the front, as the drawer slides out of it (DOM order stays front first) */
+html.js .drawer { display: flex; flex-direction: column; }
+html.js .drawer-contents { order: -1; }
+html.js .drawer-front {
+  position: relative; display: flex; align-items: center; justify-content: center; gap: 16px;
+  width: 100%; height: 64px; margin: 0; padding: 0; cursor: pointer;
+  background: linear-gradient(180deg, #16181e, #101216); border: 1px solid rgba(255, 255, 255, .07); border-radius: 5px 5px 0 0;
+  box-shadow: inset 0 3px 8px #000, 0 -10px 30px -10px #000;
+  font: italic 400 17px/1 var(--serif); color: var(--text-2);
+}
+html.js .drawer-front:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+html.js .drawer-front .handle { width: 64px; height: 7px; border-radius: 4px; background: linear-gradient(#3b3e48, #23252c); box-shadow: 0 2px 3px #000; }
+html.js .drawer-head { display: none; }
+html.js .drawer-contents {
+  max-height: 0; overflow: hidden; visibility: hidden;
+  background: #0c0d10; border: 1px solid rgba(255, 255, 255, .05); border-bottom: 0; border-radius: 5px 5px 0 0;
+  box-shadow: inset 0 14px 24px -10px #000;
+  transition: max-height 1s var(--slow), visibility 0s linear 1s;
+}
+html.js .drawer.is-open .drawer-contents { max-height: 260px; visibility: visible; transition: max-height 1s var(--slow), visibility 0s; }
+html.js .drawer-list { padding-top: 26px; }
+html.js .room .desk-wrap { transition: opacity 1s ease; }
+html.js .room.drawer-open .desk-wrap { opacity: .3; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .drawer-contents, html.js .drawer.is-open .drawer-contents, html.js .room .desk-wrap { transition: none; }
+  /* children inherit the contents' visibility, and that change must not run as a transition either */
+  html.js .drawer * { transition: none; }
+}

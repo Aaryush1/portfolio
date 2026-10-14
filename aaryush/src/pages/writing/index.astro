@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Piece from '../../components/writing/Piece.astro';
+import Drawer from '../../components/writing/Drawer.astro';
 import { toPieceView } from '../../lib/writing';
 import { layoutDesk } from '../../lib/writing-layout';
 import '@fontsource/instrument-serif/400.css'; // upright titles on this page only
@@ -25,6 +26,7 @@ const ordered = layout.placements.map((place) => ({ piece: views.find((v) => v.s
         {ordered.map(({ piece, place }) => <Piece piece={piece} place={place} />)}
       </ul>
     </div>
+    <Drawer />
   </div></main>
-  <script>import '../../scripts/light-pool'; import '../../scripts/room-clock'; import '../../scripts/dust'; import '../../scripts/writing-desk';</script>
+  <script>import '../../scripts/light-pool'; import '../../scripts/room-clock'; import '../../scripts/dust'; import '../../scripts/writing-desk'; import '../../scripts/drawer';</script>
 </BaseLayout>

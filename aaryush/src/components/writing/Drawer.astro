@@ -1,0 +1,33 @@
+---
+/**
+ * "Writing I'm working on": a desk drawer under the desk. It takes only the decorative folder's name and the
+ * redacted entries, both from site.ts, and never imports the content collection, so an unpublished title or
+ * body cannot reach this component. Each entry shows its kind and rough length only.
+ */
+import { site } from '../../data/site';
+
+interface Props {
+  entries?: { kind: string; length: string }[];
+}
+const entries = Astro.props.entries ?? site.drawer;
+const folder = site.next.name;
+---
+<section class="drawer" data-drawer aria-label="Writing I’m working on">
+  <button class="drawer-front" type="button" aria-expanded="false" aria-controls="drawer-contents">
+    <span class="handle" aria-hidden="true"></span>
+    <span class="lab">writing I’m working on</span>
+  </button>
+  <div class="drawer-contents" id="drawer-contents">
+    <h2 class="drawer-head">Writing I’m working on</h2>
+    <div class="drawer-list">
+      <div class="folder"><span class="tab">{folder}</span><span class="fb" aria-hidden="true"></span></div>
+      {entries.map((e) => (
+        <div class="redacted" role="group" aria-label={`${e.kind}, ${e.length}, unpublished`}>
+          <span class="k">{e.kind}</span>
+          <span class="bars" aria-hidden="true"><i></i><i class="m"></i><i></i><i class="s"></i></span>
+          <span class="t">{e.length}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
