@@ -1,0 +1,11 @@
+---
+// The letter's closing signature: the site mark at 3x, drawn on once when it scrolls into view (scripts/signature.ts).
+import Mark from '../Mark.astro';
+---
+<div class="signature" role="img" aria-label="ag.">
+  <Mark maskId="sig-pen" signature size={76.5} />
+</div>
+<script>import '../../scripts/signature';</script>
+<style>
+.signature{margin-top:2.4em;color:var(--text);width:fit-content}
+</style>
