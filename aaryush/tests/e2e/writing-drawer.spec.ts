@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 // site.drawer is empty (controller ruling, 2026-10-14): the drawer holds only the contextOS folder.
 // The redacted-paper rendering is covered by the fixture test in tests/unit/writing-drawer.test.ts.
-const front = (page: import('@playwright/test').Page) => page.getByRole('button', { name: /writing I.m working on/i });
+const front = (page: import('@playwright/test').Page) => page.getByRole('button', { name: 'Writing in progress' });
 
 test('the drawer is closed at rest and opens on click, listing contextOS', async ({ page }) => {
   await page.goto('/writing');
@@ -65,6 +65,18 @@ test('opening the drawer moves the light to it, and closing hands it back', asyn
   await expect.poll(y).toBeCloseTo(before, -1);
 });
 
+test('at rest it is small and quiet, shows no visible label, and opens less than a third of the old depth', async ({ page }) => {
+  await page.goto('/writing');
+  await expect(front(page)).toHaveAccessibleName('Writing in progress');
+  expect(((await front(page).innerText()) ?? '').trim()).toBe('');
+  const box = await front(page).boundingBox();
+  expect(box!.height).toBeLessThanOrEqual(30);
+  expect(Number(await front(page).evaluate((el) => getComputedStyle(el).opacity))).toBeLessThan(0.7);
+  await front(page).click();
+  await expect.poll(() => page.locator('#drawer-contents').evaluate((el) => el.getBoundingClientRect().height)).toBeLessThanOrEqual(260 / 3);
+  expect((await page.locator('.folder').boundingBox())!.height).toBeLessThanOrEqual(70);
+});
+
 test('the stage dims while the drawer is open', async ({ page }) => {
   await page.goto('/writing');
   await front(page).click();
@@ -92,7 +104,7 @@ test('reduced motion: opens instantly with no running transitions', async ({ bro
     const drawer = document.querySelector('[data-drawer]')!;
     return document.getAnimations().filter((a) => drawer.contains((a.effect as KeyframeEffect)?.target as Element)).length;
   })).toBe(0);
-  expect(await page.locator('#drawer-contents').evaluate((el) => getComputedStyle(el).maxHeight)).toBe('260px');
+  expect(await page.locator('#drawer-contents').evaluate((el) => getComputedStyle(el).maxHeight)).toBe('78px');
   // first-paint transitions on the desk settle on their own; afterwards nothing may loop
   await expect.poll(() => page.evaluate(() => document.getAnimations().filter((x) => x.playState === 'running').length)).toBe(0);
   await ctx.close();

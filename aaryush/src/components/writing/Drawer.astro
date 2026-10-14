@@ -12,10 +12,9 @@ interface Props {
 const entries = Astro.props.entries ?? site.drawer;
 const folder = site.next.name;
 ---
-<section class="drawer" data-drawer aria-label="Writing I’m working on">
-  <button class="drawer-front" type="button" aria-expanded="false" aria-controls="drawer-contents">
+<section class="drawer" data-drawer aria-label="Writing in progress">
+  <button class="drawer-front" type="button" aria-label="Writing in progress" aria-expanded="false" aria-controls="drawer-contents">
     <span class="handle" aria-hidden="true"></span>
-    <span class="lab">writing I’m working on</span>
   </button>
   <div class="drawer-contents" id="drawer-contents">
     <h2 class="drawer-head">Writing I’m working on</h2>

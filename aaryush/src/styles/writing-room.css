@@ -66,7 +66,7 @@ html.js .desk {
 }
 
 html.js .piece {
-  --rot: 0deg; --dx: 0px; --dy: 0px; --tx: 0deg; --ty: 0deg; --lit: 0;
+  --rot: 0deg; --dx: 0px; --dxe: calc(var(--dx) * var(--dxs, 1)); --dy: 0px; --tx: 0deg; --ty: 0deg; --lit: 0;
   --h1: 150px; --a2: 0deg; --a3: 0deg; --a4: 0deg; --a5: 0deg; --a6: 0deg;
   /* at rest every transform is 2D, so text is rasterised crisp; the 3D hinge chain only exists while open */
   --t1: translateY(0);
@@ -75,17 +75,17 @@ html.js .piece {
   --t4: translateY(calc(var(--h1) + var(--h2) + var(--h3)));
   --t5: translateY(calc(var(--h1) + var(--h2) + var(--h3) + var(--h4)));
   --t6: translateY(calc(var(--h1) + var(--h2) + var(--h3) + var(--h4) + var(--h5)));
-  --pw: 300px; --ph: 478px; --lx: 24px; --ly: 40px;
+  --pw: 300px; --ph: calc(478px * var(--hs, 1)); --lx: 24px; --ly: 40px;
   position: relative; padding: 0; border: 0; width: 300px; max-width: 100%;
   grid-column: var(--col, 1); grid-row: var(--row, auto) / span var(--span, 1);
   justify-self: center; align-self: start;
   color: var(--text-2);
-  transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+  transform: translate(var(--dxe), var(--dy)) rotate(var(--rot));
   transition: transform 1.3s var(--slow), --lit 1.1s ease;
 }
 html.js .piece:last-child { border: 0; }
-html.js .piece[data-shape="letter"] { height: 478px; }
-html.js .piece[data-shape="paper"] { height: 290px; --ph: 290px; --lx: 38px; --ly: 62px; }
+html.js .piece[data-shape="letter"] { height: calc(478px * var(--hs, 1)); }
+html.js .piece[data-shape="paper"] { height: calc(290px * var(--hs, 1)); --ph: calc(290px * var(--hs, 1)); --lx: 38px; --ly: 62px; }
 html.js .piece[data-shape="sheet"] { height: 220px; width: 260px; --pw: 260px; --ph: 220px; --lx: 22px; --ly: 40px; }
 /* a little hit padding so the lift never drops the pointer off the edge */
 html.js .piece::before { content: ""; position: absolute; inset: -14px; }
@@ -93,7 +93,7 @@ html.js .piece::before { content: ""; position: absolute; inset: -14px; }
 /* lifted: up, straighter, brighter, and the breakdown opens */
 html.js .piece.is-lit, html.js .piece:has(:focus-visible) {
   --lit: 1;
-  transform: translate(var(--dx), calc(var(--dy) - 12px)) perspective(1500px) rotate(calc(var(--rot) * .25)) rotateX(var(--tx)) rotateY(var(--ty)) scale(1.025);
+  transform: translate(var(--dxe), calc(var(--dy) - 12px)) perspective(1500px) rotate(calc(var(--rot) * .25)) rotateX(var(--tx)) rotateY(var(--ty)) scale(1.025);
   z-index: 5;
 }
 html.js .piece.is-open, html.js .piece:has(:focus-visible) {
@@ -108,7 +108,7 @@ html.js .piece.is-open .skin, html.js .piece:has(:focus-visible) .skin, html.js 
 @media (hover: hover) and (pointer: fine) {
   html.js .piece:hover {
     --lit: 1;
-    transform: translate(var(--dx), calc(var(--dy) - 12px)) perspective(1500px) rotate(calc(var(--rot) * .25)) rotateX(var(--tx)) rotateY(var(--ty)) scale(1.025);
+    transform: translate(var(--dxe), calc(var(--dy) - 12px)) perspective(1500px) rotate(calc(var(--rot) * .25)) rotateX(var(--tx)) rotateY(var(--ty)) scale(1.025);
     z-index: 5;
     --a2: -24deg; --a3: 48deg; --a4: -48deg; --a5: 48deg; --a6: -48deg;
     --t2: translateY(var(--h1)) rotateX(var(--a2));
@@ -225,7 +225,7 @@ html.js .piece[data-shape="letter"][data-folds="1"] .piece-why { top: 150px; hei
 
 /* ---------- paper: a stapled stack that fans out ---------- */
 html.js .sheet {
-  left: 0; top: 20px; width: 100%; height: 270px; border-radius: 2px;
+  left: 0; top: calc(20px * var(--hs, 1)); width: 100%; height: calc(270px * var(--hs, 1)); border-radius: 2px;
   background: linear-gradient(180deg, #1b1d24, #14161b);
   box-shadow: inset 0 1px 0 rgba(255, 225, 180, .08);
   transform: translate(calc(var(--i) * 1.5px), calc(var(--i) * 1.7px));
@@ -242,7 +242,7 @@ html.js .piece[data-shape="paper"] .piece-meta { left: 38px; right: 20px; top: 3
 html.js .piece[data-shape="paper"] .piece-link { left: 38px; right: 20px; top: 62px; }
 html.js .piece[data-shape="paper"] .piece-why { left: 38px; right: 20px; bottom: 18px; }
 html.js .piece[data-shape="paper"] .breakdown li {
-  top: 244px; height: 46px; padding: 4px 16px 0 34px; justify-content: center; gap: 1px;
+  top: calc(290px * var(--hs, 1) - 46px); height: 46px; padding: 4px 16px 0 34px; justify-content: center; gap: 1px;
   transform: translate(calc(var(--k) * 1.5px), calc(var(--k) * 1.7px));
   border-top: 1px solid rgba(255, 255, 255, .05); transition: opacity .25s ease, transform 1.4s var(--slow);
   font-size: 12.5px;
@@ -269,17 +269,17 @@ html.js .piece[data-shape="sheet"] .breakdown { position: absolute; width: 1px; 
 /* ---------- narrow and touch: one column, same order ---------- */
 @media (max-width: 700px), (hover: none) {
   html.js .desk { display: flex; flex-direction: column; align-items: center; gap: 56px; }
-  html.js .piece { grid-column: auto; grid-row: auto; }
+  html.js .piece { grid-column: auto; grid-row: auto; align-self: center; }
   html.js .piece[data-shape="paper"] { transition: transform 1.3s var(--slow), --lit 1.1s ease, margin .9s var(--slow); }
   html.js .piece[data-shape="paper"].is-open { margin-bottom: calc(var(--n, 6) * 46px); }
 }
 @media (max-width: 1059px) {
   html.js .desk:not([data-cols="1"]):not([data-cols="2"]) { display: flex; flex-direction: column; align-items: center; gap: 56px; }
-  html.js .desk:not([data-cols="1"]):not([data-cols="2"]) .piece { grid-column: auto; grid-row: auto; }
+  html.js .desk:not([data-cols="1"]):not([data-cols="2"]) .piece { grid-column: auto; grid-row: auto; align-self: center; }
 }
 @media (max-width: 1379px) {
   html.js .desk[data-cols="4"] { display: flex; flex-direction: column; align-items: center; gap: 56px; }
-  html.js .desk[data-cols="4"] .piece { grid-column: auto; grid-row: auto; }
+  html.js .desk[data-cols="4"] .piece { grid-column: auto; grid-row: auto; align-self: center; }
 }
 
 /* ---------- the head ---------- */
@@ -288,7 +288,7 @@ html.js .piece[data-shape="sheet"] .breakdown { position: absolute; width: 1px; 
 
 /* reduced motion: static and lit, so a lit-but-closed piece stays flat 2D (no perspective) */
 @media (prefers-reduced-motion: reduce) {
-  html.js .piece.is-lit:not(.is-open):not(:hover) { transform: translate(var(--dx), calc(var(--dy) - 12px)) rotate(calc(var(--rot) * .25)) scale(1.025); }
+  html.js .piece.is-lit:not(.is-open):not(:hover) { transform: translate(var(--dxe), calc(var(--dy) - 12px)) rotate(calc(var(--rot) * .25)) scale(1.025); }
 }
 
 /* Room clock (Task 4). Both elements exist only when room-clock.ts adds them: the note between 21:00 and 07:00, the label after a `t` step. */
@@ -309,12 +309,13 @@ html.js .desk-wrap { position: relative; }
 /* ---------- the drawer: "writing I'm working on" (Task 5) ---------- */
 /* No JS: the contents are a plain list under their heading, and there is no front to press. */
 .drawer { position: relative; z-index: 4; width: min(640px, 92vw); margin: 0 auto; }
+html.js .drawer { width: min(360px, 78vw); }
 .drawer-front { display: none; }
 .drawer-list { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-end; justify-content: center; padding: 26px 28px 0; }
 .drawer-head { margin: 0 0 14px; text-align: center; font: italic 400 17px/1.2 var(--serif); color: var(--text-2); }
-.folder { position: relative; width: 170px; height: 132px; margin-bottom: -4px; }
-.folder .tab { position: absolute; left: 0; top: 0; height: 22px; padding: 6px 12px 0; border-radius: 4px 4px 0 0; background: #262320; font: 500 11px/1 var(--mono); letter-spacing: .06em; color: var(--text); }
-.folder .fb { position: absolute; left: 0; right: 0; top: 21px; bottom: 0; background: linear-gradient(180deg, #2b2723, #201d1a); border-radius: 0 4px 0 0; }
+.folder { position: relative; width: 112px; height: 62px; margin-bottom: -4px; }
+.folder .tab { position: absolute; left: 0; top: 0; height: 18px; padding: 5px 9px 0; border-radius: 4px 4px 0 0; background: #262320; font: 500 10px/1 var(--mono); letter-spacing: .06em; color: var(--text); }
+.folder .fb { position: absolute; left: 0; right: 0; top: 17px; bottom: 0; background: linear-gradient(180deg, #2b2723, #201d1a); border-radius: 0 4px 0 0; }
 /* a redacted paper: kind and rough length only, with black bars standing in for text */
 .redacted { position: relative; width: 150px; height: 150px; margin-bottom: -4px; padding: 14px; border-radius: 2px 2px 0 0; background: linear-gradient(180deg, #191b21, #14161a); display: flex; flex-direction: column; gap: 7px; }
 .redacted .k { font: 500 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
@@ -330,13 +331,14 @@ html.js .drawer { display: flex; flex-direction: column; }
 html.js .drawer-contents { order: -1; }
 html.js .drawer-front {
   position: relative; display: flex; align-items: center; justify-content: center; gap: 16px;
-  width: 100%; height: 64px; margin: 0; padding: 0; cursor: pointer;
-  background: linear-gradient(180deg, #16181e, #101216); border: 1px solid rgba(255, 255, 255, .07); border-radius: 5px 5px 0 0;
-  box-shadow: inset 0 3px 8px #000, 0 -10px 30px -10px #000;
-  font: italic 400 17px/1 var(--serif); color: var(--text-2);
+  width: 100%; height: 26px; margin: 0; padding: 0; cursor: pointer;
+  background: linear-gradient(180deg, #121419, #0e1014); border: 1px solid rgba(255, 255, 255, .045); border-radius: 4px 4px 0 0;
+  box-shadow: inset 0 2px 5px #000;
+  opacity: .5; transition: opacity .5s ease;
 }
+html.js .drawer-front:hover, html.js .drawer.is-open .drawer-front, html.js .drawer-front:focus-visible { opacity: 1; }
 html.js .drawer-front:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-html.js .drawer-front .handle { width: 64px; height: 7px; border-radius: 4px; background: linear-gradient(#3b3e48, #23252c); box-shadow: 0 2px 3px #000; }
+html.js .drawer-front .handle { width: 36px; height: 4px; border-radius: 3px; background: linear-gradient(#2f323a, #1d1f25); box-shadow: 0 1px 2px #000; }
 html.js .drawer-head { display: none; }
 html.js .drawer-contents {
   max-height: 0; overflow: hidden; visibility: hidden;
@@ -344,8 +346,8 @@ html.js .drawer-contents {
   box-shadow: inset 0 14px 24px -10px #000;
   transition: max-height 1s var(--slow), visibility 0s linear 1s;
 }
-html.js .drawer.is-open .drawer-contents { max-height: 260px; visibility: visible; transition: max-height 1s var(--slow), visibility 0s; }
-html.js .drawer-list { padding-top: 26px; }
+html.js .drawer.is-open .drawer-contents { max-height: 78px; visibility: visible; transition: max-height 1s var(--slow), visibility 0s; }
+html.js .drawer-list { padding: 12px 28px 0; }
 html.js .room .desk-wrap { transition: opacity 1s ease; }
 html.js .room.drawer-open .desk-wrap { opacity: .3; }
 
@@ -353,4 +355,24 @@ html.js .room.drawer-open .desk-wrap { opacity: .3; }
   html.js .drawer-contents, html.js .drawer.is-open .drawer-contents, html.js .room .desk-wrap { transition: none; }
   /* children inherit the contents' visibility, and that change must not run as a transition either */
   html.js .drawer * { transition: none; }
+}
+
+/* ---------- phones (below 560px): the room shows more at once (Task 31) ---------- */
+@media (max-width: 559px) {
+  html.js .piece { --hs: .6; --dxs: 0; }
+  /* side gutter: never wider than the screen minus 2 x 28px, so rotation and lift stay clear of the edge (even at 320) */
+  html.js .piece[data-shape="letter"], html.js .piece[data-shape="paper"] { width: min(300px, calc(100vw - 56px)); --pw: min(300px, calc(100vw - 56px)); }
+  html.js .piece[data-shape="sheet"] { width: min(260px, calc(100vw - 56px)); --pw: min(260px, calc(100vw - 56px)); }
+  html.js .piece[data-shape="letter"] .piece-link { font-size: 24px; top: 34px; }
+  html.js .piece[data-shape="letter"] .piece-meta { top: 14px; }
+  html.js .piece[data-shape="letter"] .piece-why { padding: 10px 24px 0; font-size: 14px; }
+  html.js .piece[data-shape="letter"][data-folds] .piece-why { padding-top: 10px; }
+  html.js .piece[data-shape="paper"] .piece-link { font-size: 24px; top: 46px; }
+  html.js .piece[data-shape="paper"] .piece-meta { top: 24px; }
+  html.js .piece[data-shape="paper"] .piece-why { bottom: 12px; font-size: 14px; }
+  /* only the first phrase shows at rest, as on desktop; the counters stay out of the short panels */
+  html.js .piece[data-shape="letter"] .breakdown li::before { display: none; }
+  html.js .piece[data-shape="letter"] .breakdown li:nth-child(1) { padding-bottom: 12px; }
+  /* opened, the folds need the room: the "why" fades out and returns when the letter closes */
+  html.js .piece[data-shape="letter"].is-open .piece-why, html.js .piece[data-shape="letter"]:has(:focus-visible) .piece-why { opacity: 0; }
 }

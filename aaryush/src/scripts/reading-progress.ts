@@ -47,6 +47,7 @@ if (article) {
     const romanTotal = /^[IVX]+\./.test(heads[0]?.textContent?.trim() ?? '');
     const totalText = romanTotal ? ROMAN[total] || String(total) : String(total);
     label.textContent = current < 0 ? `${totalText} sections` : `Section ${numeral(current)} of ${totalText}`;
+    label.dataset.short = current < 0 ? totalText : `${numeral(current)} / ${totalText}`; // the compact phone pill reads this
   };
 
   const update = () => {

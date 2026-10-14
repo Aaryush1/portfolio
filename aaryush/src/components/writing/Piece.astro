@@ -24,7 +24,8 @@ function foldHeights(count: number): number[] {
 const heights = piece.shape === 'letter' ? foldHeights(Math.min(n, 6)) : [];
 const vars: string[] = [`view-transition-name:piece-${piece.slug}`];
 if (place) vars.push(`--rot:${place.rot.toFixed(2)}deg`, `--dx:${place.dx.toFixed(1)}px`, `--dy:${place.dy.toFixed(1)}px`, `--col:${place.col + 1}`, `--row:${Math.round(place.y / 4) + 1}`, `--span:${Math.ceil(place.h / 4)}`);
-heights.forEach((h, i) => vars.push(`--h${i + 1}:${h}px`));
+// heights scale with --hs (1 on desktop, smaller on phones; see writing-room.css)
+heights.forEach((h, i) => vars.push(`--h${i + 1}:calc(${h}px * var(--hs, 1))`));
 if (heights.length) vars.push(`--tlast:var(--t${heights.length})`, `--hlast:var(--h${heights.length})`);
 if (piece.shape === 'paper') vars.push(`--n:${Math.min(n, 6)}`);
 ---
