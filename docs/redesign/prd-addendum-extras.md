@@ -1,0 +1,140 @@
+# Addendum: details for people who notice
+
+Approved by Aaryush on 2026-10-14. These additions extend the redesign PRD (`prd.md`). They share one rule:
+
+> The details are true and quiet. They reward people who notice, and nobody is ever told they're there.
+
+Each feature works without JavaScript, or degrades to nothing. Each respects `prefers-reduced-motion`. None adds a backend, analytics or any network call.
+
+## E1. Console note
+
+- **What it is:** opening DevTools on any page shows a short note signed "— ag.", with the Engineering loop drawn in ASCII (Ticket → Spec & decisions → Implement ⇄ Review → Docs → PR → Browser QA, plus a loop back to a person).
+- **Copy:** draft, and listed in the copy review. Under 8 lines of text, not counting the ASCII. It points at the `?` keyboard map.
+- **Acceptance criteria:**
+  - It logs exactly once per page load, including after view-transition navigations.
+  - It uses `console.log` with at most two `%c` styles, so it's legible in both light and dark DevTools themes.
+  - It never logs the email address or phone number, in any form.
+  - No errors are thrown if `console` is unavailable.
+- **Failure cases to test:**
+  - It doesn't log twice when a script module is evaluated again.
+  - It doesn't appear in the served HTML. The confidentiality and leak tests still pass.
+
+## E2. Hidden keyboard commands
+
+- **Bindings:**
+
+  | Keys | Action |
+  | --- | --- |
+  | `?` | Opens a small keyboard map styled like the hero title block. |
+  | `g` then `h` | Go to the hero. |
+  | `g` then `l` | Go to the levels section. |
+  | `g` then `w` | Go to Work. |
+  | `g` then `r` | Go to Writing (the `/writing` page). |
+  | `g` then `c` | Go to Contact. |
+  | `t` | Toggle the hero topography's time preview through the periods. Debug-ish; it only shows in the map. |
+  | `Esc` | Closes the map. |
+
+- **Acceptance criteria:**
+  - Shortcuts are ignored while focus is in an input, textarea or contenteditable element, while a modifier key (Ctrl, Meta or Alt) is held, and while a pop-up dialog is open. The exception is that `?` still works inside a pop-up.
+  - A `g` sequence times out after 1.2s.
+  - The keyboard map is a proper dialog: it has focus trap behaviour, returns focus on close, is labelled, and closes on `Esc` and on backdrop click.
+  - Navigation uses the existing smooth-scroll and view-transition behaviour.
+  - Under reduced motion, there's no animated entry.
+- **Failure cases to test:**
+  - Typing `g`/`w` inside any text field does nothing.
+  - `?` with Shift on non-US layouts still resolves via `e.key === '?'`.
+  - Shortcuts don't fire during IME composition.
+
+## E3. 404 as a missing sheet
+
+- **What it is:** the strip reads "§ 404 · Sheet not in set". The heading is "Sheet not in set." Below it is a small register of the real sheets, with each row a link:
+  - 01 Hero
+  - 02 About
+  - 03 How AI fits
+  - 04 Work
+  - 05 Writing
+  - 06 Contact
+
+  A struck-through row for the requested path (shown as text, escaped) sits in sorted position as "— Not issued".
+- **Acceptance criteria:**
+  - The requested path is rendered with `textContent` only, never as HTML, and is truncated to 60 characters.
+  - The page returns status 404, which Vercel already does for `404.astro`.
+  - All links work, and the page passes axe.
+- **Failure cases to test:**
+  - A path containing `<script>` renders as literal text.
+  - Paths that are very long, or contain unicode, don't overflow at 320px.
+
+## E4. Print as a drawing sheet
+
+- **What it is:** printing the home page produces a clean A4/Letter sheet:
+  - a black-on-white line border and the hero title block (Dwg. no., Sheet, Region, Last deploy, Scale);
+  - the name and eyebrow, plus the about paragraph;
+  - the work timeline as text: company, role, dates, one-liner and system titles;
+  - the writing list.
+  - The contact block shows the email, phone and site as **text**. They're assembled at print time by the same runtime that builds `mailto:`, so they never appear in the served HTML.
+
+  It is not a résumé download. It exists only via Print.
+- **Acceptance criteria:**
+  - Under `@media print` there is no background layer, no canvas, no animation and no header or footer navigation. Pop-ups are closed.
+  - The home page fits on one or two pages at Letter and A4, checked with Playwright `page.pdf()` for both sizes.
+  - Without JavaScript, the contact lines are omitted rather than shown broken.
+- **Failure cases to test:**
+  - Printing while a pop-up is open still prints the home sheet.
+  - The email and phone never appear in the HTML source. The existing leak test still passes.
+
+## E5. Hero topography follows the visitor's clock
+
+- **What it is:** the hero field reads the visitor's local hour once on load, and again every 10 minutes while visible. It uses the same periods as the writing room:
+
+  | Period | Hours | Field |
+  | --- | --- | --- |
+  | Morning | 07–12 | Slightly cooler minor lines. |
+  | Afternoon | 12–17 | The default look. |
+  | Evening | 17–21 | The amber contour warms and brightens a little. |
+  | Night | 21–07 | Fewer contour levels, about 40% slower drift, and the amber contour slightly dimmer, as if the system is idling. |
+
+  The periods live in `src/lib/daypart.ts`, shared with the future writing room.
+- **Acceptance criteria:**
+  - Changes are subtle: the text contrast checks still pass in every period.
+  - The reduced-motion still frame reflects the period.
+  - A test hook (`?daypart=night`, honoured only in dev and test builds, or via `data-daypart` set by tests) lets e2e tests force each period. Production ignores the query parameter.
+- **Failure cases to test:**
+  - The boundary hours (06:59, 07:00, 20:59, 21:00) map correctly, with unit tests on the pure function.
+  - DST transitions don't matter, because only the local hour is used.
+
+## E6. A contact card that remembers where you met
+
+- **Why:** Aaryush shows his QR from his phone at events and meetings. Generating event QRs by hand is too much friction, so the QR page itself is the tool.
+- **The QR page (`/qr`, on his phone):**
+  - Above the QR are two quick inputs:
+    - **Where:** a free-text field ("Madison AI Week") with a few one-tap presets configured in `site.ts`, such as Coffee, Conference, Dinner and Meetup.
+    - **Talked about:** up to two topic chips. Each maps to a page on the site: the systems, Advisory and Writing.
+  - The QR re-renders live as he types or taps, client-side, and encodes `https://aaryush.com/?met=<where>&about=<slug,slug>`.
+  - **Nothing persists:** every visit to `/qr` starts blank, with no storage of any kind.
+  - Under Reduce Motion, the QR doesn't animate between states.
+- **The person who scans:**
+  - They land on the home page as normal, and nothing on the page announces the context.
+  - The params are read once, kept in `sessionStorage`, and stripped from the address bar with `history.replaceState`, so they don't end up in shared links.
+  - Any "Save contact" button then builds the vCard at runtime. It has the usual fields: name, email and phone assembled from parts, as today, plus the URL. It adds a `NOTE`, for example: "Met at Madison AI Week · Tue, Oct 14, 2026 · Talked about: Engineering loop (aaryush.com/work/ready-rebound-loop)".
+  - The date comes from the scanner's device at save time.
+  - Without params, the vCard still gets "Saved Tue, Oct 14, 2026 from aaryush.com".
+- **No follow-up nudge:** the note never tells them what to write.
+- **Acceptance criteria:**
+  - **Escaping:** the `where` value is trimmed, capped at 60 characters and vCard-escaped. Backslash, comma, semicolon and newline are escaped per RFC 6350.
+  - **Unknown topics:** topic slugs not in the known list are dropped.
+  - **Valid card:** the vCard imports on iOS and Android contacts with the note intact. This is a manual check; automated tests parse the generated text.
+  - **Scraper protection holds:** the email and phone never appear in the served HTML or the QR. The existing leak tests still pass.
+  - **No JS:** `/qr` shows the static QR, and "Save contact" falls back to the static `.vcf`.
+  - **Library:** QR generation uses one small, zero-dependency, MIT-style library, loaded only on `/qr`. It must not ship in the home bundle.
+- **Failure cases to test:**
+  - `?met=<script>` and over-long or unicode values.
+  - Repeated `about` slugs, and more than two of them.
+  - A visit with params followed by a reload: the params are gone from the URL but the note still applies in that tab.
+  - A new tab gets no note context.
+
+## Out of scope here (planned separately)
+
+- **The dynamic vCard:** waiting on Aaryush's depth decision.
+- **The writing room:** waiting on prototype v2 feedback.
+- **The essay ribbon on the home writing teaser:** depends on the writing room's localStorage format.
+- **The string board, coffee rings and AI-assisted vCard notes:** parked.
