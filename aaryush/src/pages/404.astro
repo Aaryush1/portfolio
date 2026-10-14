@@ -19,7 +19,7 @@ import '../styles/writing-room.css';
     <div class="wrap">
       <header class="room-head"><h1 class="room-kicker mono">Not on the desk.</h1></header>
       <div class="desk-wrap">
-        <div class="crumple" aria-hidden="true"><span class="shade"></span><span class="body"><i class="f1"></i><i class="f2"></i><i class="f3"></i><i class="f4"></i></span></div>
+        <div class="crumple" aria-hidden="true"><span class="shade"></span><svg class="body" viewBox="0 0 150 128" focusable="false"><clipPath id="c404c"><path id="c404" d="M10 40 L24 20 C30 12 38 12 44 10 L60 3 L84 9 L104 2 C112 8 124 16 132 26 L146 40 L141 62 L146 82 C140 98 126 106 114 114 L96 122 L70 118 L44 125 L30 112 L12 104 L6 80 L12 60Z"/></clipPath><path d="M10 40L24 20L44 10L60 3L84 9L104 2L132 26L146 40L141 62L146 82L114 114L96 122L70 118L44 125L30 112L12 104L6 80L12 60Z" fill="#d9cfb9"/><g clip-path="url(#c404c)"><path d="M0 0H150V128H0Z" fill="#dcd2bb"/><path d="M10 40L24 20L44 10L60 3L66 40L38 58L12 60Z" fill="#f3ecda"/><path d="M60 3L84 9L104 2L132 26L146 40L100 52L66 40Z" fill="#c4b99f"/><path d="M38 58L66 40L100 52L92 84L52 92Z" fill="#e8dfc9"/><path d="M100 52L146 40L141 62L146 82L114 114L92 84Z" fill="#b5a98d"/><path d="M12 60L38 58L52 92L44 125L30 112L12 104L6 80Z" fill="#cdc2a9"/><path d="M52 92L92 84L114 114L96 122L70 118L44 125Z" fill="#d3c8ae"/><path d="M104 2L132 26L100 52L84 9Z" fill="#e6dec9"/><g stroke="#7f7255" stroke-opacity=".3" stroke-width=".7" fill="none"><path d="M18 30L60 14"/><path d="M14 40L63 22"/><path d="M12 49L64 31"/><path d="M44 74L95 66"/><path d="M47 83L93 76"/><path d="M62 100L100 96"/></g><path d="M12 60L38 58L66 40L60 3M38 58L52 92L44 125M66 40L100 52L146 40M100 52L92 84L52 92M92 84L114 114M84 9L100 52" stroke="#8a7c5e" stroke-opacity=".5" stroke-width=".9" fill="none"/></g></svg></div>
         <p class="back"><a href="/writing">Back to the desk</a></p>
       </div>
     </div>
@@ -67,12 +67,7 @@ html[data-room404] .site404{display:none}
 .room404 .desk-wrap{display:grid;justify-items:center;gap:40px;padding:90px 0 200px}
 .crumple{position:relative;width:150px;height:128px;margin-top:40px}
 .crumple .shade{position:absolute;inset:10% 6% 0;background:#000;border-radius:40%;filter:blur(calc(var(--shadow-blur,24px) + 2px));opacity:.6;transform:translate(calc(12px + var(--shadow-x,0px)),calc(18px + var(--shadow-y,0px)))}
-.crumple .body{position:absolute;inset:0;background:#2a2c34;clip-path:polygon(8% 30%,22% 6%,46% 14%,70% 2%,92% 24%,98% 52%,86% 82%,62% 98%,36% 90%,12% 94%,2% 62%)}
-.crumple i{position:absolute;inset:0}
-.crumple .f1{background:#3a3c45;clip-path:polygon(22% 6%,46% 14%,40% 46%,8% 30%)}
-.crumple .f2{background:#1e2026;clip-path:polygon(46% 14%,70% 2%,92% 24%,58% 50%,40% 46%)}
-.crumple .f3{background:#32343c;clip-path:polygon(40% 46%,58% 50%,98% 52%,86% 82%,62% 98%,36% 90%)}
-.crumple .f4{background:#24262d;clip-path:polygon(8% 30%,40% 46%,36% 90%,12% 94%,2% 62%)}
+.crumple .body{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .room404 .back{margin:0;position:relative;z-index:2}
 .room404 .back a{display:inline-block;min-height:44px;padding:12px 4px;font:400 13px/1.4 var(--mono);letter-spacing:.06em;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--line-2)}
 .room404 .back a:hover,.room404 .back a:focus-visible{color:#fff;border-color:var(--accent)}
