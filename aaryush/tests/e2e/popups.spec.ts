@@ -18,7 +18,7 @@ test('direct link then back stays on site', async ({ page }) => {
   await page.evaluate(() => history.back());
   await expect(page).toHaveURL(/\/$/);
   await expect(dialog(page)).toBeHidden();
-  await expect(page).toHaveTitle(/AI Strategy & Organizational Design/);
+  await expect(page).toHaveTitle('Aaryush Gupta');
 });
 
 test('job → system → back to job → Esc closes', async ({ page }) => {
@@ -134,7 +134,7 @@ test('direct link, Esc without clicking, then state is clean', async ({ page }) 
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toBeHidden();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page).toHaveTitle(/AI Strategy & Organizational Design/);
+  await expect(page).toHaveTitle('Aaryush Gupta');
   expect(await page.evaluate(() => document.documentElement.classList.contains('locked'))).toBe(false);
   await page.locator('#co-ready-rebound a.more').click();
   await expect(dialog(page)).toBeVisible();

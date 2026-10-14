@@ -54,7 +54,7 @@ test.describe('E4 print sheet: what prints', () => {
     await printed(page);
     const t = (await text(page)).toLowerCase();
     for (const s of [
-      'aaryush gupta', 'ai strategy & organizational design',
+      'aaryush gupta',
       'i build the systems behind', 'how anyone solves problems',
       'gupta advisory', 'founder',
       'ready rebound', 'ai & engineering lead', 'cylerity', 'ai lead', 'jan 2024 – present',

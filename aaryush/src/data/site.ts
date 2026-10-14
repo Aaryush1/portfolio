@@ -1,10 +1,9 @@
 export const site = {
   name: 'Aaryush Gupta',
   url: 'https://aaryush.com',
-  title: 'Aaryush Gupta — AI Strategy & Organizational Design',
+  title: 'Aaryush Gupta',
   description:
     'I build the systems behind how anyone solves problems: operating models, decision architectures and AI systems for organizations in healthcare, finance, tech and beyond.',
-  eyebrow: 'AI Strategy & Organizational Design',
   hero: {
     lead: 'I build the systems behind',
     subjects: ['how a problem gets solved', 'how problems get solved', 'how problems solve themselves', 'how teams solve problems'],

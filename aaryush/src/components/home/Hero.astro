@@ -11,7 +11,6 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
   <span class="reg reg-bl" aria-hidden="true"></span><span class="reg reg-br" aria-hidden="true"></span>
   <div class="wrap">
     <div class="hero-inner">
-      <p class="eyebrow-hero enter"><span class="tick" aria-hidden="true"></span>{site.eyebrow}</p>
       <h1 class="name enter d1" id="hero-name">{site.name}</h1>
       <p class="rot enter d2" id="rot" data-subjects={JSON.stringify(subjects)}>
         <span class="sr-only">{lead} {settled.before}{settled.em}{settled.after}.</span>
@@ -62,8 +61,6 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
   display:flex;flex-direction:column;justify-content:center;
   padding:80px 0 150px;
 }
-.eyebrow-hero{display:inline-flex;align-items:center;gap:10px;font:500 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
-.eyebrow-hero .tick{width:16px;height:1px;background:var(--accent)}
 .name{
   margin-top:26px;font-weight:500;
   font-size:clamp(42px, 7.4vw, 88px);line-height:.98;letter-spacing:-.045em;
