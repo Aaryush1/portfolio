@@ -4,8 +4,8 @@ for (const path of ['/work/does-not-exist', '/writing/nope', '/definitely/not/he
   test(`${path} shows the designed 404`, async ({ page }) => {
     const res = await page.goto(path);
     expect(res?.status()).toBe(404);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/not here/i);
-    await expect(page.getByRole('link', { name: /Back to home/ })).toHaveAttribute('href', '/');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sheet not in set.');
+    await expect(page.getByRole('link', { name: 'Hero' })).toHaveAttribute('href', '/#hero');
     await expect(page.locator('dialog#popup[open]')).toHaveCount(0);
   });
 }

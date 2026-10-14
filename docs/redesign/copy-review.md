@@ -9,7 +9,7 @@ Voice reminders (from the project notes): operator, not engineer; confident but 
 Contents
 
 - Part A: Draft blocks (the brief's list): 1 Hero, 2 About, 3 How AI fits, 4 Inside-link label, 5 Work intro lead, 6 Content files with `draft: true`
-- Part B: New copy written during the build (not from the old live site): 7 Diagram titles and descriptions, 8 Hero figure caption and title block, 9 Section intros and headings, 10 Footer, 11 "Next" line, 12 404 page, 13 Other small UI labels
+- Part B: New copy written during the build (not from the old live site): 7 Diagram titles and descriptions, 8 Hero figure caption and title block, 9 Section intros and headings, 10 Footer, 11 "Next" line, 12 404 page, 13 Other small UI labels, 14 Console note and keyboard map
 
 ---
 
@@ -720,23 +720,24 @@ Next line:
 
 ## 12. 404 page
 
-**Source:** `aaryush/src/pages/404.astro`
+**Source:** `aaryush/src/pages/404.astro`, copy in `aaryush/src/data/console.ts` (`notFound`). Rewritten in Task 23 as a "missing sheet" (see section 14).
 
 Current:
 
-- Strip: § 404 · Not found · Sheet — / —
-- Heading: This one’s not here.
-- Lead: The link may be old, or the page may have moved.
-- Link: Back to home
-- Browser tab title: Not found — Aaryush Gupta
+- Strip: § 404 · Sheet not in set · Sheet — / —
+- Heading: Sheet not in set.
+- Register rows (each a link): 01 Hero, 02 About, 03 How AI fits, 04 Work, 05 Writing, 06 Contact
+- Struck-through row for the requested path (filled in by JavaScript; omitted without it): "Not issued"
+- Browser tab title: Sheet not in set — Aaryush Gupta
 - Meta description: This page doesn't exist.
 
 Edited version (leave blank to keep):
 
 ```
+Strip:
 Heading:
-Lead:
-Link:
+Register labels:
+Not-issued label:
 ```
 
 ---
@@ -752,6 +753,53 @@ These are short labels inside the pop-ups and cards. Listed so nothing is a surp
 - Timeline: the role column shows "Earlier work" for the Earlier group; breadcrumb reads "Work · {date range}"
 - Pop-up chrome: "Back" (defaults to the parent company name), "Esc", "Close"
 - Level tags on cards and pop-ups: `L1`–`L4`; in pop-ups they read e.g. "L1 — How the organization runs"
+
+Edits:
+
+```
+(any label changes)
+```
+
+---
+
+## 14. Console note and keyboard map
+
+**Source:** `aaryush/src/data/console.ts` (`consoleNote`, `keyMap`, `notFound`). All draft (`site.drafts.consoleNote`, `keyboardMap`, `notFound`). Hidden details: nobody is told they exist, so keep them dry and short.
+
+### 14a. Console note
+
+Shown once per page load when DevTools is open. The ASCII drawing is the Engineering loop (ticket, spec and decisions, implement and review, docs, PR, browser QA, back to a person).
+
+Current:
+
+```
+Hello, fellow inspector.
+This site is built the way I build most things: a ticket, a spec, a loop of build and review, and a person at both ends.
+The loop is below. Nothing on this page phones home.
+Press ? for the keyboard map.
+— ag.
+```
+
+Edited version (leave blank to keep):
+
+```
+(your text; keep it under 8 lines, no contact details)
+```
+
+### 14b. Keyboard map labels
+
+Opened with `?`. The last row appears only when the hero's time preview exists.
+
+Current:
+
+- Title: Keyboard map. Hint: Esc to close. Button: Close
+- ? : This map
+- g h : Go to the hero
+- g l : Go to how AI fits
+- g w : Go to work
+- g r : Go to writing
+- g c : Go to contact
+- t : Step the field through the day
 
 Edits:
 

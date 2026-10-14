@@ -10,6 +10,7 @@ import '../styles/base.css';
 import Seo from '../components/Seo.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import KeyMap from '../components/KeyMap.astro';
 import { site } from '../data/site';
 interface Props { title?: string; description?: string; ogImage?: string; path?: string; bodyClass?: string }
 const { title = site.title, description = site.description, ogImage = '/og/home.png', path = Astro.url.pathname, bodyClass } = Astro.props;
@@ -31,6 +32,8 @@ const { title = site.title, description = site.description, ogImage = '/og/home.
     <SiteHeader />
     <slot />
     <SiteFooter />
+    <KeyMap />
     <script>import '../scripts/site';</script>
+    <script>import '../scripts/console-note';</script>
   </body>
 </html>

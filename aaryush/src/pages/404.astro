@@ -1,11 +1,54 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { notFound } from '../data/console';
 ---
-<BaseLayout title="Not found — Aaryush Gupta" description="This page doesn't exist." ogImage="/og/home.png" path="/404">
-  <main class="wrap sec">
-    <div class="sec-head mono"><span class="n">§ 404</span><span>Not found</span><span class="f">Sheet — / —</span></div>
-    <h1 class="h2" style="margin-top:44px">This one’s not here.</h1>
-    <p class="lead">The link may be old, or the page may have moved.</p>
-    <p style="margin-top:28px"><a class="more" href="/">Back to home</a></p>
-  </main>
+<BaseLayout title="Sheet not in set — Aaryush Gupta" description="This page doesn't exist." ogImage="/og/home.png" path="/404">
+  <main class="sec"><div class="wrap">
+    <div class="sec-head mono"><span class="n">§ 404</span><span>{notFound.strip}</span><span class="f">Sheet — / —</span></div>
+    <h1 class="h2" style="margin-top:44px">{notFound.heading}</h1>
+    <ol class="register" data-register>
+      {notFound.sheets.map((s) => (
+        <li data-href={s.href}><span class="no">{s.n}</span><a href={s.href}>{s.label}</a></li>
+      ))}
+    </ol>
+  </div></main>
 </BaseLayout>
+<script>
+  import { notFound } from '../data/console';
+  import { displayPath, insertIndex } from '../lib/sheet404';
+  const list = document.querySelector<HTMLElement>('[data-register]');
+  if (list) {
+    const rows = [...list.children];
+    const path = location.pathname;
+    const li = document.createElement('li');
+    li.className = 'gone';
+    li.setAttribute('data-missing', '');
+    const no = document.createElement('span');
+    no.className = 'no';
+    no.textContent = '—';
+    const s = document.createElement('s');
+    s.textContent = displayPath(path);
+    const st = document.createElement('span');
+    st.className = 'st';
+    st.textContent = notFound.missing;
+    li.append(no, s, st);
+    const at = insertIndex(path, rows.map((r) => r.getAttribute('data-href') ?? ''));
+    list.insertBefore(li, rows[at] ?? null);
+  }
+</script>
+<style>
+.register{list-style:none;margin:44px 0 0;padding:0;max-width:34rem;border:1px solid var(--line-2)}
+.register :global(li){display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:0 14px;border-top:1px solid var(--line);font:400 13px/1.4 var(--mono)}
+.register :global(li:first-child){border-top:0}
+.register :global(.no){color:var(--accent);letter-spacing:.06em;padding:12px 0}
+.register a{display:block;padding:12px 0;color:var(--text);letter-spacing:.02em;min-height:44px;box-sizing:border-box}
+.register a:hover{color:#fff}
+.register :global(.gone){color:var(--text-3)}
+.register :global(.gone .no){color:var(--text-3)}
+.register :global(.gone s){padding:12px 0;min-width:0;overflow-wrap:anywhere;word-break:break-all;text-decoration-color:var(--text-3)}
+.register :global(.gone .st){font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:12px 0;white-space:nowrap}
+@media (max-width:420px){
+  .register :global(li){grid-template-columns:32px minmax(0,1fr)}
+  .register :global(.gone .st){grid-column:2;padding:0 0 10px}
+}
+</style>

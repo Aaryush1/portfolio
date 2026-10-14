@@ -33,7 +33,7 @@ export const site = {
   },
   companyLinkLabel: (name: string) => `Inside ${name}`,
   /** Flip to false in Task 13 once Aaryush approves each block. */
-  drafts: { hero: true, about: true, levels: true, companyLinkLabel: true, footer: false },
+  drafts: { hero: true, about: true, levels: true, companyLinkLabel: true, footer: false, consoleNote: true, keyboardMap: true, notFound: true },
 } as const;
 
 export type Site = typeof site;
