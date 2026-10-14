@@ -132,6 +132,28 @@ Each feature works without JavaScript, or degrades to nothing. Each respects `pr
   - A visit with params followed by a reload: the params are gone from the URL but the note still applies in that tab.
   - A new tab gets no note context.
 
+## E7. The homepage night note: general notes
+
+- **What it is:** between 21:00 and 07:00 in the visitor's local time, a small "General notes" block in pencil appears on the hero drawing, near the title block. It reads:
+  > GENERAL NOTES
+  > 1. It's past nine.
+  > 2. So are you.
+
+  "General notes" is set as a drafting label. The numbered lines are in the pencil hand: Instrument Serif italic, slightly rotated, the colour of pencil graphite.
+- **Placement:**
+  - **Desktop (title block visible):** above or beside the title block. It must not overlap the block, the hero text or the contact row.
+  - **Phones (title block hidden):** in the footer's bottom bar, next to the location line, in the same pencil style.
+- **Never announced:** no label, tooltip or hint explains it. In the daytime it is absent from the DOM entirely, because it is inserted by script only at night.
+- **Clock:** it shares `src/lib/daypart.ts` with the hero and the writing room.
+- **Distinct from the writing room:** it is not the writing room's "you're up late too." note, and it uses different words and form.
+- **Acceptance criteria:**
+  - It is present only from 21:00 to 07:00, with the boundary hours tested.
+  - It is absent from the served HTML.
+  - It doesn't overlap anything at 1280 or 375.
+  - It is `aria-hidden`, since it is decorative.
+  - Under reduced motion it appears with no animation.
+  - The `data-daypart` hook forces it on in tests.
+
 ## Out of scope here (planned separately)
 
 - **The dynamic vCard:** waiting on Aaryush's depth decision.
