@@ -7,9 +7,10 @@ diagram: skale
 caption: Every interview sharpens the profile, and the person.
 legend:
   - { kind: flow, label: Flow }
-  - { kind: feedback, label: Next interview, tailored }
+  - { kind: feedback, label: "Next interview, tailored" }
 facts:
-  - { label: Approach, value: Higher-dimensional embedding models }
+  - { label: Input, value: "An AI interview, 5 or 30 minutes" }
+  - { label: Output, value: "Feedback, job matches, a sharper next interview" }
   - { label: Model, value: White-label & enterprise hiring }
 draft: true
 ---
