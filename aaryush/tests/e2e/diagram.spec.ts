@@ -65,10 +65,12 @@ test('reduced motion shows the finished diagram with no movement', async ({ brow
 
 test('reopening does not stack loops', async ({ page }) => {
   await page.goto('/');
+  // Count distinct rAF callbacks, not calls per second: the frame rate of a headless browser varies a lot with load
+  // (Firefox ranged 16-160 fps for one loop), but each mounted diagram loop re-registers its own single callback.
   await page.evaluate(() => {
     const raf = window.requestAnimationFrame.bind(window);
-    (window as any).__rafCalls = 0;
-    window.requestAnimationFrame = (cb) => { (window as any).__rafCalls++; return raf(cb); };
+    (window as any).__rafFns = new Set();
+    window.requestAnimationFrame = (cb) => { (window as any).__rafFns.add(cb); return raf(cb); };
   });
   for (let i = 0; i < 4; i++) {
     await page.locator('#sys-cylerity-intake').click();
@@ -76,12 +78,11 @@ test('reopening does not stack loops', async ({ page }) => {
     await page.keyboard.press('Escape');
   }
   await page.locator('#sys-cylerity-intake').click();
-  await page.waitForTimeout(500);
-  await page.evaluate(() => { (window as any).__rafCalls = 0; });
+  await expect(svg(page)).toHaveClass(/\brun\b/);
+  await page.evaluate(() => { (window as any).__rafFns = new Set(); });
   await page.waitForTimeout(1000);
-  const calls = await page.evaluate(() => (window as any).__rafCalls as number);
-  // One diagram loop ≈ 60 calls/s (the hero canvas pauses while a pop-up is open, Task 8); stacked loops would be 120+.
-  expect(calls).toBeLessThan(100);
+  // Only the one live diagram loop schedules frames while a pop-up is open (the hero canvas pauses, Task 8); stacked loops would show 2+.
+  expect(await page.evaluate(() => (window as any).__rafFns.size as number)).toBe(1);
 });
 
 test('pauses when hidden', async ({ page }) => {
