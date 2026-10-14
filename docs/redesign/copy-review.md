@@ -509,6 +509,46 @@ Note: the last paragraph repeats the footer lead (section 10) almost word for wo
 >
 > Founders upload their documents and materials. The system builds the rubrics, structure and documentation of where that company actually stands, work that used to fall on people. Launchpad, the University of Minnesota's tech-transfer office, uses that picture to bring in the right people and the right support, without spending time relearning what's already been done.
 
+### 6.10 Earlier: Univise (added after review round 1; was marked approved, carried over from the old site)
+
+**Source:** `aaryush/src/content/systems/univise.md`
+
+- title: Univise · company: Earlier (group) · order 1
+
+**summary:**
+
+> Built a university advising system that spread across campus through word of mouth. No marketing, no push, just a product that solved a daily problem.
+
+**outcome:** Best pitch at Transcend
+
+**Body:**
+
+> Advising information was scattered across dozens of university pages and PDFs. Students couldn't find straightforward answers. Advisors were overwhelmed with repetitive questions.
+>
+> The core problem wasn't a lack of information but a lack of accessible information architecture. Univise surfaces answers in plain language with links to official sources, trust through transparency, and it spread organically because it solved a daily friction point every student experienced.
+>
+> It was adopted across campus through word of mouth alone and won best pitch at Transcend, proof that the right information architecture reshapes how an institution delivers a service.
+
+### 6.11 Earlier: SmartBenAI (added after review round 1; carried over from the old site)
+
+**Source:** `aaryush/src/content/systems/smartbenai.md`
+
+- title: SmartBenAI · company: Earlier (group) · order 2
+
+**summary:**
+
+> Automated claims data extraction for healthcare TPAs while keeping humans in the loop where compliance demands it.
+
+**outcome:** Compliance-first automation
+
+**Body:**
+
+> TPAs spent hours re-typing claim data from noisy scans. The process was slow and expensive, but compliance requirements made automation seem risky.
+>
+> Automation handles the volume and humans handle judgment. Confidence scoring flags low-certainty items for human review automatically, and the whole system was built around healthcare privacy requirements from day one.
+>
+> The result is clean, structured data with human oversight where it matters. Automation enhances accuracy instead of introducing risk.
+
 ---
 
 # Part B: New copy written during the build
