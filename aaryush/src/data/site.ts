@@ -45,7 +45,7 @@ export const site = {
   drawer: [] as { kind: string; length: string }[],
   footer: {
     heading: 'Let’s talk.',
-    lead: 'The best first message is a rough picture of what you’re trying to solve and how it’s handled today.',
+    lead: 'The best conversations start half-formed.',
   },
   companyLinkLabel: (name: string) => `Inside ${name}`,
   /** Flip to false in Task 13 once Aaryush approves each block. */

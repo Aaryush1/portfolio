@@ -713,7 +713,9 @@ Current heading:
 
 Current lead:
 
-> The best first message is a rough picture of what you’re trying to solve and how it’s handled today.
+> The best conversations start half-formed.
+
+**Approved by Aaryush 2026-10-14** (footer lead, replacing the earlier line).
 
 Current drawing caption beside the footer graphic:
 
