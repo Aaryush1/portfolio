@@ -2,6 +2,9 @@
 // with one amber contour whose level oscillates. Lifecycle (idle start, pause when
 // offscreen / hidden / pop-up open, dt cap, DPR cap, reduced-motion still) is unchanged
 // from the previous hero drawing; tests/e2e/hero.spec.ts depends on it.
+// The look follows the visitor's local hour (src/lib/daypart.ts, spec E5).
+
+import { daypartFor, fieldParams, isDaypart, nextPreview, type Daypart, type FieldParams, type Rgba } from '../lib/daypart';
 
 const hero = document.getElementById('hero');
 const cv = document.getElementById('field') as HTMLCanvasElement | null;
@@ -62,12 +65,8 @@ const SEGMENTS: (number[] | null)[] = [
   [0, 3], [0, 2], [0, 3, 1, 2], [0, 1], [3, 1], [2, 1], [3, 2],
 ];
 
-const MINOR_STROKE = 'rgba(160,164,174,.12)';
-const MAJOR_STROKE = 'rgba(160,164,174,.24)';
-const AMBER_STROKE = 'rgba(242,181,68,.62)';
-const MINOR_LEVELS: number[] = [];
-const MAJOR_LEVELS: number[] = [];
-for (let i = 0; i <= 14; i++) (i % 4 === 0 ? MAJOR_LEVELS : MINOR_LEVELS).push(-0.7 + i * 0.1);
+const rgba = (c: Rgba) => `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`;
+const RECHECK_MS = 10 * 60 * 1000;
 
 const FRAME_MS = 1000 / 30;
 const STILL_T = 18;
@@ -83,6 +82,63 @@ if (hero && cv && ctx) {
   let field = new Float32Array(0);
   let raf = 0, last = 0, clock = STILL_T, lastDraw = 0;
   let visible = true, ready = false;
+
+  // ---------- day period (E5) ----------
+  let preview: Daypart | null = null;
+  let part: Daypart | null = null;
+  let params: FieldParams = fieldParams('afternoon');
+  let minorStroke = '', majorStroke = '', amberStroke = '';
+  let minorLevels: number[] = [], majorLevels: number[] = [];
+  let tag: HTMLElement | null = null, tagTimer = 0;
+
+  // Precedence: keyboard preview, then data-daypart on <html> (tests), then ?daypart= (dev builds only), then the clock.
+  function resolvePart(): Daypart {
+    if (preview) return preview;
+    const forced = root.getAttribute('data-daypart');
+    if (isDaypart(forced)) return forced;
+    if (import.meta.env.DEV) {
+      const q = new URLSearchParams(location.search).get('daypart');
+      if (isDaypart(q)) return q;
+    }
+    return daypartFor(new Date().getHours());
+  }
+
+  function applyPart() {
+    const next = resolvePart();
+    if (next === part) return;
+    part = next;
+    params = fieldParams(next);
+    minorStroke = rgba(params.minor); majorStroke = rgba(params.major); amberStroke = rgba(params.amber);
+    minorLevels = []; majorLevels = [];
+    for (let i = 0; i < params.levelCount; i++) (i % 4 === 0 ? majorLevels : minorLevels).push(-0.7 + i * params.levelStep);
+    cv!.dataset.daypart = next;
+    cv!.dataset.levels = String(params.levelCount);
+    cv!.dataset.drift = String(params.drift);
+    cv!.dataset.amber = String(params.amber[3]);
+    // Redraw straight away when nothing else will (reduced-motion still frame, or paused).
+    if (ready && !raf) draw(reduced() ? STILL_T : clock);
+  }
+
+  function showTag(name: string) {
+    tag?.remove();
+    clearTimeout(tagTimer);
+    tag = document.createElement('div');
+    tag.className = 'dp-tag';
+    tag.setAttribute('aria-hidden', 'true');
+    tag.textContent = `Field · ${name}`;
+    hero!.appendChild(tag);
+    const el = tag;
+    tagTimer = window.setTimeout(() => { el.remove(); if (tag === el) tag = null; }, 2200);
+  }
+
+  // Task 23's keyboard map calls this on `t`: morning, afternoon, evening, night, then auto.
+  (window as unknown as { __heroDaypart?: () => string }).__heroDaypart = () => {
+    preview = nextPreview(preview);
+    applyPart();
+    const name = preview ?? 'auto';
+    showTag(name);
+    return name;
+  };
 
   cv.dataset.running = 'false';
 
@@ -147,10 +203,10 @@ if (hero && cv && ctx) {
     c.clearRect(0, 0, W, H);
     c.lineJoin = 'round';
     c.lineWidth = 1;
-    c.beginPath(); MINOR_LEVELS.forEach((l) => contour(c, l)); c.strokeStyle = MINOR_STROKE; c.stroke();
-    c.beginPath(); MAJOR_LEVELS.forEach((l) => contour(c, l)); c.strokeStyle = MAJOR_STROKE; c.stroke();
+    c.beginPath(); minorLevels.forEach((l) => contour(c, l)); c.strokeStyle = minorStroke; c.stroke();
+    c.beginPath(); majorLevels.forEach((l) => contour(c, l)); c.strokeStyle = majorStroke; c.stroke();
     c.beginPath(); contour(c, 0.03 + 0.07 * Math.sin(t * 0.06));
-    c.strokeStyle = AMBER_STROKE; c.lineWidth = 1.2; c.stroke();
+    c.strokeStyle = amberStroke; c.lineWidth = 1.2; c.stroke();
   }
 
   function loop(now: number) {
@@ -158,7 +214,7 @@ if (hero && cv && ctx) {
     if (now - lastDraw < FRAME_MS - 3) return; // 30fps cap
     const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
     last = now; lastDraw = now;
-    clock += dt;
+    clock += dt * params.drift;
     draw(clock);
   }
 
@@ -175,9 +231,12 @@ if (hero && cv && ctx) {
   }
   function refresh() {
     ready = true;
+    applyPart();
     build();
     if (reduced()) { stop(); draw(STILL_T); } else { draw(clock); start(); }
   }
+
+  applyPart();
 
   // Start after first paint so the canvas never competes with LCP.
   if (reduced()) refresh();
@@ -193,9 +252,12 @@ if (hero && cv && ctx) {
     }, 160);
   });
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver((en) => { visible = en[0].isIntersecting; if (visible) start(); else stop(); }).observe(hero);
+    new IntersectionObserver((en) => { visible = en[0].isIntersecting; if (visible) { applyPart(); start(); } else stop(); }).observe(hero);
   }
-  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else { applyPart(); start(); } });
+  // Re-check the hour every 10 minutes, only while the hero is on screen.
+  setInterval(() => { if (visible && !document.hidden) applyPart(); }, RECHECK_MS);
+  new MutationObserver(applyPart).observe(root, { attributes: true, attributeFilter: ['data-daypart'] });
   reduceMQ.addEventListener('change', () => { stop(); refresh(); });
   // Pause while a pop-up is open (html.locked): saves CPU and keeps the frame count low behind the dialog.
   new MutationObserver(() => { if (locked()) stop(); else start(); }).observe(root, { attributes: true, attributeFilter: ['class'] });

@@ -54,6 +54,12 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
 <style>
 .hero{position:relative;isolation:isolate;overflow:hidden}
 #field{position:absolute;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none}
+/* Transient label from the `t` time preview; created at runtime. */
+.hero :global(.dp-tag){position:absolute;top:14px;right:16px;z-index:1;pointer-events:none;font:400 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+@media (prefers-reduced-motion:no-preference){
+  .hero :global(.dp-tag){animation:dp-tag 2.2s var(--ease-out) both}
+  @keyframes dp-tag{0%{opacity:0}12%,70%{opacity:1}100%{opacity:0}}
+}
 @media (min-width:960px){
   #field{-webkit-mask-image:linear-gradient(90deg, transparent 44%, #000 62%);mask-image:linear-gradient(90deg, transparent 44%, #000 62%)}
 }
