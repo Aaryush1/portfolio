@@ -1,0 +1,25 @@
+---
+import { pieceLabel, type PieceView } from '../../lib/writing';
+
+interface Props {
+  piece: PieceView;
+}
+const { piece } = Astro.props;
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+---
+<li class="piece" data-piece data-slug={piece.slug} data-kind={piece.kind} data-shape={piece.shape}>
+  <a class="piece-link" href={`/writing/${piece.slug}`} aria-label={pieceLabel(piece.title, piece.kind, piece.minutes)}>{piece.title}</a>
+  <p class="piece-meta mono">
+    <span>{piece.kind}</span>
+    <span>{piece.minutes} min read</span>
+    <time datetime={piece.date.toISOString().slice(0, 10)}>{fmt(piece.date)}</time>
+  </p>
+  {piece.why && <p class="piece-why">{piece.why}</p>}
+  {piece.breakdown.length > 0 && (
+    <ol class="breakdown">
+      {piece.breakdown.map((b) => (
+        <li>{b.label}{b.gist && <span class="gist"> — {b.gist}</span>}</li>
+      ))}
+    </ol>
+  )}
+</li>

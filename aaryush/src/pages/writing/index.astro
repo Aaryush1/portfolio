@@ -1,20 +1,19 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+import Piece from '../../components/writing/Piece.astro';
+import { toPieceView } from '../../lib/writing';
+import '../../styles/writing-room.css';
+const pieces = (await getCollection('writing', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .map(toPieceView);
 ---
 <BaseLayout title="Writing — Aaryush Gupta" description="Essays by Aaryush Gupta on AI and how organizations work." ogImage="/og/writing.png" path="/writing">
-  <main class="sec"><div class="wrap">
-    <div class="sec-head mono"><span class="n">§</span><span>Writing</span><span class="f">{posts.length} entries</span></div>
+  <main class="sec room"><div class="wrap">
+    <div class="sec-head mono"><span class="n">§</span><span>Writing</span><span class="f">{pieces.length} entries</span></div>
     <h1 class="h2" style="margin-top:44px">Notes on where this is going.</h1>
-    <ul class="posts" data-writing-list>
-      {posts.map((p) => (
-        <li><a class="post" href={`/writing/${p.id}`}>
-          <time datetime={p.data.date.toISOString().slice(0, 10)}>{fmt(p.data.date)}</time>
-          <div><h2>{p.data.title}</h2><p>{p.data.summary}</p></div>
-        </a></li>
-      ))}
+    <ul class="pieces" data-writing-list>
+      {pieces.map((p) => <Piece piece={p} />)}
     </ul>
   </div></main>
 </BaseLayout>

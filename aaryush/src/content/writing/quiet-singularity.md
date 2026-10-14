@@ -5,6 +5,14 @@ date: 2026-02-15
 summary: "An observational analysis of three concurrent developments in artificial intelligence — recursive model self-improvement, the commoditization of frontier-class inference, and the compounding automation of cognitive labor — and their implications for institutions designed around assumptions of scarcity."
 kind: paper
 pdf: /quiet-singularity.pdf
+why: "I kept seeing one loop in three different headlines, and nobody was naming it."
+breakdown:
+  - { label: "The Shift", gist: "Systems now help build themselves" }
+  - { label: "Recursive Self-Improvement", gist: "Labs say models build models" }
+  - { label: "The Collapse of Cost", gist: "Frontier-class intelligence gets nearly free" }
+  - { label: "The Implication", gist: "Judgment becomes the scarce thing" }
+  - { label: "The Feedback Loop", gist: "Better tools build better tools" }
+  - { label: "The Institutional Gap", gist: "Institutions built for scarcity" }
 draft: false
 ---
 ## I. The Shift

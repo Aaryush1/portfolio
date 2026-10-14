@@ -4,6 +4,12 @@ subtitle: A letter to the people I love
 date: 2026-02-18
 summary: "My attempt, after years of failing to find the right words, to finally explain what AI means for everyone — not the technology, but what's already changing in the world around you, right now, while most people are going about their lives."
 kind: letter
+why: "I failed to explain this to my family for years. This is the attempt."
+breakdown:
+  - { label: "One app, one weekend" }
+  - { label: "It's already here" }
+  - { label: "We've seen this before" }
+  - { label: "The great experiment" }
 draft: false
 ---
 <p>Last weekend, I got frustrated with my habits app.</p>

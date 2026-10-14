@@ -2,8 +2,26 @@ import { expect, test } from '@playwright/test';
 
 test('writing index lists essays newest first', async ({ page }) => {
   await page.goto('/writing');
-  const titles = await page.locator('[data-writing-list] h2').allInnerTexts();
+  const titles = await page.locator('[data-writing-list] .piece-link').allInnerTexts();
   expect(titles).toEqual(['This Is Bigger Than Electricity', 'The Quiet Singularity']);
+});
+
+test('no-JS: every piece is listed with title, kind, minutes, why and a working link', async ({ browser }) => {
+  const ctx = await browser.newContext({ javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  await page.goto('/writing');
+  const items = page.locator('[data-writing-list] > li');
+  await expect(items).toHaveCount(2);
+  const first = items.first();
+  await expect(first.getByRole('link', { name: /This Is Bigger Than Electricity — letter, \d+ min read/ })).toHaveAttribute('href', '/writing/bigger-than-electricity');
+  await expect(first.locator('.piece-why')).not.toBeEmpty();
+  await expect(first.locator('ol.breakdown li')).toHaveCount(4);
+  await ctx.close();
+});
+
+test('the list never exposes email or phone', async ({ request }) => {
+  const html = await (await request.get('/writing')).text();
+  expect(html).not.toMatch(/aaryush@outlook\.com|331-2850|\+1949/);
 });
 
 test('essay page renders the full letter with reading progress', async ({ page }) => {

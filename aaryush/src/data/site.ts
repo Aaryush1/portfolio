@@ -41,13 +41,15 @@ export const site = {
   location: 'Madison, WI',
   education: 'UW–Madison',
   next: { name: 'contextOS', note: 'Coming soon.' },
+  /** /writing drawer: unpublished work, shown only as kind + rough length. Never titles or content. Empty: the drawer holds only the contextOS folder (Aaryush, 2026-10-14). */
+  drawer: [] as { kind: string; length: string }[],
   footer: {
     heading: 'Let’s talk.',
     lead: 'The best first message is a rough picture of what you’re trying to solve and how it’s handled today.',
   },
   companyLinkLabel: (name: string) => `Inside ${name}`,
   /** Flip to false in Task 13 once Aaryush approves each block. */
-  drafts: { hero: true, about: true, levels: true, companyLinkLabel: true, footer: false, consoleNote: true, keyboardMap: true, notFound: true, qrCard: true },
+  drafts: { hero: true, about: true, levels: true, companyLinkLabel: true, footer: false, consoleNote: true, keyboardMap: true, notFound: true, qrCard: true, writingRoom: true },
 } as const;
 
 /** Build-time stamp (YYYY.MM), so it always matches the deploy that's live. */

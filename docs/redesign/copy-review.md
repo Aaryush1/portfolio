@@ -9,7 +9,7 @@ Voice reminders (from the project notes): operator, not engineer; confident but 
 Contents
 
 - Part A: Draft blocks (the brief's list): 1 Hero, 2 About, 3 How AI fits, 4 Inside-link label, 5 Work intro lead, 6 Content files with `draft: true`
-- Part B: New copy written during the build (not from the old live site): 7 Diagram titles and descriptions, 8 Hero figure caption and title block, 9 Section intros and headings, 10 Footer, 11 "Next" line, 12 404 page, 13 Other small UI labels, 14 Console note and keyboard map, 15 QR page and contact card
+- Part B: New copy written during the build (not from the old live site): 7 Diagram titles and descriptions, 8 Hero figure caption and title block, 9 Section intros and headings, 10 Footer, 11 "Next" line, 12 404 page, 13 Other small UI labels, 14 Console note and keyboard map, 15 QR page and contact card, 16 Writing room copy
 
 ---
 
@@ -874,6 +874,85 @@ Edits:
 
 ```
 (any wording changes)
+```
+
+---
+
+## 16. Writing room copy
+
+**Source:** `aaryush/src/content/writing/bigger-than-electricity.md` and `aaryush/src/content/writing/quiet-singularity.md` (`why`, `breakdown`; both files are published, but these two new fields are draft copy); `aaryush/src/data/site.ts` (`site.drafts.writingRoom`, `site.drawer`). Added in the writing room plan, Task 1.
+
+Each piece is an object on a desk. Its `why` line is written on the object, and its `breakdown` is the structure the object shows (letter folds, paper sections). Co-write each line with Aaryush before release.
+
+### 16a. "Why I wrote this" lines
+
+Current:
+
+- This Is Bigger Than Electricity (letter): I failed to explain this to my family for years. This is the attempt.
+- The Quiet Singularity (paper): I kept seeing one loop in three different headlines, and nobody was naming it.
+
+Edits:
+
+```
+(your text for each; keep it to one line)
+```
+
+### 16b. Breakdown phrases
+
+Letter: one phrase per fold, labels only. Paper: one label and one gist (five words or fewer) per section.
+
+Current, letter (This Is Bigger Than Electricity):
+
+- One app, one weekend
+- It's already here
+- We've seen this before
+- The great experiment
+
+Current, paper (The Quiet Singularity):
+
+- The Shift: Systems now help build themselves
+- Recursive Self-Improvement: Labs say models build models
+- The Collapse of Cost: Frontier-class intelligence gets nearly free
+- The Implication: Judgment becomes the scarce thing
+- The Feedback Loop: Better tools build better tools
+- The Institutional Gap: Institutions built for scarcity
+
+Edits:
+
+```
+(any label or gist changes)
+```
+
+### 16c. Drawer
+
+Current: the drawer holds only the contextOS folder. There are no draft entries (`site.drawer` is empty). Confirmed by Aaryush, 2026-10-14. The folder is decorative and doesn't open or link anywhere.
+
+Edits: none unless drafts are added later. A drawer entry shows only a kind and a rough length, never a title.
+
+### 16d. Night note
+
+Current (shown at 21:00 to 07:00 only, handwritten on a paper note on the desk, never labelled):
+
+- you're up late too.
+
+Edits:
+
+```
+(keep or replace)
+```
+
+### 16e. Visible labels
+
+Current:
+
+- Pick up where you left off (on an essay page, and on the home writing teaser)
+- forget (a quiet control on /writing that clears what the room remembers)
+- writing I'm working on (the drawer's label)
+
+Edits:
+
+```
+(any label changes)
 ```
 
 ---

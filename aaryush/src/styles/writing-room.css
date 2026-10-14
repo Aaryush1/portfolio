@@ -1,0 +1,16 @@
+/* The writing room. Scoped to .room so the rest of the site keeps its own tokens. Dark only. */
+.room {
+  --bg: #0A0B0E; --s1: #0E1015; --s2: #12151B; --s3: #171A22;
+  --text: #E6E7EA; --text-2: #A0A4AE; --text-3: #8B909C; --accent: #F2B544;
+  --line: rgba(255, 255, 255, .08);
+}
+
+.pieces { margin-top: 44px; display: grid; gap: 0; }
+.piece { padding: 26px 0; border-top: 1px solid var(--line); }
+.piece:last-child { border-bottom: 1px solid var(--line); }
+.piece-link { font-size: 20px; font-weight: 500; letter-spacing: -.018em; line-height: 1.35; color: var(--text); text-decoration: none; }
+.piece-link:hover, .piece-link:focus-visible { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+.piece-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 14px; font: 400 12.5px/1.4 var(--mono); color: var(--text-3); }
+.piece-why { margin-top: 12px; font: italic 400 17px/1.5 var(--serif); color: var(--text-2); }
+.breakdown { margin-top: 14px; padding-left: 0; list-style: none; display: grid; gap: 4px; font: 400 13px/1.5 var(--mono); color: var(--text-3); }
+.breakdown .gist { color: var(--text-2); }

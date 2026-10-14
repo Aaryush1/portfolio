@@ -45,8 +45,12 @@ const writing = defineCollection({
     subtitle: z.string(),
     date: z.coerce.date(),
     summary: z.string(),
-    kind: z.enum(['letter', 'paper']),
+    kind: z.enum(['letter', 'paper', 'essay', 'talk']),
     pdf: z.string().optional(),
+    /** One line, handwritten italic on the object (writing room). */
+    why: z.string().min(1).optional(),
+    /** Three to six entries; a paper's gist is five words or fewer (checked in tests). */
+    breakdown: z.array(z.object({ label: z.string().min(1), gist: z.string().optional() })).max(6).optional(),
     draft: z.boolean().default(false),
   }),
 });
