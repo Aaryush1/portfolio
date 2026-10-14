@@ -20,8 +20,25 @@
 .essay-body .table-note{font:400 12.5px/1.5 var(--mono);color:var(--text-3)}
 .essay-body .references{margin-top:3em;font-family:var(--font);font-size:14px;color:var(--text-2)}
 .essay-body .references ol{list-style:decimal;padding-left:1.4em;display:grid;gap:6px}
+.essay-sign{font-size:var(--essay-size);width:100%;max-width:var(--essay-measure);margin:0 auto}
 .essay-foot{max-width:var(--essay-measure);margin:clamp(48px,7vw,80px) auto 0;display:flex;flex-wrap:wrap;gap:12px 24px}
 .progress{position:fixed;top:var(--header);left:0;right:0;height:2px;z-index:19;background:transparent}
 .progress::after{content:"";position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--progress,0));background:var(--accent)}
+/* Papers: two piles of sheets instead of the bar. Decoration only (aria-hidden); hidden without JS. */
+.pile-dock{display:none}
+html.js .pile-dock{display:block;position:fixed;right:24px;bottom:20px;z-index:19;width:max-content;min-width:112px;pointer-events:none}
+.pile-dock{transition:opacity .25s,visibility 0s}
+html.js .pile-dock.is-away{opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+.piles{position:relative;height:calc(44px + var(--n,6) * 2.6px);width:112px}
+.pile-sh{position:absolute;left:0;bottom:0;width:34px;height:44px;border:1px solid var(--line-3);border-radius:2px;background:var(--s3);
+  transform:translate(0,calc(var(--i) * -2.6px));transition:transform .45s var(--ease-out)}
+.pile-sh.moved{transform:translate(70px,calc(var(--i) * -2.6px)) rotate(calc(var(--r) * 1deg));border-color:var(--line-2);background:var(--s2)}
+.pile-label{margin:6px 0 0;font-size:12px;line-height:1.3;color:var(--text-2);text-align:center;white-space:nowrap}
+.essay--paper{padding-bottom:clamp(72px,10vw,136px)}
+html.js .essay--paper{padding-bottom:max(clamp(72px,10vw,136px),150px)}
+@media (max-width:719px){
+  html.js .pile-dock{right:auto;left:50%;transform:translateX(-50%);bottom:calc(52px + env(safe-area-inset-bottom,0px))}
+  html.js .essay--paper{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))}
+}
 @media (max-width:719px){.essay-body .data-table{display:block;overflow-x:auto}}
-@media print{.top,.foot,.progress,.essay-foot{display:none}body{background:#fff;color:#000}.essay-body p,.essay-body{color:#000}}
+@media print{.top,.foot,.progress,.pile-dock,.essay-foot{display:none}body{background:#fff;color:#000}.essay-body p,.essay-body{color:#000}}

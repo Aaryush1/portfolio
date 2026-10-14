@@ -5,7 +5,7 @@ const root = document.documentElement;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function init() {
-  const svg = document.querySelector<SVGElement>('.mark-svg');
+  const svg = document.querySelector<SVGElement>('.mark-svg:not([data-signature])');
   const link = svg?.closest<HTMLElement>('a');
   if (!svg || !link) return;
 

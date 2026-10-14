@@ -12,6 +12,6 @@ const { post } = Astro.props;
 const { Content } = await render(post);
 const minutes = readingMinutes(wordCount(post.body ?? ''));
 ---
-<EssayLayout title={post.data.title} subtitle={post.data.subtitle} date={post.data.date} summary={post.data.summary} slug={post.id} pdf={post.data.pdf} minutes={minutes}>
+<EssayLayout title={post.data.title} subtitle={post.data.subtitle} date={post.data.date} summary={post.data.summary} slug={post.id} pdf={post.data.pdf} minutes={minutes} kind={post.data.kind}>
   <Content />
 </EssayLayout>
