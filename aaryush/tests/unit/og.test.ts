@@ -10,7 +10,10 @@ const cards: [string, OgCard][] = [
   ['home', { type: 'home', name: 'Aaryush Gupta', line: 'I build the systems behind how anyone solves problems.', deploy: '2026.10' }],
   ['system with diagram', { type: 'place', kicker: 'System diagram', title: 'Skale.win', sub: 'Career platform', diagram: diagrams.skale, seed: 3 }],
   ['system without diagram', { type: 'place', kicker: 'System', title: 'Ready Rebound', sub: 'Claims underwriting', seed: 5 }],
-  ['company, no diagram', { type: 'place', kicker: 'Practice', title: 'Gupta Advisory', seed: 7 }],
+  ['company, no systems', { type: 'company', kicker: 'Practice', title: 'Gupta Advisory', seed: 7, systems: [] }],
+  ['company, 2 systems', { type: 'company', kicker: 'Company', title: 'Cylerity', seed: 9, systems: [{ title: 'Claims underwriting' }, { title: 'Engineering intake', diagram: diagrams.intake }] }],
+  ['company, 1 system', { type: 'company', kicker: 'Company', title: 'Skale.win', seed: 11, systems: [{ title: 'Career platform', diagram: diagrams.skale }] }],
+  ['company, 6 systems (capped)', { type: 'company', kicker: 'Company', title: 'A Very Long Company Name Inc', seed: 13, systems: Array.from({ length: 6 }, (_, i) => ({ title: `System ${i}`, diagram: diagrams.loop })) }],
   ['letter', { type: 'essay', shape: 'letter', kicker: 'LETTER · 14 MIN READ', title: 'This Is Bigger Than Electricity' }],
   ['paper', { type: 'essay', shape: 'paper', kicker: 'PAPER · 6 MIN READ', title: 'The Quiet Singularity' }],
   ['sheet', { type: 'essay', shape: 'sheet', kicker: 'ESSAY · 3 MIN READ', title: 'A very long title that goes on across several lines of the card to prove it still fits' }],
@@ -23,6 +26,12 @@ describe('renderOg', () => {
     expect(isPng(png)).toBe(true);
     expect(dims(png)).toEqual([1200, 630]);
     expect(png.length).toBeLessThan(MAX_BYTES);
+  }, 30_000);
+
+  it('company cards differ from system cards for the same company', async () => {
+    const sys = await renderOg({ type: 'place', kicker: 'System diagram', title: 'Cylerity', sub: 'Engineering intake', diagram: diagrams.intake, seed: 9 });
+    const co = await renderOg(cards.find(([n]) => n === 'company, 2 systems')![1]);
+    expect(sys.equals(co)).toBe(false);
   }, 30_000);
 
   it('is byte-stable across runs', async () => {

@@ -20,6 +20,8 @@ export type OgCard =
   | { type: 'home'; name: string; line: string; deploy: string }
   /** Systems and companies: big name, small subtext, the system diagram dimmed behind (or topography). */
   | { type: 'place'; kicker: string; title: string; sub?: string; diagram?: DiagramSpec; seed: number }
+  /** A company and the set of systems inside it: name big, one small framed figure per system. */
+  | { type: 'company'; kicker: string; title: string; seed: number; systems: { title: string; diagram?: DiagramSpec }[] }
   | { type: 'essay'; shape: 'letter' | 'paper' | 'sheet'; kicker: string; title: string }
   /** /writing is a static cover: it must not change as pieces are published. */
   | { type: 'writing' };
@@ -178,10 +180,10 @@ const kicker = (text: string, size = 22) =>
 const footer = () => abs({ left: 72, bottom: 54, alignItems: 'center', gap: 22 }, [mark(54), h({ fontFamily: 'JetBrains Mono', fontSize: 20, letterSpacing: 1.6, color: '#8B909C' }, 'aaryush.com')]);
 
 /* ---------- system diagram, labels omitted (satori would not use the loaded fonts inside SVG) ---------- */
-function diagramSvg(spec: DiagramSpec, scale: number, frac = 0.3): { svg: string; w: number; h: number } {
+function diagramSvg(spec: DiagramSpec, scale: number, frac = 0.3, sw = 1.4): { svg: string; w: number; h: number } {
   const [vw, vh] = spec.vb;
   const arrow = (x: number, y: number, dx: number, dy: number) => { const b = 6, s = 4; return `M${x - dx * b - dy * s} ${y - dy * b + dx * s} L${x} ${y} L${x - dx * b + dy * s} ${y - dy * b - dx * s}`; };
-  let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${vw * scale}" height="${vh * scale}" viewBox="0 0 ${vw} ${vh}" fill="none" stroke-width="1.4">`;
+  let o = `<svg xmlns="http://www.w3.org/2000/svg" width="${vw * scale}" height="${vh * scale}" viewBox="0 0 ${vw} ${vh}" fill="none" stroke-width="${sw}">`;
   for (const [x, y1, y2] of spec.inputs) o += `<path d="M${x} ${y1} V${y2}" stroke="rgba(255,255,255,.4)"/><path d="${arrow(x, y2, 0, 1)}" stroke="rgba(255,255,255,.6)" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${x}" cy="${y1}" r="2.8" fill="${AMBER}"/>`;
   for (const e of spec.edges) {
     const a = e.p[e.p.length - 2], b = e.p[e.p.length - 1];
@@ -272,6 +274,35 @@ function place(c: Extract<OgCard, { type: 'place' }>): El {
   ]);
 }
 
+export const COMPANY_FRAMES_MAX = 4;
+function company(c: Extract<OgCard, { type: 'company' }>): El {
+  const systems = c.systems.slice(0, COMPANY_FRAMES_MAX);
+  const fw = 250, fh = 190, gap = 28;
+  const frames = systems.map((s, i) => {
+    const num = `SYS.${String(i + 1).padStart(2, '0')}`;
+    let fig: El | null = null;
+    if (s.diagram) {
+      const d = diagramSvg(s.diagram, (fh - 56) / s.diagram.vb[1], 0.3, 3.2);
+      fig = img(b64(d.svg), Math.round(d.w), Math.round(d.h), { position: 'absolute', left: Math.round((fw - d.w) / 2), top: 44, opacity: 0.78 });
+    }
+    return h({ flexDirection: 'column', width: fw }, [
+      h({ position: 'relative', width: fw, height: fh, border: '1px solid rgba(255,255,255,.3)', background: '#0E1015' }, [
+        abs({ left: 12, top: 10, fontFamily: 'JetBrains Mono', fontSize: 16, letterSpacing: 1.6, color: AMBER }, num),
+        fig,
+      ].filter(Boolean)),
+      h({ marginTop: 16, fontSize: 28, lineHeight: 1.15, letterSpacing: -0.3, color: '#C8CBD2' }, s.title),
+    ]);
+  });
+  return root([
+    topoImg(c.seed, 0.13, 1.8, { opacity: 0.9 }),
+    abs({ left: 0, top: 0, width: W, height: H, background: 'linear-gradient(90deg, rgba(10,11,14,.9) 0%, rgba(10,11,14,.8) 60%, rgba(10,11,14,.55) 100%)' }),
+    abs({ left: 72, top: 64 }, kicker(c.kicker)),
+    abs({ left: 72, top: frames.length ? 112 : 216, width: 1056 }, h({ fontSize: fit(c.title, [[10, 124], [15, 108], [22, 88], [40, 72]]), lineHeight: 1, fontWeight: 500, letterSpacing: -4, color: '#E6E7EA' }, c.title)),
+    frames.length ? abs({ left: 72, top: 296, gap }, frames) : null,
+    abs({ right: 72, bottom: 54 }, mark(54)),
+  ].filter(Boolean));
+}
+
 function essay(c: Extract<OgCard, { type: 'essay' }>): El {
   const obj = c.shape === 'letter' ? letterObj(150, 120, 300, 392, -4) : c.shape === 'paper' ? paperObj(150, 120, 300, 392, -3) : sheetObj(150, 120, 300, 392, -3);
   return root([
@@ -297,7 +328,7 @@ function writing(): El {
 }
 
 export async function renderOg(card: OgCard): Promise<Buffer> {
-  const tree = card.type === 'home' ? home(card) : card.type === 'place' ? place(card) : card.type === 'essay' ? essay(card) : writing();
+  const tree = card.type === 'home' ? home(card) : card.type === 'place' ? place(card) : card.type === 'company' ? company(card) : card.type === 'essay' ? essay(card) : writing();
   const svg = await satori(tree as never, { width: W, height: H, fonts: await loadFonts() });
   return new Resvg(svg, { fitTo: { mode: 'width', value: W } }).render().asPng();
 }

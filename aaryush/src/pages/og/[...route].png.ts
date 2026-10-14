@@ -27,16 +27,17 @@ export async function getStaticPaths() {
     return { params: { route: `writing/${p.slug}` }, props: { card: { type: 'essay', shape: p.shape, kicker: `${p.kind} · ${p.minutes} min read`, title: p.title } satisfies OgCard } };
   });
 
-  // A company shows its first system that has a diagram; none (Gupta Advisory) falls back to the topography.
+  // A company is a name over topography with one framed figure per system.
   const companyCards = companies.filter((c) => c.data.kind === 'company').map((c) => {
-    const rep = systems.find((s) => s.data.company.id === c.id && s.data.diagram);
     const card: OgCard = {
-      type: 'place',
+      type: 'company',
       kicker: c.id === 'gupta-advisory' ? 'Practice' : 'Company',
       title: c.data.name,
-      sub: rep?.data.title ?? c.data.role,
-      diagram: rep?.data.diagram ? diagrams[rep.data.diagram] : undefined,
       seed: seedOf(c.id),
+      // Only companies with at least one diagram get the figure row; Gupta Advisory is name over topography.
+      systems: systems.some((s) => s.data.company.id === c.id && s.data.diagram)
+        ? systems.filter((s) => s.data.company.id === c.id).map((s) => ({ title: s.data.title, diagram: s.data.diagram ? diagrams[s.data.diagram] : undefined }))
+        : [],
     };
     return { params: { route: `work/${c.id}` }, props: { card } };
   });
