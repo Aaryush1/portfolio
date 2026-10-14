@@ -2,6 +2,9 @@
 import ContactActions from '../ContactActions.astro';
 import { site } from '../../data/site';
 const { lead, subjects, settled, lede } = site.hero;
+// Stamped at build time, so it always matches the deploy that's live.
+const built = new Date();
+const lastDeploy = `${built.getFullYear()}.${String(built.getMonth() + 1).padStart(2, '0')}`;
 const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em>${settled.after}</span>`;
 ---
 <section class="hero" id="hero" aria-labelledby="hero-name">
@@ -34,9 +37,9 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
   </div>
   <div class="wrap hero-foot enter d5" aria-hidden="true">
     <dl class="tblock">
-      <div><dt>Drawn by</dt><dd>A. Gupta</dd></div>
-      <div><dt>Sheet</dt><dd>01 / 06</dd></div>
-      <div><dt>Rev.</dt><dd>2026.10</dd></div>
+      <div><dt>Dwg. no.</dt><dd>AG-001</dd></div>
+      <div><dt>Region</dt><dd>us-central</dd></div>
+      <div><dt>Last deploy</dt><dd>{lastDeploy}</dd></div>
       <div><dt>Scale</dt><dd>NTS</dd></div>
     </dl>
   </div>
