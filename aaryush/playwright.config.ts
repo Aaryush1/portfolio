@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const port = Number(process.env.PW_PORT ?? 4322);
+
 export default defineConfig({
   testDir: 'tests/e2e',
   timeout: 30_000,
@@ -9,10 +11,10 @@ export default defineConfig({
   // in tests that pass alone; 4 workers was clean. Playwright can't set workers per project, so cap them for the whole run.
   workers: 4,
   reporter: 'list',
-  use: { baseURL: 'http://localhost:4322', trace: 'retain-on-failure' },
+  use: { baseURL: `http://localhost:${port}`, trace: 'retain-on-failure' },
   webServer: {
-    command: 'npm run build && npm run preview -- --port 4322',
-    url: 'http://localhost:4322',
+    command: `npm run build && npm run preview -- --port ${port}`,
+    url: `http://localhost:${port}`,
     reuseExistingServer: false,
     timeout: 240_000,
   },
