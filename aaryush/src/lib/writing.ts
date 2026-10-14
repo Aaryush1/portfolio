@@ -30,6 +30,8 @@ export interface PieceView {
   minutes: number;
   why?: string;
   breakdown: { label: string; gist?: string }[];
+  /** Sections the reader can progress through: a letter's folds, otherwise the essay's real `##` headings (references excluded). */
+  sections: number;
 }
 
 /** Structural input, so this module stays free of `astro:content` and runs under Vitest. */
@@ -46,6 +48,12 @@ export interface WritingEntry {
   };
 }
 
+export function sectionCount(kind: string, body: string, breakdownLength: number): number {
+  if (kind === 'letter') return Math.min(breakdownLength, 6);
+  const main = body.split('<div class="references">')[0];
+  return (main.match(/^##\s/gm) ?? []).length;
+}
+
 export function toPieceView(entry: WritingEntry): PieceView {
   const d = entry.data;
   return {
@@ -58,5 +66,6 @@ export function toPieceView(entry: WritingEntry): PieceView {
     minutes: readingMinutes(wordCount(entry.body ?? '')),
     why: d.why,
     breakdown: d.breakdown ?? [],
+    sections: sectionCount(d.kind, entry.body ?? '', (d.breakdown ?? []).length),
   };
 }

@@ -73,3 +73,8 @@ html.js .essay--paper{padding-bottom:max(clamp(72px,10vw,136px),150px)}
 @media (prefers-reduced-motion:reduce){.cite-sheet,.cite-sheet.is-open{transition:none;transform:none}}
 @media print{.cite-sheet{display:none}}
 @media print{.top,.foot,.progress,.pile-dock,.essay-foot{display:none}body{background:#fff;color:#000}.essay-body p,.essay-body{color:#000}}
+
+/* pick-up offer: sits in the gap between the header and the body, so showing it moves nothing */
+.pickup-slot{max-width:var(--essay-measure);margin:0 auto;height:0;position:relative}
+.pickup{position:absolute;left:0;top:10px;font:400 13px/1.35 var(--mono);letter-spacing:.02em;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
+.pickup:hover{color:var(--text)}

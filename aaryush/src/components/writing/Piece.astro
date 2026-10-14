@@ -29,7 +29,7 @@ heights.forEach((h, i) => vars.push(`--h${i + 1}:calc(${h}px * var(--hs, 1))`));
 if (heights.length) vars.push(`--tlast:var(--t${heights.length})`, `--hlast:var(--h${heights.length})`);
 if (piece.shape === 'paper') vars.push(`--n:${Math.min(n, 6)}`);
 ---
-<li class="piece" data-piece data-slug={piece.slug} data-kind={piece.kind} data-shape={piece.shape} data-folds={heights.length || undefined} style={vars.join(';')}>
+<li class="piece" data-piece data-slug={piece.slug} data-total={piece.sections} data-kind={piece.kind} data-shape={piece.shape} data-folds={heights.length || undefined} style={vars.join(';')}>
   <span class="cast" aria-hidden="true"></span>
   {piece.shape === 'letter' && <ObjectLetter folds={heights.length} />}
   {piece.shape === 'paper' && <ObjectPaper sheets={Math.min(n, 6)} />}

@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Icon from '../Icon.astro';
+import { sectionCount } from '../../lib/writing';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const posts = (await getCollection('writing', ({ data }) => !data.draft))
@@ -16,13 +17,14 @@ const label = (d: Date) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
     </div>
     <div class="posts rv">
       {posts.map((p) => (
-        <a class="post" href={`/writing/${p.id}`}>
+        <a class="post" href={`/writing/${p.id}`} data-slug={p.id} data-total={sectionCount(p.data.kind, p.body ?? '', (p.data.breakdown ?? []).length)} data-title={p.data.title}>
           <time datetime={p.data.date.toISOString().slice(0, 7)}>{label(p.data.date)}</time>
           <div><h3>{p.data.title}</h3><p>{p.data.summary}</p></div>
           <Icon class="arr" name="arrow-up-right" />
         </a>
       ))}
     </div>
-    <a class="more rv" href="/writing">All writing<Icon name="arrow-right" /></a>
+    <div class="more-row rv"><a class="more" href="/writing">All writing<Icon name="arrow-right" /></a><a class="pickup-home mono" data-pickup-home hidden></a></div>
   </div>
 </section>
+<script>import '../../scripts/writing-memory-client';</script>

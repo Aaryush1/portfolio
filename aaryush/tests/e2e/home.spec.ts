@@ -138,3 +138,33 @@ test('phone system cards are compact rows: number, title, levels, arrow; no desc
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect(card.locator('p').first()).toBeVisible();
 });
+
+test.describe('E8: the room remembers you on the home teaser', () => {
+  const seed = (sec: number) => JSON.stringify({ v: 1, pieces: { 'quiet-singularity': { sec, t: 1 } }, last: 'quiet-singularity' });
+
+  test('a ribbon and a pick-up link for a piece you are partway through', async ({ page }) => {
+    await page.addInitScript((m) => localStorage.setItem('writing:v1', m), seed(2));
+    await page.goto('/');
+    const row = page.locator('#writing a.post[href="/writing/quiet-singularity"]');
+    await expect(row.locator('.ribbon')).toBeVisible();
+    await expect(page.locator('#writing').getByRole('link', { name: /Pick up where you left off/ })).toHaveAttribute('href', '/writing/quiet-singularity#pickup');
+  });
+
+  test('nothing when nothing is remembered, and the section does not change height when the ribbon appears', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('#writing .ribbon')).toHaveCount(0);
+    await expect(page.locator('#writing').getByRole('link', { name: /Pick up where you left off/ })).toHaveCount(0);
+    const h = await page.locator('#writing').evaluate((e) => e.getBoundingClientRect().height);
+    await page.evaluate((m) => localStorage.setItem('writing:v1', m), seed(2));
+    await page.reload();
+    await expect(page.locator('#writing .ribbon')).toBeVisible();
+    expect(await page.locator('#writing').evaluate((e) => e.getBoundingClientRect().height)).toBe(h);
+  });
+
+  test('a piece read to its final section gets no ribbon and no offer', async ({ page }) => {
+    await page.addInitScript((m) => localStorage.setItem('writing:v1', m), seed(5));
+    await page.goto('/');
+    await expect(page.locator('#writing .ribbon')).toHaveCount(0);
+    await expect(page.locator('#writing').getByRole('link', { name: /Pick up where you left off/ })).toHaveCount(0);
+  });
+});

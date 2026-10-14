@@ -119,3 +119,11 @@ html.locked .bg i{animation-play-state:paused} /* a pop-up covers the page: stop
 .more svg{width:14px;height:14px;color:var(--accent);transition:transform .3s var(--ease)}
 .more:hover{color:#fff}
 .more:hover svg{transform:translateX(4px)}
+
+/* writing teaser memory (Task 8): the ribbon is absolute, so nothing shifts when it appears */
+#writing .post .ribbon{position:absolute;left:0;top:26px;bottom:26px;width:2px;height:auto;border-radius:1px;background:var(--accent);pointer-events:none}
+@media(min-width:900px){#writing .post .ribbon{left:2px}}
+.more-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 28px}
+.pickup-home{margin-top:16px;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
+.pickup-home[hidden]{display:none}
+.pickup-home:hover{color:var(--text)}

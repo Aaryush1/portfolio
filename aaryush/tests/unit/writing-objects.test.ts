@@ -5,7 +5,7 @@ import type { PieceView } from '../../src/lib/writing';
 
 const base: PieceView = {
   slug: 'x', title: 'A Strange Thing', subtitle: '', kind: 'zine', shape: 'sheet',
-  date: new Date('2026-01-01'), minutes: 3, why: 'because', breakdown: [],
+  date: new Date('2026-01-01'), minutes: 3, why: 'because', breakdown: [], sections: 0,
 };
 const render = async (piece: PieceView) => (await AstroContainer.create()).renderToString(Piece, { props: { piece } });
 

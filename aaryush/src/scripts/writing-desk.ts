@@ -4,6 +4,7 @@
  * CSS hover/:has(:focus-visible) already covers the case where this script never runs.
  */
 import { nearestToCenter } from '../lib/room-light';
+import { lastOpened, noteLast } from '../lib/writing-memory';
 import { canWalk, clearWalk, isWalking, prefetchPiece, walkIn } from './walk-in';
 
 const pieces = Array.from(document.querySelectorAll<HTMLElement>('[data-piece]'));
@@ -88,19 +89,15 @@ document.addEventListener('click', (e) => {
 });
 
 // Back restores the desk: remember which piece we walked into, and on a back/forward return put focus (and the light) on it.
-const LAST = 'writing:last';
-const remember = (slug: string | undefined) => {
-  if (!slug) return;
-  try { sessionStorage.setItem(LAST, slug); } catch { /* storage blocked: the browser default applies */ }
-};
+// The slug lives in writing:v1.last (localStorage), with sessionStorage as the fallback when that is blocked.
+const remember = (slug: string | undefined) => { if (slug) noteLast(slug); };
 for (const el of pieces) el.querySelector('.piece-link')?.addEventListener('click', () => remember(el.dataset.slug));
 addEventListener('pagehide', () => {
   const f = document.activeElement?.closest<HTMLElement>('[data-piece]');
   if (f) remember(f.dataset.slug);
 });
 function restoreFocus() {
-  let slug: string | null = null;
-  try { slug = sessionStorage.getItem(LAST); } catch { return; }
+  const slug = lastOpened();
   const el = slug ? pieces.find((p) => p.dataset.slug === slug) : undefined;
   const link = el?.querySelector<HTMLAnchorElement>('.piece-link');
   if (!el || !link) return;
