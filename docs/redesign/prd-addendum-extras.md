@@ -154,6 +154,22 @@ Each feature works without JavaScript, or degrades to nothing. Each respects `pr
   - Under reduced motion it appears with no animation.
   - The `data-daypart` hook forces it on in tests.
 
+## E8. The contextOS line: a caret, and a word you can type
+
+- **The caret.** On the timeline's "Next" line, the period after "contextOS" is replaced by a thin blinking caret, as if the name is still being typed. The rest of the line stays as it is: "Next — contextOS▍ Coming soon."
+  - **Style:** the caret matches the hero's morph styling. It uses the amber of the hero's arriving letters, sits at the same weight, and blinks slowly (about a 1.1s cycle, ease in and out, never a hard flash).
+  - **Reduced motion:** the caret shows, but doesn't blink.
+  - **No JS:** the original period shows.
+- **The typed easter egg.** Typing `contextos` anywhere on the site (case-insensitive, outside text inputs, using the same guards as the keyboard shortcuts) makes the contextOS word on the timeline re-type itself once. It uses the hero's shared-letter morph style: the letters arrive amber and settle. If the timeline line isn't on screen, it scrolls into view first.
+  - No message, label or toast, and nothing explains it.
+  - Under reduced motion, the line gets a single, instant amber tint instead.
+  - On pages without the timeline, it does nothing.
+- **Acceptance criteria:**
+  - The caret replaces the period when JS runs. Under reduced motion it doesn't animate.
+  - The typed sequence fires only from outside editable fields, with a 1.5s gap tolerance between keys.
+  - The morph runs once per trigger, and repeated triggers while it's running are ignored.
+  - Neither part is in the keyboard map or explained anywhere.
+
 ## Out of scope here (planned separately)
 
 - **The dynamic vCard:** waiting on Aaryush's depth decision.
