@@ -1,4 +1,4 @@
-export type KeyAction = 'map' | 'hero' | 'levels' | 'work' | 'writing' | 'contact' | 'time';
+export type KeyAction = 'map' | 'hero' | 'levels' | 'work' | 'writing' | 'contact' | 'time' | 'skyLabels' | 'skySlower' | 'skyFaster';
 
 export interface KeyInput {
   key: string;
@@ -52,6 +52,10 @@ export function createKeyRouter(opts: { now?: () => number; timeout?: number; ha
       if (pending && GO[e.key]) return GO[e.key];
       if (e.key === 'g') { pendingAt = now(); return null; }
       if (e.key === 't' && hasTime()) return 'time';
+      // The hero sky's easter eggs (E17). Never listed in the keyboard map. After `g`, `l` still means "go to levels" (above).
+      if (e.key === 'l' || e.key === 'L') return 'skyLabels';
+      if (e.key === '[') return 'skySlower';
+      if (e.key === ']') return 'skyFaster';
       return null;
     },
   };

@@ -993,15 +993,13 @@ Edits:
 
 Source: `aaryush/src/data/revisions.ts`, shown from the hero title block's "Last deploy" cell.
 
-**Approved by Aaryush 2026-10-14** (exact text; dates are year.month only):
+**Approved by Aaryush 2026-10-14** (exact text; dates are year.month only). Regrouped to five rows (E, D, C, B, A) in the 2026-10-14 copy review, replacing the earlier seven (C to G):
 
 | Rev | Date | Description |
 | --- | --- | --- |
-| G | 2026.10 | A contact card that remembers where you met. |
-| F | 2026.10 | The writing room. |
-| E | 2026.10 | The hero learns to rearrange itself. |
-| D | 2026.10 | Topography and light replace the grid. A new mark. |
-| C | 2026.10 | Redrawn as a set of sheets. Systems you can open. |
+| E | 2026.10 | The sky overhead, live. |
+| D | 2026.10 | The writing room. |
+| C | 2026.10 | Systems you can open. A card that remembers. |
 | B | 2026.02 | Repositioned around AI. The writing begins. |
 | A | 2025.08 | Rebuilt in Astro. Works on phones. |
 
@@ -1057,3 +1055,15 @@ Approved 2026-10-14. It replaces "1. It's past nine. 2. So are you.", which didn
 - [ ] I have reviewed every block above.
 - [ ] Blocks I want left exactly as they are: (list the section numbers)
 - [ ] Anything I want to cut entirely: (list)
+
+## 19. The sky's console line (DRAFT)
+
+Source: `aaryush/src/lib/console-note.ts` (`buildSkyNote`). Logged once when the sky's full star catalogue lands, in the same two-style format as the DevTools note. **Draft, proposed in the controller's brief, not yet approved by Aaryush.** The line gets the count and the guessed place filled in:
+
+`✦ 23,795 stars · Hipparcos via d3-celestial · your sky over 41.9°N 87.6°W · from your time zone` (the count is the real number of stars loaded for that visitor, and the ending is `from your IP` or `from your device` when the position came from there)
+
+Edits:
+
+```
+(any changes)
+```

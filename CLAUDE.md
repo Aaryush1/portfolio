@@ -2,7 +2,7 @@
 
 Aaryush Gupta's personal site. It helps people understand who he is as a builder and want to talk to him because he's interesting, not to hire him. There's no selling, no testimonials and no "hire me".
 
-The app lives in `aaryush/` (Astro 5, static, deployed on Vercel).
+The app lives in `aaryush/` (Astro 5, static, deployed on Vercel). It has one tiny server function, `aaryush/api/sky.ts` (the hero sky's approximate position from Vercel's IP headers; see `decisions.md`).
 
 ## Who visits, and on what
 
@@ -79,7 +79,7 @@ They're **shown, never explained**. Nothing on the site hints at them, labels th
 - **Homepage language: engineering drawings.**
   - **Section strips:** "§ NN … Sheet NN / 05".
   - **The hero title block:** Dwg. no., Sheet, Region us-central, Last deploy (stamped at build), Scale NTS.
-  - **Background:** the topography, which follows the visitor's local time.
+  - **Background:** the live star chart of the visitor's own sky (E17): real stars, planets, Moon, Sun and Milky Way, running fast and following the visitor's local time. Easter eggs `L` and `[` `]`. The ~360 brightest stars are baked in `src/data/sky/` for an instant first paint; the rest of the catalogue is fetched from our own site as binary tiles, only for the bands the latitude can show, and twinkles in (no outside request at all).
   - **Hero:** a shared-letter morph.
 - **Writing language: a warm, dim room.** The /writing page and essay pages do **not** use the drawing language. They have objects on a desk, a pool of light, dust, and the visitor's clock (9pm–7am is night).
 - **Motion:** warm, slow and never bouncy. Resting objects are 2D, so text stays crisp, and 3D only appears during interaction. With `prefers-reduced-motion`, everything shows its final frame. Nothing animates when it isn't on screen.
@@ -94,8 +94,8 @@ They're **shown, never explained**. Nothing on the site hints at them, labels th
   - `console.ts`: the DevTools note.
   - `revisions.ts`
 - **`src/content/`:** companies, systems and writing (Astro collections; schema in `content.config.ts`). Quote any frontmatter value that contains a comma.
-- **`src/lib/`:** pure, tested logic: timeline, diagram, daypart, morph timing, keymap, vcard, meet, writing layout and memory, OG cards, rehype plugins.
-- **`src/scripts/`:** client behaviour, one concern per file: hero-rotator and morph, hero-topography, lens, popups, writing-desk, light-pool, dust, walk-in, keymap, contact-card, and so on.
+- **`src/lib/`:** pure, tested logic: timeline, diagram, daypart, sky (astronomy, place, geometry), morph timing, keymap, vcard, meet, writing layout and memory, OG cards, rehype plugins.
+- **`src/scripts/`:** client behaviour, one concern per file: hero-rotator and morph, hero-sky (and `sky/engine.ts`, loaded lazily), lens, popups, writing-desk, light-pool, dust, walk-in, keymap, contact-card, and so on.
 - **`src/components/`:**
   - `home/`: Hero, Levels, Timeline, TitleBlock, WritingTeaser, PrintSheet.
   - `popup/`
@@ -119,7 +119,7 @@ Run these from `aaryush/`:
 
 - **Specs:**
   - `docs/redesign/prd.md`: the redesign.
-  - `prd-addendum-extras.md`: E1–E16, the details and easter eggs.
+  - `prd-addendum-extras.md`: E1–E19, the details and easter eggs.
   - `prd-writing-room.md`
 - **Plans:** `docs/redesign/plan.md` and `plan-writing-room.md`.
 - **Copy:** `docs/redesign/copy-review.md`, with every approval dated.

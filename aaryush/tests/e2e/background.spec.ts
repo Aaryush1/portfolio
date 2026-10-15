@@ -57,24 +57,20 @@ test('under reduced motion the light does not drift and the grain never animates
   await context.close();
 });
 
-test('hero canvas draws contour lines, including an amber one', async ({ page }) => {
+test('hero canvas draws the sky: stars on a dark ground', async ({ page }) => {
+  await page.addInitScript(() => {
+    const set = () => !!document.documentElement && (document.documentElement.setAttribute('data-daypart', 'night'), true);
+    if (!set()) new MutationObserver((_m, o) => { if (set()) o.disconnect(); }).observe(document, { childList: true });
+  });
   await page.goto('/');
   await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'true');
   const measure = () => page.evaluate(() => {
     const cv = document.getElementById('field') as HTMLCanvasElement;
     const c = cv.getContext('2d')!;
     const { data } = c.getImageData(0, 0, cv.width, cv.height);
-    let drawn = 0, amber = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      const a = data[i + 3];
-      if (!a) continue;
-      drawn++;
-      const r = data[i], g = data[i + 1], b = data[i + 2];
-      if (a > 40 && r > 150 && r > g && g > b) amber++;
-    }
-    return { drawn, amber };
+    let bright = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i] + data[i + 1] + data[i + 2] > 330) bright++;
+    return { bright };
   });
-  await expect.poll(async () => (await measure()).drawn).toBeGreaterThan(500); // the field has painted
-  const result = await measure();
-  expect(result.amber).toBeGreaterThan(20);
+  await expect.poll(async () => (await measure()).bright).toBeGreaterThan(80); // stars have painted
 });

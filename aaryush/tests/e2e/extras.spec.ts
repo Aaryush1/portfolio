@@ -290,10 +290,10 @@ test.describe('E3 404 sheet', () => {
   });
 });
 
-test.describe('E5 hero topography follows the clock', () => {
+test.describe('E5 the hero sky follows the clock', () => {
   const field = (page: Page) => page.locator('#field');
   const info = (page: Page) =>
-    field(page).evaluate((c: HTMLCanvasElement) => ({ part: c.dataset.daypart, levels: Number(c.dataset.levels), drift: Number(c.dataset.drift), amber: Number(c.dataset.amber) }));
+    field(page).evaluate((c: HTMLCanvasElement) => ({ part: c.dataset.daypart }));
   const at = async (page: Page, h: number, m: number) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.clock.install({ time: new Date(2026, 9, 14, h, m, 0) });
@@ -320,21 +320,19 @@ test.describe('E5 hero topography follows the clock', () => {
     });
   }
 
-  test('data-daypart on <html> forces each period with its own parameters', async ({ browser }) => {
-    const seen: Record<string, Awaited<ReturnType<typeof info>>> = {};
+  test('data-daypart on <html> forces each period, and each period draws its own sky', async ({ browser }) => {
+    const seen: Record<string, string> = {};
+    const frames: string[] = [];
     for (const d of ['morning', 'afternoon', 'evening', 'night']) {
-      const { page, ctx } = await forced(browser, d);
+      const { page, ctx } = await forced(browser, d, true);
       await expect(field(page)).toHaveAttribute('data-daypart', d);
-      seen[d] = await info(page);
+      expect((await info(page)).part).toBe(d);
+      await expect(field(page)).toHaveClass(/\bon\b/);
+      seen[d] = d;
+      frames.push(await field(page).evaluate((c: HTMLCanvasElement) => c.toDataURL()));
       await ctx.close();
     }
-    expect(seen.afternoon).toMatchObject({ levels: 15, drift: 1 });
-    expect(seen.night.levels).toBeLessThan(15);
-    expect(seen.night.drift).toBeCloseTo(0.6, 5);
-    expect(seen.night.amber).toBeLessThan(seen.afternoon.amber);
-    expect(seen.evening.amber).toBeGreaterThan(seen.afternoon.amber);
-    expect(seen.morning.levels).toBe(18);
-    expect(seen.morning.drift).toBeGreaterThan(1);
+    expect(new Set(frames).size).toBe(4);
   });
 
   test('an invalid data-daypart is ignored', async ({ page }) => {
@@ -354,6 +352,9 @@ test.describe('E5 hero topography follows the clock', () => {
     await at(page, 11, 55);
     await page.goto('/');
     await expect(field(page)).toHaveAttribute('data-daypart', 'morning');
+    // the sky starts a moment after load (on this fake clock, when the timers run); wait for it to be up
+    await page.clock.runFor(3000);
+    await expect(field(page)).toHaveClass(/\bon\b/);
     await page.clock.runFor('09:00');
     await expect(field(page)).toHaveAttribute('data-daypart', 'morning');
     await page.clock.runFor('01:05');
@@ -365,6 +366,7 @@ test.describe('E5 hero topography follows the clock', () => {
     for (const d of ['afternoon', 'night']) {
       const { page, ctx } = await forced(browser, d, true);
       await expect(field(page)).toHaveAttribute('data-daypart', d);
+      await expect(field(page)).toHaveClass(/\bon\b/);
       expect(await field(page).getAttribute('data-running')).toBe('false');
       frames.push(await field(page).evaluate((c: HTMLCanvasElement) => c.toDataURL()));
       await ctx.close();

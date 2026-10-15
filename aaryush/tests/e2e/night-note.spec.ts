@@ -107,12 +107,14 @@ test('reduced motion: the notes appear with no animation', async ({ browser }) =
   await ctx.close();
 });
 
-test('phone topography is calmer below 560px and unchanged on desktop', async ({ page }) => {
+test('the sky runs at 150x on phones and 225x on desktop', async ({ page }) => {
   await page.setViewportSize({ width: 430, height: 900 });
   await page.goto('/');
-  await expect(page.locator('canvas#field')).toHaveAttribute('data-calm', 'true');
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await expect(page.locator('canvas#field')).toHaveAttribute('data-calm', 'false');
+  await expect(page.locator('canvas#field')).toHaveAttribute('data-rate', '150');
+  const desk = await page.context().newPage();
+  await desk.setViewportSize({ width: 1280, height: 800 });
+  await desk.goto('/');
+  await expect(desk.locator('canvas#field')).toHaveAttribute('data-rate', '225');
 });
 
 test('phone: a soft fade sits behind the text block, and the desktop hero has none', async ({ page }) => {

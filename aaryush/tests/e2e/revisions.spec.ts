@@ -15,11 +15,9 @@ test('closed by default; a click opens it with every row, in order, styled as a 
   expect(head.map((h) => h.trim().toLowerCase())).toEqual(['rev', 'date', 'description']);
   const rows = await block(page).locator('tbody tr').evaluateAll((trs) => trs.map((tr) => [...tr.children].map((c) => (c.textContent ?? '').trim())));
   expect(rows).toEqual([
-    ['G', '2026.10', 'A contact card that remembers where you met.'],
-    ['F', '2026.10', 'The writing room.'],
-    ['E', '2026.10', 'The hero learns to rearrange itself.'],
-    ['D', '2026.10', 'Topography and light replace the grid. A new mark.'],
-    ['C', '2026.10', 'Redrawn as a set of sheets. Systems you can open.'],
+    ['E', '2026.10', 'The sky overhead, live.'],
+    ['D', '2026.10', 'The writing room.'],
+    ['C', '2026.10', 'Systems you can open. A card that remembers.'],
     ['B', '2026.02', 'Repositioned around AI. The writing begins.'],
     ['A', '2025.08', 'Rebuilt in Astro. Works on phones.'],
   ]);

@@ -91,6 +91,13 @@ function init(dialog: HTMLDialogElement) {
     if (!action) return;
     if (action === 'map') { e.preventDefault(); open(); return; }
     if (action === 'time') { timeHook()?.(); return; }
+    // The hero sky's hidden keys: they do nothing on pages without the sky.
+    if (action === 'skyLabels' || action === 'skySlower' || action === 'skyFaster') {
+      const sky = (window as unknown as { __sky?: { toggleLabels(): void; stepRate(dir: number): void } }).__sky;
+      if (action === 'skyLabels') sky?.toggleLabels();
+      else sky?.stepRate(action === 'skyFaster' ? 1 : -1);
+      return;
+    }
     const href = TARGETS[action];
     if (href) go(href);
   });
