@@ -74,6 +74,8 @@ There are three kinds, and each has its own shape and character:
 
 Their look is decided by mockups (build step 2), not by this spec. Under the hood they are real text and links.
 
+**Memories have strength** (Aaryush, 2026-10-15). A strong memory is right there: larger, in focus, detailed. A vague one is lighter: smaller, softer, with less detail. Each memory in the story data carries a strength, and it sets the memory's size, focus and detail. Gupta Advisory stays in the story as a minor (vague) memory, which keeps CLAUDE.md's "quiet single line" in spirit.
+
 ### Pace and control
 
 - **Visitor-paced, directed.**
@@ -99,7 +101,7 @@ These rules are firm:
 ## 5. How it's built
 
 - **Shell:** Astro stays. `/` is one full-screen page with two parts:
-  - **WebGL (Three.js):** sky, flight, galaxy, Earth, and faint navigation and cartography line work in the site's drawing language. It's present but never strong.
+  - **WebGL (Three.js):** sky, flight, galaxy, Earth, and faint navigation line work between stars (bearings, paths), present but never strong. **No architectural or engineering-drawing elements** (rulers, tick marks, registration corners, title blocks): this is a different story from the drawing language of the rest of the site (Aaryush, 2026-10-15).
   - **Thoughts:** HTML elements placed over the scene (§3).
 - **Story data:** one data file, with beats, camera waypoints, which thoughts appear where and when, intent notes and approved lines. Content edits don't touch code.
 - **Director:** a pure module, unit tested, that owns:
@@ -143,7 +145,7 @@ The contact card's **Save contact**, including its custom contact save (the vCar
 
 **Must:**
 1. The boot frame paints within the current homepage's LCP (about 2.7 s on Lighthouse's phone test), with a Lighthouse performance score of 90 or more.
-2. Once loaded, it holds a steady 60 fps on desktop and a recent phone.
+2. Once loaded, it holds a steady 60 fps on desktop and on a recent phone. Everything runs at 60 fps. Old devices are not a target: if a device is the bottleneck, that's accepted (Aaryush, 2026-10-15).
 3. The camera never cuts or jumps, including at the loop seam.
 4. Exactly one beat per gesture, forward or back, on wheel, swipe, keys and tap. A fast wheel or flick moves one beat.
 5. After about 20 seconds of idle it continues by itself, and it loops through the dot seam.
@@ -167,7 +169,7 @@ The contact card's **Save contact**, including its custom contact save (the vCar
 ## 8. Known limits
 
 - The first visit downloads a lot. It's cached afterward.
-- Old phones get reduced detail.
+- Old devices aren't supported as a target. They may drop frames, and that's accepted.
 - The galaxy beyond the catalog is generated, not charted.
 - The usual 3D-on-the-web caveats apply: battery use on phones, and browsers that block WebGL fall back (or, since that's nice-to-have, may get a basic version).
 - Search engines see the server HTML, which is thinner than today's homepage unless the plain version (nice-to-have) is built.
