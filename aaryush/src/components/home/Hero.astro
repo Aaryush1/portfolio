@@ -123,7 +123,8 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
 .rot:global(.is-settled) .rot-pd{color:var(--accent)}
 .lede{margin-top:22px;max-width:31rem;color:var(--text-2);font-size:17px;line-height:1.65}
 @media (max-width:719px){
-  .hero-inner{min-height:0;padding:28px 0 40px}
+  /* phones: the hero is the whole first screen on landing (svh = the viewport with the browser bars showing) */
+  .hero-inner{min-height:calc(100svh - var(--header));padding:28px 0 40px}
   .name{margin-top:16px}
   .rot{margin-top:16px}
   .lede{margin-top:14px;font-size:16px;line-height:1.6}
