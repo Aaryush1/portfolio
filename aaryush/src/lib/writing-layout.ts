@@ -81,6 +81,11 @@ export function layoutDesk(pieces: { slug: string; shape: string }[], opts: { co
     if (!swap) break;
     colOf[swap[0]] = short; colOf[swap[1]] = tall;
   }
+  // newest first: the column holding the newest piece goes leftmost, and so on
+  const firstIn = Array.from({ length: cols }, (_, c) => { const i = colOf.indexOf(c); return i < 0 ? n + c : i; });
+  const rank = firstIn.map((_, c) => c).sort((a, b) => firstIn[a] - firstIn[b]);
+  const remap = new Array<number>(cols); rank.forEach((c, k) => { remap[c] = k; });
+  for (let i = 0; i < n; i++) colOf[i] = remap[colOf[i]];
   const colH = new Array<number>(cols).fill(0);
   const placed: Placement[] = pieces.map((p, i) => {
     const rnd = mulberry32(fnv1a(p.slug));
@@ -97,6 +102,6 @@ export function layoutDesk(pieces: { slug: string; shape: string }[], opts: { co
   const used = colH.map((v) => Math.max(0, v - ROW_GAP));
   const tallest = Math.max(...used);
   for (const p of placed) p.y += Math.round((tallest - used[p.col]) / 2);
-  placed.sort((a, b) => a.y - b.y || a.x - b.x);
+  // reading order is newest first (pieces arrive sorted by date, newest first)
   return { cols, width: cols * 300 + (cols - 1) * COL_GAP, height: tallest, placements: placed };
 }

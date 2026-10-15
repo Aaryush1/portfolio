@@ -41,7 +41,7 @@ if (printBox) {
 // ---------- Homepage: reveal, pointer glow, depth meters, index chips ----------
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const revealTargets = document.querySelectorAll<HTMLElement>('.rv, .frag');
+const revealTargets = document.querySelectorAll<HTMLElement>('.rv');
 if ('IntersectionObserver' in window && !reduced) {
   const io = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
@@ -74,8 +74,19 @@ document.querySelectorAll<HTMLAnchorElement>('a.chip[href^="#"]').forEach((a) =>
     t.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
     history.replaceState(null, '', href);
     t.classList.remove('is-target');
-    void t.offsetWidth;
-    t.classList.add('is-target');
-    window.setTimeout(() => t.classList.remove('is-target'), 2200);
+    // flash once the scroll lands, so a long phone scroll doesn't use up the flash on the way
+    let done = false;
+    const flash = () => {
+      if (done) return;
+      done = true;
+      void t.offsetWidth;
+      t.classList.add('is-target');
+      window.setTimeout(() => t.classList.remove('is-target'), 2200);
+    };
+    if (reduced) flash();
+    else {
+      window.addEventListener('scrollend', flash, { once: true });
+      window.setTimeout(flash, 1200);
+    }
   });
 });

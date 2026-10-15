@@ -56,7 +56,8 @@ test('the letter shows its first phrase faintly at rest, and every faint label s
   }
 });
 
-test('with two pieces there is no empty region larger than one object', async ({ page }) => {
+test('with two pieces there is no empty region larger than one object', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'desktop composition; phones stack the pieces');
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/writing');
   const boxes = await page.locator('[data-piece]').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()));
@@ -86,12 +87,12 @@ for (const slug of ['bigger-than-electricity', 'quiet-singularity']) {
   });
 }
 
-test('keyboard focus lands in visual order and shows the same state as hover', async ({ page }) => {
+test('newest piece comes first: focus order is newest first and the newest sits leftmost', async ({ page }) => {
   await page.goto('/writing');
   const order = await page.locator('[data-piece]').evaluateAll((els) =>
-    els.map((e) => ({ slug: (e as HTMLElement).dataset.slug, top: e.getBoundingClientRect().top, left: e.getBoundingClientRect().left })));
-  const visual = [...order].sort((a, b) => Math.round(a.top / 40) - Math.round(b.top / 40) || a.left - b.left).map((o) => o.slug);
-  expect(order.map((o) => o.slug)).toEqual(visual);
+    els.map((e) => ({ slug: (e as HTMLElement).dataset.slug, left: e.getBoundingClientRect().left })));
+  expect(order[0].slug).toBe('once-for-good');
+  expect(Math.min(...order.map((o) => o.left))).toBeGreaterThanOrEqual(order[0].left - 1);
   await page.locator('[data-piece] .piece-link').first().focus();
   await expect(page.locator('[data-piece]').first()).toHaveClass(/is-lit/);
 });
