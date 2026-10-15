@@ -15,6 +15,7 @@ const deskWrap = room?.querySelector<HTMLElement>('.desk-wrap') ?? null;
 
 let note: HTMLDivElement | null = null;
 let unsubscribe: (() => void) | null = null;
+let resizer: ResizeObserver | null = null;
 let timer = 0;
 
 function applyLight(part: string) {
@@ -38,11 +39,20 @@ function mountNote() {
   deskWrap.append(el);
   note = el;
   // The note catches the light: brightness falls off with the pool's distance from the note's centre.
-  unsubscribe = onMove((x, y, i, s) => {
+  // Its centre in room coordinates is read once and again only when the room or the note changes size, never per frame.
+  let centre: { x: number; y: number } | null = null;
+  const measure = () => {
     const a = room.getBoundingClientRect();
     const b = el.getBoundingClientRect();
-    const dx = x - (b.left - a.left + b.width / 2);
-    const dy = y - (b.top - a.top + b.height / 2);
+    centre = { x: b.left - a.left + b.width / 2, y: b.top - a.top + b.height / 2 };
+  };
+  resizer = new ResizeObserver(() => { centre = null; });
+  resizer.observe(room);
+  resizer.observe(el);
+  unsubscribe = onMove((x, y, i, s) => {
+    if (!centre) measure();
+    const dx = x - centre!.x;
+    const dy = y - centre!.y;
     const sigma = 210 * s;
     const near = Math.exp(-(dx * dx + dy * dy) / (2 * sigma * sigma)) * i;
     el.style.setProperty('--near', near.toFixed(3));
@@ -52,6 +62,8 @@ function mountNote() {
 function unmountNote() {
   unsubscribe?.();
   unsubscribe = null;
+  resizer?.disconnect();
+  resizer = null;
   note?.remove();
   note = null;
 }

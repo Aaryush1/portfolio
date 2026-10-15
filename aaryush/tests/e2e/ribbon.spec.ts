@@ -1,5 +1,8 @@
 import { expect, test, type Page, type Locator } from '@playwright/test';
 import { settled } from './settle';
+import { afternoon, pinAfternoon } from './afternoon';
+
+pinAfternoon();
 
 // The remembered-reading marks never touch a title: a margin ribbon on hover devices (only while the pick-up link is
 // hovered or focused), a small dot beside the date on touch devices, and the desk's own tick.
@@ -43,6 +46,7 @@ for (const width of [320, 375, 430, 720]) {
   test(`home teaser, touch device, ${width}px: a dot beside the date, no ribbon, no overlap`, async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width, height: 900 }, hasTouch: true, isMobile: true });
     const page = await ctx.newPage();
+    await afternoon(page);
     await seed(page);
     await page.goto('/');
     expect(await page.evaluate(() => matchMedia('(hover: none)').matches)).toBe(true);
@@ -79,6 +83,7 @@ test('screenshots', async ({ browser }) => {
   const dir = 'C:/Users/aaryu/code/personal/portfolio-explorations/shots';
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();
+  await afternoon(page);
   await seed(page);
   await page.goto('/');
   await page.locator('#writing').scrollIntoViewIfNeeded();
@@ -90,6 +95,7 @@ test('screenshots', async ({ browser }) => {
   await ctx.close();
   const m = await browser.newContext({ viewport: { width: 430, height: 900 }, hasTouch: true, isMobile: true });
   const mp = await m.newPage();
+  await afternoon(mp);
   await seed(mp);
   await mp.goto('/');
   await mp.locator('#writing').scrollIntoViewIfNeeded();

@@ -213,6 +213,9 @@ html.js .piece[data-shape="letter"].is-open .breakdown li:nth-child(1) .ph-label
 @media (hover: hover) and (pointer: fine) { html.js .piece[data-shape="letter"]:hover .breakdown li:nth-child(1) .ph-label { opacity: 1; } }
 html.js .piece[data-folds="2"] .breakdown li:nth-child(2), html.js .piece[data-folds="3"] .breakdown li:nth-child(3), html.js .piece[data-folds="4"] .breakdown li:nth-child(4),
 html.js .piece[data-folds="5"] .breakdown li:nth-child(5), html.js .piece[data-folds="6"] .breakdown li:nth-child(6) { justify-content: flex-end; padding-bottom: 14px; }
+/* the closing fold's label sits where the middle folds' labels sit (about 32px down), with the "why" written below it */
+html.js .piece[data-folds="3"] .breakdown li:nth-child(3), html.js .piece[data-folds="4"] .breakdown li:nth-child(4),
+html.js .piece[data-folds="5"] .breakdown li:nth-child(5), html.js .piece[data-folds="6"] .breakdown li:nth-child(6) { justify-content: flex-start; padding-top: calc(32px * var(--hs, 1)); padding-bottom: 0; }
 html.js .piece[data-shape="letter"] .piece-meta { left: 24px; right: 24px; top: 18px; }
 html.js .piece[data-shape="letter"] .piece-link { left: 24px; right: 24px; top: 38px; font-size: 27px; }
 /* the "why" is written on the closing panel, so it travels with that fold */
@@ -222,6 +225,8 @@ html.js .piece[data-shape="letter"] .piece-why {
   transition: color 1.4s ease, text-shadow 1.4s ease, opacity 1.2s ease, transform 1.4s var(--slow);
 }
 html.js .piece[data-shape="letter"][data-folds] .piece-why { padding-top: 18px; }
+html.js .piece[data-shape="letter"][data-folds="3"] .piece-why, html.js .piece[data-shape="letter"][data-folds="4"] .piece-why,
+html.js .piece[data-shape="letter"][data-folds="5"] .piece-why, html.js .piece[data-shape="letter"][data-folds="6"] .piece-why { padding-top: 74px; }
 html.js .piece[data-shape="letter"]:not([data-folds]) .piece-why,
 html.js .piece[data-shape="letter"][data-folds="1"] .piece-why { top: 150px; height: auto; transform: none; }
 
@@ -368,7 +373,6 @@ html.js .room.drawer-open .desk-wrap { opacity: .3; }
   html.js .piece[data-shape="letter"], html.js .piece[data-shape="paper"] { width: min(300px, calc(100vw - 56px)); --pw: min(300px, calc(100vw - 56px)); }
   html.js .piece[data-shape="sheet"] { width: min(260px, calc(100vw - 56px)); --pw: min(260px, calc(100vw - 56px)); }
   html.js .piece[data-shape="note"] { width: min(300px, calc(100vw - 56px)); --pw: min(300px, calc(100vw - 56px)); --ns: .85; }
-  html.js .flag { right: -16px; }
   html.js .piece[data-shape="letter"] .piece-link { font-size: 24px; top: 34px; }
   html.js .piece[data-shape="letter"] .piece-meta { top: 14px; }
   html.js .piece[data-shape="letter"] .piece-why { padding: 10px 24px 0; font-size: 14px; }
@@ -400,7 +404,10 @@ html.js .walk-clone .staple { display: none; }
 /* an opened piece is left a little out of place; `translate` is its own property, so it composes with every transform above */
 html.js .piece { transition: transform 1.3s var(--slow), translate 1.3s var(--slow), --lit 1.1s ease; }
 html.js .piece.seen { translate: 12px 16px; }
-@media (prefers-reduced-motion: reduce) { html.js .piece { transition: transform 1.3s var(--slow), --lit 1.1s ease; } }
+/* reduced motion: pieces, their skins and their labels change state with no transition at all */
+@media (prefers-reduced-motion: reduce) {
+  html.js .piece, html.js .piece *, html.js .piece *::before, html.js .piece *::after { transition: none !important; }
+}
 /* the quietest thing in the room: a small mono word at the very bottom */
 .forget {
   display: block; margin: 0 auto; padding: 12px 18px 28px; background: none; border: 0; cursor: pointer;
@@ -411,16 +418,21 @@ html.js .piece.seen { translate: 12px 16px; }
 .forget:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---------- the room remembers you: where you left off (Task 40) ---------- */
-/* paper: an amber sticky flag poking out of the right edge at the section reached; it sits in the skin, under the cover */
+/* paper: an amber sticky flag poking out of the right edge. It is a child of the sheet it marks, so it rides that sheet's fan with no motion code of its own:
+   at rest it sits at the section's height on the stack, open it settles on the sheet's visible strip beside the label. */
 html.js .flag {
-  right: -26px; top: calc(20px * var(--hs, 1) + 270px * var(--hs, 1) * var(--fy, .1) - 11px); width: 42px; height: 22px; z-index: 10; border-radius: 1px 3px 3px 1px;
+  position: absolute; right: -26px; z-index: 10; width: 42px; height: 22px; border-radius: 1px 3px 3px 1px;
+  top: calc(270px * var(--hs, 1) * var(--fy, .1) - 11px + var(--nopen) * (270px * var(--hs, 1) * (1 - var(--fy, .1)) - 23px));
   background: linear-gradient(90deg, #c9932f 0, #F2B544 30%, #f6c560); box-shadow: 0 2px 4px rgba(0, 0, 0, .45), inset 0 -1px 0 rgba(0, 0, 0, .15); transform: rotate(-1.5deg);
+  transition: top 1.4s var(--slow);
 }
+/* phones: poke out less, so the flag (rotated, and the piece is nudged 12px once seen) stays inside the screen even at 320 */
+@media (max-width: 559px) { html.js .flag { right: -8px; } }
 html.js .flag::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 9px; background: rgba(0, 0, 0, .14); }
-/* letter: a faint amber thumbprint, a child of the fold's panel so it rides the fold's own transform */
+/* letter: a faint amber thumbprint, a child of the fold's panel so it rides the fold's own transform; it sits mid-fold and above the fold's shading, under the labels */
 html.js .fold > .print {
-  position: absolute; right: 28px; bottom: 8px; aspect-ratio: 46 / 58; height: min(58px, calc(var(--h) - 16px)); width: auto;
-  opacity: .5; filter: blur(.35px); transform: rotate(-24deg); pointer-events: none;
+  position: absolute; z-index: 1; right: 40px; top: 50%; aspect-ratio: 46 / 58; height: min(58px, calc(var(--h) - 16px)); width: auto;
+  opacity: .5; filter: blur(.35px); transform: translateY(-50%) rotate(-24deg); pointer-events: none;
 }
 
 /* ---------- note: a clipped stack of index cards (Task 40) ---------- */

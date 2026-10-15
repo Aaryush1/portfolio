@@ -13,7 +13,7 @@ const ribbon = () => { const i = document.createElement('i'); i.className = 'rib
 
 // ---------- the desk ----------
 // "Where you left off": one mark per kind, at the part the visitor reached. All are decoration (aria-hidden).
-//  - paper: an amber sticky flag poking out of the right edge, at the height of the section reached
+//  - paper: an amber sticky flag poking out of the right edge (a child of the section's sheet, so it fans down with it)
 //  - letter: a faint amber thumbprint on the fold reached (a child of that fold's panel, so it rides the fold's own transform)
 //  - note: the card reached is pulled out of the stack
 const SVG = 'http://www.w3.org/2000/svg';
@@ -41,13 +41,15 @@ function clearMarks(p: HTMLElement) {
 }
 function mark(p: HTMLElement, sec: number, total: number) {
   const shape = p.dataset.shape;
-  const skin = p.querySelector<HTMLElement>('.skin');
-  if (shape === 'paper' && skin) {
+  const sheets = Array.from(p.querySelectorAll<HTMLElement>('.skin > .sheet:not(.cover)'));
+  // the flag is a child of the sheet it marks (section n is the sheet that fans out n steps), so it travels with it when the paper opens
+  const sheet = sheets[sheets.length - Math.min(sec + 1, sheets.length)];
+  if (shape === 'paper' && sheet) {
     const f = document.createElement('span');
     f.className = 'flag';
     f.setAttribute('aria-hidden', 'true');
     f.style.setProperty('--fy', String((sec + 0.5) / total));
-    skin.appendChild(f);
+    sheet.appendChild(f);
   } else if (shape === 'letter') {
     p.querySelector(`.fold-${sec + 1}`)?.appendChild(thumbprint());
   } else if (shape === 'note') {
@@ -117,8 +119,10 @@ if (article && slug) {
   const offer = total > 0 ? pickup(slug, total) : null;
   const slot = document.getElementById('pickup');
   if (offer && slot && goTo) {
-    const m = !isLetter ? heads()[offer.sec]?.textContent?.trim().match(/^([IVX]+)\./) : null;
-    const where = isLetter ? '' : ` — section ${m ? m[1] : ROMAN[offer.sec + 1] || offer.sec + 1}`;
+    const isNote = article.dataset.kind === 'note';
+    const m = !isLetter && !isNote ? heads()[offer.sec]?.textContent?.trim().match(/^([IVX]+)\./) : null;
+    // papers say "section II", notes say "card 2" (approved copy), letters name no place
+    const where = isLetter ? '' : isNote ? ` — card ${offer.sec + 1}` : ` — section ${m ? m[1] : ROMAN[offer.sec + 1] || offer.sec + 1}`;
     const a = document.createElement('a');
     a.className = 'pickup';
     a.href = `/writing/${slug}#pickup`;

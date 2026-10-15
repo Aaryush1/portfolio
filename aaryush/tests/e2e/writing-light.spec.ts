@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { settled } from './settle';
 
 const pool = (page: Page) => page.locator('.room').evaluate((r) => ({
   x: parseFloat(getComputedStyle(r).getPropertyValue('--pool-x')),
@@ -6,6 +7,18 @@ const pool = (page: Page) => page.locator('.room').evaluate((r) => ({
   i: parseFloat(getComputedStyle(r).getPropertyValue('--pool-i')),
 }));
 const whyOpacity = (loc: Locator) => loc.locator('.piece-why').evaluate((e) => Number(getComputedStyle(e).opacity));
+/** Resolves once the pool has stopped moving (two reads in a row agree), instead of a fixed sleep. */
+const poolSettled = async (page: Page) => {
+  let last = await pool(page);
+  await expect.poll(async () => { const p = await pool(page); const same = p.x === last.x && p.y === last.y && p.i === last.i; last = p; return same; }, { timeout: 15000, intervals: [300] }).toBe(true);
+};
+/** Waits n animation frames with the browser's own rAF (kept aside before a spec counts rAF calls). */
+const frames = (page: Page, n: number) => page.evaluate((k) => new Promise<void>((done) => {
+  const raf = (window as any).__rafNative ?? window.requestAnimationFrame.bind(window);
+  let i = 0;
+  const tick = () => { if (++i >= k) done(); else raf(tick); };
+  raf(tick);
+}), n);
 
 test('hover or focus measurably changes transform, pool position and why opacity', async ({ page }) => {
   await page.goto('/writing');
@@ -28,7 +41,7 @@ test('keyboard focus does the same as hover', async ({ page }) => {
 
 test('leaving a piece returns the pool to rest', async ({ page }) => {
   await page.goto('/writing');
-  await page.waitForTimeout(2500);
+  await poolSettled(page);
   const rest = await pool(page);
   await page.locator('[data-slug="quiet-singularity"]').hover();
   await expect(page.locator('.room')).toHaveAttribute('data-pool', 'piece');
@@ -41,6 +54,7 @@ test('the pool settles: after a hover the light loop stops and schedules nothing
   await page.addInitScript(() => {
     (window as any).__n = 0;
     const raf = window.requestAnimationFrame.bind(window);
+    (window as any).__rafNative = raf;
     window.requestAnimationFrame = (cb) => { (window as any).__n++; return raf(cb); };
   });
   await page.goto('/writing');
@@ -53,9 +67,9 @@ test('the pool settles: after a hover the light loop stops and schedules nothing
   await expect.poll(async () => { const p = await pool(page); const same = p.x === last.x && p.y === last.y && p.i === last.i; last = p; return same; }, { timeout: 15000, intervals: [600] }).toBe(true);
   await page.evaluate(() => { Object.defineProperty(document, 'hidden', { value: true, configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
   await expect(page.locator('canvas.dust')).toHaveAttribute('data-dust', 'paused');
-  await page.waitForTimeout(400); // a pending frame may still land
+  await frames(page, 25); // a pending frame may still land
   const n = await count();
-  await page.waitForTimeout(1500);
+  await frames(page, 90); // about a second and a half of frames
   expect(await count()).toBe(n); // a settled pool costs nothing
 });
 
@@ -74,6 +88,7 @@ test('once settled and dust paused, nothing at all schedules frames', async ({ p
   await page.addInitScript(() => {
     (window as any).__n = 0;
     const raf = window.requestAnimationFrame.bind(window);
+    (window as any).__rafNative = raf;
     window.requestAnimationFrame = (cb) => { (window as any).__n++; return raf(cb); };
   });
   await page.goto('/writing');
@@ -119,13 +134,14 @@ test('reduced motion: static and lit, no dust, no loop', async ({ browser }) => 
 test('dust lives only inside the pool: no mote paints far from it', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/writing');
-  await page.waitForTimeout(1500);
-  const r = await page.evaluate(() => {
+  const measure = () => page.evaluate(() => {
     const c = document.querySelector('canvas.dust') as HTMLCanvasElement;
     const g = c.getContext('2d')!;
     const px = (x: number, y: number, w: number, h: number) => { const d = g.getImageData(x, y, w, h).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 8) n++; return n; };
     return { corner: px(0, 0, 120, 120), all: px(0, 0, c.width, c.height) };
   });
+  await expect.poll(async () => (await measure()).all).toBeGreaterThan(0); // motes have started to show
+  const r = await measure();
   expect(r.corner).toBe(0);
   expect(r.all).toBeGreaterThan(0); // not simply blank: motes show inside the pool
 });
@@ -183,7 +199,8 @@ test('the why line at rest still has AA contrast on the paper', async ({ page })
 
 test('objects stay matte with the light layer on (pixel variance of a clean patch)', async ({ page }) => {
   await page.goto('/writing');
-  await page.waitForTimeout(800);
+  await settled(page);
+  await poolSettled(page);
   const shot = await page.locator('[data-slug="quiet-singularity"] .sheet.cover').screenshot();
   const sd = await page.evaluate(async (b64) => {
     const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();

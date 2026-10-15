@@ -6,7 +6,7 @@
 import { deskKey, isEditableTarget } from '../lib/keymap';
 import { nearestToCenter } from '../lib/room-light';
 import { aimAt } from './light-pool';
-import { lastOpened, noteLast } from '../lib/writing-memory';
+import { noteLast } from '../lib/writing-memory';
 import { canWalk, clearWalk, isWalking, prefetchPiece, walkIn } from './walk-in';
 
 const pieces = Array.from(document.querySelectorAll<HTMLElement>('[data-piece]'));
@@ -14,24 +14,34 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const phone = () => matchMedia('(hover: none)').matches || innerWidth <= 700;
 
 const isLit = (p: HTMLElement) => p.classList.contains('is-lit');
+// piece:unlit is announced one tick late and dropped if a piece:lit follows at once, so moving the light from one piece to the next
+// (focus leaves one, then arrives at the other) never sends the pool toward rest and back.
+let unlitTimer = 0;
+const queueUnlit = () => { if (!unlitTimer) unlitTimer = window.setTimeout(() => { unlitTimer = 0; document.dispatchEvent(new CustomEvent('piece:unlit')); }, 0); };
+const cancelUnlit = () => { clearTimeout(unlitTimer); unlitTimer = 0; };
 // Reduced motion: the room is static and lit. Every piece stays lit; hover and focus only open or close one.
 function light(el: HTMLElement, open = true) {
   const wasLit = isLit(el), wasOpen = el.classList.contains('is-open');
+  // Swapping the light between pieces announces only piece:lit: an unlit straight before it would send the pool toward rest and back.
+  let dropped = false;
   for (const p of pieces) {
     if (p === el) continue;
-    if (reduce.matches) p.classList.remove('is-open'); else unlight(p);
+    if (reduce.matches) p.classList.remove('is-open'); else if (unlight(p, false)) dropped = true;
   }
   el.classList.add('is-lit');
   if (open) el.classList.add('is-open');
-  if (!wasLit || (open && !wasOpen)) document.dispatchEvent(new CustomEvent('piece:lit', { detail: { el } }));
+  if (!wasLit || (open && !wasOpen)) { cancelUnlit(); document.dispatchEvent(new CustomEvent('piece:lit', { detail: { el } })); }
+  else if (dropped) queueUnlit();
 }
-function unlight(el: HTMLElement) {
-  if (!isLit(el) && !el.classList.contains('is-open')) return;
+/** Returns true when it changed anything. `announce` false leaves the piece:unlit event to the caller. */
+function unlight(el: HTMLElement, announce = true): boolean {
+  if (!isLit(el) && !el.classList.contains('is-open')) return false;
   el.classList.remove('is-open');
   if (!reduce.matches) el.classList.remove('is-lit');
   el.style.removeProperty('--tx');
   el.style.removeProperty('--ty');
-  document.dispatchEvent(new CustomEvent('piece:unlit'));
+  if (announce) queueUnlit();
+  return true;
 }
 
 function settleStatic() {
@@ -70,8 +80,13 @@ for (const el of pieces) {
   // a tap or click focuses the link too; only keyboard focus (:focus-visible) lights the piece, or the phone's first tap would open and follow at once
   el.addEventListener('focusin', (e) => { if ((e.target as Element).matches(':focus-visible')) light(el); });
   el.addEventListener('focusout', (e) => { if (!el.contains(e.relatedTarget as Node | null)) unlight(el); });
+  // The two-step is for fingers only: a mouse click or a keyboard/screen-reader activation follows the link at once.
+  let pointer = '';
+  el.querySelector<HTMLAnchorElement>('.piece-link')?.addEventListener('pointerdown', (e) => { pointer = e.pointerType; });
   el.querySelector<HTMLAnchorElement>('.piece-link')?.addEventListener('click', (e) => {
-    if (!phone() || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    const touched = pointer === 'touch';
+    pointer = '';
+    if (!touched || !phone() || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     if (isWalking()) { e.preventDefault(); return; }
     if (el.classList.contains('is-open')) {
       // second tap follows the link; letters and papers walk in first (Task 32), anything else just navigates
@@ -91,16 +106,25 @@ document.addEventListener('click', (e) => {
 });
 
 // Back restores the desk: remember which piece we walked into, and on a back/forward return put focus (and the light) on it.
-// The slug lives in writing:v1.last (localStorage), with sessionStorage as the fallback when that is blocked.
-const remember = (slug: string | undefined) => { if (slug) noteLast(slug); };
+// The slug is kept on this history entry (so a Back weeks later, or to a different entry, restores nothing) and consumed
+// once used. writing:v1.last (localStorage, sessionStorage as the fallback) still records it for the rest of the room.
+const MARK = 'deskLast';
+const remember = (slug: string | undefined) => {
+  if (!slug) return;
+  noteLast(slug);
+  try { history.replaceState({ ...(history.state && typeof history.state === 'object' ? history.state : {}), [MARK]: slug }, ''); } catch { /* ignore */ }
+};
 for (const el of pieces) el.querySelector('.piece-link')?.addEventListener('click', () => remember(el.dataset.slug));
 addEventListener('pagehide', () => {
   const f = document.activeElement?.closest<HTMLElement>('[data-piece]');
   if (f) remember(f.dataset.slug);
 });
 function restoreFocus() {
-  const slug = lastOpened();
-  const el = slug ? pieces.find((p) => p.dataset.slug === slug) : undefined;
+  const st = history.state && typeof history.state === 'object' ? history.state : null;
+  const slug: string | undefined = st?.[MARK];
+  if (!slug) return;
+  try { const { [MARK]: _used, ...rest } = st; history.replaceState(Object.keys(rest).length ? rest : null, ''); } catch { /* ignore */ }
+  const el = pieces.find((p) => p.dataset.slug === slug);
   const link = el?.querySelector<HTMLAnchorElement>('.piece-link');
   if (!el || !link) return;
   link.focus({ preventScroll: true });
@@ -108,8 +132,8 @@ function restoreFocus() {
   const r = el.getBoundingClientRect();
   if (r.bottom < 0 || r.top > innerHeight) el.scrollIntoView({ block: 'center' });
 }
-const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-if (nav?.type === 'back_forward') restoreFocus();
+// The marker only exists on the history entry we left from (and is consumed by the first restore), so no navigation-type check is needed.
+restoreFocus();
 addEventListener('pageshow', (e) => { if (e.persisted) { clearWalk(); restoreFocus(); } });
 
 // E15: arrow keys walk the desk. Left and right move the light and the keyboard focus through the pieces in visual (DOM)
@@ -118,7 +142,10 @@ addEventListener('pageshow', (e) => { if (e.persisted) { clearWalk(); restoreFoc
 document.addEventListener('keydown', (e) => {
   if (e.defaultPrevented) return;
   const t = e.target as Element | null;
-  if (t && t !== document.body && t !== document.documentElement && !t.closest('[data-piece]')) return;
+  const onPage = !t || t === document.body || t === document.documentElement;
+  if (!onPage && !t.closest('[data-piece]')) return;
+  // with focus on the page itself only the arrows act, so Home, End and Enter keep their native scrolling and activation
+  if (onPage && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
   const focused = pieces.findIndex((p) => p.contains(document.activeElement));
   const current = focused >= 0 ? focused : pieces.findIndex((p) => p.classList.contains('is-open'));
   const move = deskKey({

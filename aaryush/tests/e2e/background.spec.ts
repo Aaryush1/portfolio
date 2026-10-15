@@ -60,8 +60,7 @@ test('under reduced motion the light does not drift and the grain never animates
 test('hero canvas draws contour lines, including an amber one', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('canvas#field')).toHaveAttribute('data-running', 'true');
-  await page.waitForTimeout(600);
-  const result = await page.evaluate(() => {
+  const measure = () => page.evaluate(() => {
     const cv = document.getElementById('field') as HTMLCanvasElement;
     const c = cv.getContext('2d')!;
     const { data } = c.getImageData(0, 0, cv.width, cv.height);
@@ -75,6 +74,7 @@ test('hero canvas draws contour lines, including an amber one', async ({ page })
     }
     return { drawn, amber };
   });
-  expect(result.drawn).toBeGreaterThan(500);
+  await expect.poll(async () => (await measure()).drawn).toBeGreaterThan(500); // the field has painted
+  const result = await measure();
   expect(result.amber).toBeGreaterThan(20);
 });

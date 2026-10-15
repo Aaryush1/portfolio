@@ -1,4 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
+import { afternoon, pinAfternoon } from './afternoon';
+import { settled } from './settle';
+
+pinAfternoon();
 
 // Task 31: phone polish on /writing, the paper pile pill, and footnotes as a preview sheet.
 const phone = { hasTouch: true, isMobile: true };
@@ -7,8 +11,10 @@ for (const w of [360, 375, 412, 430]) {
   test(`/writing at ${w}px: pieces are centred with a 16px gutter at least, even lifted`, async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: w, height: 812 }, ...phone });
     const page = await ctx.newPage();
+    await afternoon(page);
     await page.goto('/writing');
-    await page.waitForTimeout(1200); // the nearest piece lights and lifts
+    await expect(page.locator('[data-piece].is-lit')).toHaveCount(1); // the nearest piece lights and lifts
+    await settled(page);
     const rects = await page.locator('[data-piece]').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { l: r.left, r: r.right }; }));
     for (const r of rects) {
       expect(r.l).toBeGreaterThanOrEqual(16);
@@ -23,6 +29,7 @@ for (const w of [360, 375, 412, 430]) {
 test('/writing at 375x812: the letter and the paper both fit on the first screen, objects at ~60% height', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, ...phone });
   const page = await ctx.newPage();
+  await afternoon(page);
   await page.goto('/writing');
   const letter = (await page.locator('[data-shape="letter"]').boundingBox())!;
   const paper = (await page.locator('[data-shape="paper"]').boundingBox())!;
@@ -37,6 +44,7 @@ test('/writing at 375x812: the letter and the paper both fit on the first screen
 test('phones: only the first fold phrase shows at rest, the why fades when the letter opens and returns on close; taps unchanged', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 430, height: 932 }, ...phone });
   const page = await ctx.newPage();
+  await afternoon(page);
   await page.goto('/writing');
   const letter = page.locator('[data-shape="letter"]');
   const op = (sel: string) => letter.locator(sel).first().evaluate((e) => parseFloat(getComputedStyle(e).opacity));
@@ -64,6 +72,7 @@ test('phones: only the first fold phrase shows at rest, the why fades when the l
 test('paper pile dock on a phone: a compact translucent pill in the bottom-right corner', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, ...phone });
   const page = await ctx.newPage();
+  await afternoon(page);
   await page.goto('/writing/quiet-singularity');
   await page.locator('.essay-body h2').nth(2).evaluate((e) => e.scrollIntoView({ block: 'start' }));
   const dock = page.locator('.pile-dock');
@@ -129,6 +138,7 @@ test('desktop: the sheet is a popover beside the marker', async ({ page }) => {
 test('phones: the sheet sits at the bottom with the blur style', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 430, height: 932 }, ...phone });
   const page = await ctx.newPage();
+  await afternoon(page);
   await page.goto('/writing/quiet-singularity');
   const m = cite(page, 11);
   await m.scrollIntoViewIfNeeded();
@@ -145,6 +155,7 @@ test('phones: the sheet sits at the bottom with the blur style', async ({ browse
 test('reduced motion: the sheet opens with no transition', async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await ctx.newPage();
+  await afternoon(page);
   await page.goto('/writing/quiet-singularity');
   const m = cite(page, 2);
   await m.scrollIntoViewIfNeeded();
