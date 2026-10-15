@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 // One letter and one paper: every piece ends with the signature, and each kind gets the same behaviour.
 const pieces = [
@@ -60,24 +60,6 @@ test('essay:section state is readable by a late listener', async ({ page }) => {
   await expect.poll(() => page.evaluate(() => JSON.parse(document.documentElement.dataset.essaySection ?? '{}').index)).toBe(2);
 });
 
-for (const size of [{ width: 1100, height: 760 }, { width: 375, height: 700 }]) {
-  test(`at the very bottom the piles never touch the site footer links (${size.width}px)`, async ({ page }) => {
-    await page.setViewportSize(size);
-    await page.goto('/writing/quiet-singularity');
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    const dock = page.locator('.pile-dock');
-    // the dock steps aside (an IntersectionObserver, then a .25s fade) once the footer is on screen; that takes longer in Firefox and WebKit,
-    // so poll until it is gone or clear of every footer link, instead of sampling at a fixed 500ms
-    await expect.poll(() => page.evaluate(() => {
-      const dk = document.querySelector('.pile-dock') as HTMLElement;
-      if (getComputedStyle(dk).visibility === 'hidden') return false;
-      const d = dk.getBoundingClientRect();
-      return [...document.querySelectorAll('footer a')].some((a) => { const r = a.getBoundingClientRect(); return r.x < d.x + d.width && r.x + r.width > d.x && r.y < d.y + d.height && r.y + r.height > d.y; });
-    }), { timeout: 10000 }).toBe(false);
-    await expect(dock).toBeHidden();
-  });
-}
-
 for (const { kind, slug } of pieces) {
   test(`a ${kind} signature is fully drawn without JS and under reduced motion`, async ({ browser }) => {
     for (const opts of [{ javaScriptEnabled: false }, { reducedMotion: 'reduce' as const }]) {
@@ -91,35 +73,68 @@ for (const { kind, slug } of pieces) {
   });
 }
 
-test('a paper shows two piles, not the generic bar, and sheets move as sections pass', async ({ page }) => {
+const bar = (page: Page) => page.locator('[data-reading-progress]');
+const tickFractions = (page: Page) => bar(page).locator('.tick').evaluateAll((ts) => ts.map((t) => parseFloat((t as HTMLElement).style.left) / 100));
+
+for (const { kind, slug, sections } of [
+  { kind: 'paper', slug: '/writing/quiet-singularity', sections: 6 },
+  { kind: 'letter', slug: '/writing/bigger-than-electricity', sections: 4 },
+  { kind: 'note', slug: '/writing/once-for-good', sections: 4 },
+]) {
+  test(`a ${kind} has the same reading bar, with a gap at each section break`, async ({ page }) => {
+    await page.goto(slug);
+    await expect(bar(page)).toHaveCount(1);
+    await expect(bar(page)).toHaveAttribute('aria-hidden', 'true');
+    await expect(page.locator('[data-piles], .pile-dock')).toHaveCount(0);
+    const ticks = await tickFractions(page);
+    // one break between neighbouring sections (a paper may also open with a short preface, which adds one before section I)
+    expect(ticks.length).toBeGreaterThanOrEqual(sections - 1);
+    expect(ticks.length).toBeLessThanOrEqual(sections);
+    for (let i = 1; i < ticks.length; i++) expect(ticks[i]).toBeGreaterThan(ticks[i - 1]);
+    expect(ticks[0]).toBeGreaterThan(0);
+    expect(ticks[ticks.length - 1]).toBeLessThan(1);
+    // the line still fills as you read
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight / 2));
+    await expect.poll(() => bar(page).evaluate((e) => parseFloat(e.style.getPropertyValue('--progress')))).toBeGreaterThan(0.2);
+  });
+}
+
+test('a paper breaks sit by cumulative words: a longer section takes more of the bar', async ({ page }) => {
   await page.goto('/writing/quiet-singularity');
-  await expect(page.locator('[data-reading-progress]')).toHaveCount(0);
-  const piles = page.locator('[data-piles]');
-  await expect(piles).toHaveCount(1);
-  await expect(piles).toHaveAttribute('aria-hidden', 'true');
-  const total = await piles.locator('.pile-sh').count();
-  expect(total).toBe(await page.locator('.essay-body h2:not(.references h2)').count());
-  const moved = () => piles.locator('.pile-sh.moved').count();
-  expect(await moved()).toBe(0);
-  const third = page.locator('.essay-body h2').nth(2);
-  await third.evaluate((e) => e.scrollIntoView({ block: 'start' }));
-  await expect.poll(moved).toBe(2); // sections I and II are behind us
-  await expect(page.locator('.pile-label')).toHaveText('Section III of VI');
+  const words = await page.locator('.essay-body').evaluate((art) => {
+    const out: number[] = [];
+    let cur = -1;
+    for (const c of Array.from(art.children)) {
+      if (c.matches('.signature, .references')) continue;
+      if (c.matches('h2')) { cur++; out[cur] = 0; }
+      if (cur >= 0) out[cur] += (c.textContent ?? '').split(/\s+/).filter(Boolean).length;
+    }
+    return out;
+  });
+  const ticks = await tickFractions(page);
+  const starts = ticks.length === words.length ? ticks : [0, ...ticks];
+  const widths = starts.map((s, i) => (starts[i + 1] ?? 1) - s);
+  const total = words.reduce((a, b) => a + b, 0);
+  words.forEach((w, i) => expect(Math.abs(widths[i] - w / total)).toBeLessThan(0.02));
+  expect(words.indexOf(Math.max(...words))).toBe(widths.indexOf(Math.max(...widths)));
+});
+
+test('the current section is the lit stretch of the line, and follows the reader', async ({ page }) => {
+  await page.goto('/writing/quiet-singularity');
+  const seg = () => bar(page).evaluate((e) => [e.style.getPropertyValue('--seg-a'), e.style.getPropertyValue('--seg-b')].map(parseFloat));
+  await page.locator('.essay-body h2').nth(2).evaluate((e) => e.scrollIntoView({ block: 'start' }));
+  await expect.poll(async () => (await seg())[0]).toBeGreaterThan(0);
+  const ticks = await tickFractions(page);
+  const [a, b] = await seg();
+  const third = ticks.length === 6 ? 2 : 1; // index into the ticks of section III's start
+  expect(Math.abs(a / 100 - ticks[third])).toBeLessThan(0.002);
+  expect(Math.abs(b / 100 - ticks[third + 1])).toBeLessThan(0.002);
   await page.locator('.essay-body h2:not(.references h2)').last().evaluate((e) => e.scrollIntoView({ block: 'start' }));
-  await expect.poll(moved).toBe(total - 1);
+  await expect.poll(async () => Math.round((await seg())[1])).toBe(100);
 });
 
-test('a letter keeps the generic bar and has no piles', async ({ page }) => {
+test('a letter is split into its folds in equal parts', async ({ page }) => {
   await page.goto('/writing/bigger-than-electricity');
-  await expect(page.locator('[data-reading-progress]')).toHaveCount(1);
-  await expect(page.locator('[data-piles]')).toHaveCount(0);
-});
-
-test('the piles never cover the footer links on a phone', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 700 });
-  await page.goto('/writing/quiet-singularity');
-  await page.getByRole('link', { name: /All writing/ }).scrollIntoViewIfNeeded();
-  const link = await page.getByRole('link', { name: /All writing/ }).boundingBox();
-  const pile = await page.locator('[data-piles]').boundingBox();
-  expect(link!.y + link!.height <= pile!.y || link!.y >= pile!.y + pile!.height).toBe(true);
+  const ticks = await tickFractions(page);
+  expect(ticks.map((t) => Math.round(t * 100))).toEqual([25, 50, 75]);
 });

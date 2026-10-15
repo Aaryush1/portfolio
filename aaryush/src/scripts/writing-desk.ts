@@ -66,6 +66,20 @@ addEventListener('scroll', queueFollow, { passive: true });
 addEventListener('resize', queueFollow);
 queueFollow();
 
+// Phones: a faint drift of dust at the foot of the first screen invites a scroll. It comes in after a moment and goes for good once the visitor scrolls.
+const cue = document.querySelector<HTMLElement>('[data-scroll-cue]');
+if (cue && phone() && pieces.length > 1 && scrollY < 24) {
+  const on = window.setTimeout(() => cue.classList.add('is-on'), 1400);
+  const off = () => {
+    if (scrollY < 24) return;
+    clearTimeout(on);
+    cue.classList.remove('is-on');
+    cue.classList.add('is-off');
+    removeEventListener('scroll', off);
+  };
+  addEventListener('scroll', off, { passive: true });
+}
+
 for (const el of pieces) {
   el.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch' && !phone()) light(el); });
   el.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch' && !phone() && !el.matches(':has(:focus-visible)')) unlight(el); });
@@ -89,9 +103,9 @@ for (const el of pieces) {
     if (!touched || !phone() || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     if (isWalking()) { e.preventDefault(); return; }
     if (el.classList.contains('is-open')) {
-      // second tap follows the link; letters and papers walk in first (Task 32), anything else just navigates
+      // second tap follows the link; letters, papers and notes walk in first (Task 32, 49), anything else just navigates
       const shape = el.dataset.shape;
-      if ((shape === 'letter' || shape === 'paper') && walkIn(el, (e.currentTarget as HTMLAnchorElement).href, shape)) e.preventDefault();
+      if ((shape === 'letter' || shape === 'paper' || shape === 'note') && walkIn(el, (e.currentTarget as HTMLAnchorElement).href, shape)) e.preventDefault();
       return;
     }
     e.preventDefault();
@@ -114,7 +128,11 @@ const remember = (slug: string | undefined) => {
   noteLast(slug);
   try { history.replaceState({ ...(history.state && typeof history.state === 'object' ? history.state : {}), [MARK]: slug }, ''); } catch { /* ignore */ }
 };
-for (const el of pieces) el.querySelector('.piece-link')?.addEventListener('click', () => remember(el.dataset.slug));
+for (const el of pieces) el.querySelector('.piece-link')?.addEventListener('click', (e) => {
+  remember(el.dataset.slug);
+  // A note opened on a bigger screen (the view transition does the move) still tells its page to settle the cards into section marks.
+  if (el.dataset.shape === 'note' && !e.defaultPrevented && !reduce.matches) { try { sessionStorage.setItem('walk-in', `note|${Date.now()}`); } catch { /* storage blocked: the marks just appear */ } }
+});
 addEventListener('pagehide', () => {
   const f = document.activeElement?.closest<HTMLElement>('[data-piece]');
   if (f) remember(f.dataset.slug);

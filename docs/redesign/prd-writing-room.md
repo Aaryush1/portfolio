@@ -61,7 +61,9 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
   - **The signature:** at the end of every piece's essay page (letters, papers and notes), the "ag." mark writes itself once it scrolls into view. On a paper it sits after the last section and before the references. This reuses the logo draw-on; every piece ends with the signature.
 - **Paper:**
   - **Opening:** the stack slides forward and the cover flips at the staple to reveal the page.
-  - **Reading progress:** on a paper's essay page, progress shows as two small piles of sheets, with sheets moving from the unread pile to the read pile as each section passes. This replaces the generic progress bar on papers only.
+- **Reading progress (every kind, Task 49):** the same thin amber bar under the header on letter, paper and note pages. It has a small gap at each section break (a paper's `##` sections, a letter's folds, a note's cards) and the current section's stretch of the line is a little brighter. Breaks sit by cumulative word count, so a longer section takes more of the bar (a letter's folds are equal parts, the way memory reads a letter). The fill crosses each break just as that section's heading reaches the reading line. The old "two piles" for papers is gone.
+- **Note opening, "the deal" (Task 49):** the binder clip lifts off, the cards slide out of the stack and settle down the screen in a column, each a little wider than the last, then the essay page fades in and each card resolves into its section mark. On phones (below 560px) this is done on the desk by `scripts/walk-in.ts`, like the letter and paper (about 1.3s end to end); on wider screens it is a view transition (the stack is dealt downward, then the page), and the marks settle the same way. Reduced motion goes straight to the page.
+- **/writing on phones (Task 49):** at 700px and below, or on a coarse pointer, each piece has its own screen: centred in the viewport with its own pool of light, the moving light still following the centred piece. A faint drift of dust at the foot of the first screen invites a scroll (no words or arrows); it stops for good once the visitor scrolls, and is a still hint under reduced motion. Desktop is unchanged.
 - **Note:** a plain page, like the letter's. At each card, a quiet section mark: the top edge of an index card (a faint hairline outline about 9px tall) with the number in amber and the label in mono. The mark widens with each card (58%, 70%, 84%, 100% of the text column, at every screen size). Reading progress, memory and "pick up where you left off" work by card, as they do by section on a paper.
 - **Back:** browser Back returns to the desk with the piece back in place.
 - **Reduced motion:** all transitions are instant.
@@ -103,7 +105,7 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
 2. **Hover and focus** on a piece measurably change three things: its transform (lift), the light pool position, and the opacity of the "why" line.
 3. **Night note:** it renders only for 21:00–07:00, including at the boundary hours, and is absent from the DOM in daytime.
 4. **Opening a piece** navigates to its URL, and Back restores the desk with focus on that piece.
-5. **Signature:** every piece's page draws the signature at the end (before the references on a paper). Paper pages show the two piles, which advance by section.
+5. **Signature:** every piece's page draws the signature at the end (before the references on a paper). Every kind has the section-break reading bar.
 6. **Remembering:** after reading a paper to section III and returning, the paper is pulled out with an amber flag at section III, and its page offers to pick up at III. "Forget" clears it, and so does storage throwing.
 7. **No JS:** all pieces are listed, with working links.
 8. **Reduced motion:** the page is static and lit, transitions are instant, there's no dust, and no animation loop is running.

@@ -3,7 +3,8 @@
  *
  * The second tap on an open letter or paper does not navigate straight away. A copy of the piece is lifted to the
  * front of the screen and brought up until the sheet *is* the screen: the paper's cover fills it edge to edge, the
- * letter's panels open one after another until they cover it. Then the page navigates, and the essay page's view
+ * letter's panels open one after another until they cover it, and a note's clip lifts and its cards are dealt out down the
+ * screen, each a little wider than the last (the page then turns them into its section marks). Then the page navigates, and the essay page's view
  * transition finishes the move (the cover turns on its staple, or the essay text fades up on the opened sheet).
  * See the "walking in" rules in writing-room.css and writing-transitions.css, and the pagereveal hook in BaseLayout.
  *
@@ -14,7 +15,7 @@ const EASE_OUT = 'cubic-bezier(.16,1,.3,1)';
 const EASE_D = 'cubic-bezier(.45,.05,.2,1)';
 const FLAG = 'walk-in';
 
-export type WalkKind = 'letter' | 'paper';
+export type WalkKind = 'letter' | 'paper' | 'note';
 
 let walking = false;
 
@@ -113,7 +114,7 @@ export function walkIn(el: HTMLElement, href: string, kind: WalkKind): boolean {
         if (folds < 2) clone.querySelectorAll('.letter-base').forEach((f) => f.classList.add('flat'));
       }, A + (k - 2) * step);
     }
-  } else {
+  } else if (kind === 'paper') {
     // Paper: the stack lifts a little, the fan folds back in, and the cover scales until it fills the screen edge to edge.
     const A = 480;
     total = A;
@@ -137,6 +138,46 @@ export function walkIn(el: HTMLElement, href: string, kind: WalkKind): boolean {
     staple.setAttribute('aria-hidden', 'true');
     document.body.append(staple);
     staple.animate([{ opacity: 0 }, { opacity: 0, offset: 0.6 }, { opacity: 1 }], { duration: A, fill: 'forwards' });
+  }
+
+  else {
+    // Note, "the deal": the binder clip lifts off, the cards slide out of the stack and settle down the screen in a column, each a
+    // little wider than the last (58 / 70 / 84 / 100% of the text column, the widths of the page's section marks). The essay page
+    // then fades in and each card resolves into its section mark (see "walk-note" in writing-transitions.css).
+    const SLOW = 'cubic-bezier(.22,.7,.2,1)';
+    const cards = Array.from(clone.querySelectorAll<HTMLElement>('.card:not(.n0)'));
+    const front = clone.querySelector<HTMLElement>('.card.n0');
+    const clip = clone.querySelector<HTMLElement>('.clip');
+    const colW = Math.min(W - 48, 560);
+    const fracs = [0.58, 0.7, 0.84, 1];
+    const gap = 12;
+    const th = Math.max(78, Math.min(132, (H * 0.74 - gap * (cards.length - 1)) / Math.max(cards.length, 1)));
+    const top0 = Math.max(24, (H - (cards.length * th + (cards.length - 1) * gap)) / 2 - H * 0.02);
+    const START = 130, STAGGER = 80, DUR = 560;
+    total = START + (cards.length - 1) * STAGGER + DUR + 40;
+    lead = 160;
+    veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 380, easing: 'ease-out', fill: 'forwards' });
+    fadeKids(300);
+    const rest = (el: HTMLElement) => { const t = getComputedStyle(el).transform; return t === 'none' ? 'none' : t; };
+    // the clip lifts off first and goes
+    clip?.animate([
+      { transform: 'none', opacity: 1 },
+      { transform: 'translateY(-26px) rotate(-5deg)', opacity: 0 },
+    ], { duration: 420, easing: 'cubic-bezier(.3,.1,.3,1)', fill: 'forwards' });
+    // the front card (the title) slips away up and off the stack
+    front?.animate([
+      { transform: 'none', opacity: 1 },
+      { transform: 'translateY(-40px)', opacity: 0 },
+    ], { duration: 460, easing: 'cubic-bezier(.3,.1,.3,1)', fill: 'forwards' });
+    const left = parseFloat(clone.style.left) || 0, topPx = parseFloat(clone.style.top) || 0;
+    cards.forEach((card, i) => {
+      const ow = card.offsetWidth || 1, oh = card.offsetHeight || 1;
+      const ox = left + card.offsetLeft + ow / 2, oy = topPx + card.offsetTop;
+      const sx = (colW * (fracs[Math.min(i, fracs.length - 1)])) / ow, sy = th / oh;
+      const to = `translate(${W / 2 - ox}px, ${top0 + i * (th + gap) - oy}px) scale(${sx}, ${sy})`;
+      card.style.zIndex = String(10 + i);
+      card.animate([{ transform: rest(card) }, { transform: to }], { duration: DUR, delay: START + i * STAGGER, easing: SLOW, fill: 'both' });
+    });
   }
 
   // Go a little before the last frame lands: the page takes a moment to answer, and the sheet keeps closing meanwhile.

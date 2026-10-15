@@ -92,3 +92,47 @@ test('320px: the opened sheet never causes sideways scroll on the desk or the es
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await ctx.close();
 });
+
+// Task 49: the note's opening, "the deal".
+test('note: the clip lifts, the cards are dealt down the screen each wider than the last, then the page settles them into section marks', async ({ page }) => {
+  await openTwice(page, 'once-for-good');
+  await expect(page.locator('.walk-clone')).toHaveCount(1);
+  await expect(page.locator('.walk-veil')).toHaveCount(1);
+  // by the end of the deal the four cards sit in a column, top to bottom, widening 58 / 70 / 84 / 100% of the text column
+  await expect.poll(async () => page.evaluate(() => {
+    const cs = [...document.querySelectorAll<HTMLElement>('.walk-clone .card:not(.n0)')];
+    if (cs.length !== 4) return true; // already navigated
+    const r = cs.map((c) => c.getBoundingClientRect());
+    const col = innerWidth - 48;
+    const ok = r.every((b, i) => i === 0 || (b.top >= r[i - 1].bottom - 1 && b.width > r[i - 1].width));
+    return ok && Math.abs(r[0].width / col - 0.58) < 0.04 && Math.abs(r[3].width / col - 1) < 0.04;
+  }).catch(() => true), { timeout: 3000 }).toBe(true);
+  await expect(page).toHaveURL(/\/writing\/once-for-good\/?$/);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.locator('html')).toHaveClass(/walk-note/);
+  expect(await names(page)).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('note: back to the desk restores focus to the note and leaves no overlay', async ({ page }) => {
+  await openTwice(page, 'once-for-good');
+  await expect(page).toHaveURL(/once-for-good/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/writing\/?$/);
+  await expect(page.locator('.walk-clone, .walk-veil')).toHaveCount(0);
+  await expect(link(page, 'once-for-good')).toBeFocused();
+  expect(await page.locator('[data-slug="once-for-good"]').evaluate((e) => getComputedStyle(e).visibility)).toBe('visible');
+});
+
+test('note, reduced motion: no deal, straight to the page', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 430, height: 932 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await page.goto('/writing');
+  await link(page, 'once-for-good').scrollIntoViewIfNeeded();
+  await link(page, 'once-for-good').tap();
+  await link(page, 'once-for-good').tap();
+  await expect(page).toHaveURL(/once-for-good/);
+  await expect(page.locator('.walk-clone')).toHaveCount(0);
+  await expect(page.locator('html')).not.toHaveClass(/walk-note/);
+  await ctx.close();
+});

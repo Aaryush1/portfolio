@@ -8,13 +8,16 @@
 ::view-transition-group(*.vt-paper) { animation-duration: .95s; animation-timing-function: var(--ease-d); }
 /* Back (and any piece that is not the one being opened) uses the rest class: a slow plain morph, no hinge or lift. */
 ::view-transition-group(*.vt-rest) { animation-duration: .8s; animation-timing-function: var(--ease-d); }
+::view-transition-group(*.vt-note) { animation-duration: 1.05s; animation-timing-function: var(--ease-d); }
 ::view-transition-old(*.vt-letter), ::view-transition-new(*.vt-letter),
-::view-transition-old(*.vt-paper), ::view-transition-new(*.vt-paper) { height: 100%; object-fit: contain; object-position: 50% 50%; }
+::view-transition-old(*.vt-paper), ::view-transition-new(*.vt-paper),
+::view-transition-old(*.vt-note), ::view-transition-new(*.vt-note) { height: 100%; object-fit: contain; object-position: 50% 50%; }
 
 /* Only the piece being opened (hovered, open or keyboard-focused) carries its kind's class; the rest are vt-rest. */
 .piece { view-transition-class: vt-rest; }
 .piece[data-shape="letter"]:is(:hover, .is-open, :has(:focus-visible)) { view-transition-class: vt-letter; }
 .piece[data-shape="paper"]:is(:hover, .is-open, :has(:focus-visible)) { view-transition-class: vt-paper; }
+.piece[data-shape="note"]:is(:hover, .is-open, :has(:focus-visible)) { view-transition-class: vt-note; }
 .piece[data-shape="sheet"] { view-transition-class: vt-sheet; }
 
 /* Letter: it lifts toward you, then the page unfolds downward from the fold. */
@@ -42,10 +45,34 @@
   to { opacity: 1; transform: none; }
 }
 
+/* Note ("the deal", Task 49): the stack is dealt out downward and gives way to the page, whose section marks then settle (below).
+   On phones the dealing is done on the desk by scripts/walk-in.ts instead, and no piece is a shared element. */
+::view-transition-old(*.vt-note) { animation: vt-note-out .72s var(--ease-d) both; transform-origin: 50% 0; }
+::view-transition-new(*.vt-note) { animation: vt-note-in .8s var(--ease-out) .26s both; }
+@keyframes vt-note-out {
+  to { opacity: 0; transform: translateY(14px) scale(1.02, 1.18); }
+}
+@keyframes vt-note-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ...and on the page that follows, each card resolves into its section mark: a card-sized pane thins down to the quiet top edge.
+   Set on <html> by the pagereveal hook in BaseLayout when a note was opened from the desk (any width). */
+html.walk-note .essay-body[data-kind="note"] h2::after { pointer-events: none; animation: note-resolve 1.05s var(--ease-out) both; }
+html.walk-note .essay-body[data-kind="note"] h2:nth-of-type(2)::after { animation-delay: .1s; }
+html.walk-note .essay-body[data-kind="note"] h2:nth-of-type(3)::after { animation-delay: .2s; }
+html.walk-note .essay-body[data-kind="note"] h2:nth-of-type(n+4)::after { animation-delay: .3s; }
+@keyframes note-resolve {
+  from { height: 84px; background: rgba(255, 235, 200, .045); border-color: rgba(255, 235, 200, .3); }
+  to { height: 9px; background: transparent; border-color: rgba(255, 235, 200, .11); }
+}
+
 /* Reduced motion: navigation is instant (base.css turns the transition off); belt and braces here. */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   .piece, .essay-head { view-transition-name: none !important; }
+  html.walk-note .essay-body[data-kind="note"] h2::after { animation: none !important; }
 }
 
 /* ---------- Phones (below 560px, Task 32): walking into a piece fills the whole screen ----------
@@ -54,7 +81,7 @@
  * The class on <html> (walk-letter, walk-paper, vt-back) is set by the pagereveal hook in BaseLayout; nothing here animates layout. */
 @media (max-width: 559px) {
   .piece, .essay-head { view-transition-name: none !important; }
-  html.walk-out .top, html.walk-letter .top, html.walk-paper .top { view-transition-name: none; }
+  html.walk-out .top, html.walk-letter .top, html.walk-paper .top, html.walk-note .top { view-transition-name: none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .42s; }
 
   /* Paper: the full-screen cover turns up on the staple (its left edge); the essay's head is already underneath. */
@@ -75,6 +102,9 @@
     background: linear-gradient(180deg, #1f1b16, #191611); animation: walk-fade-out .55s ease .22s both;
   }
   html.walk-letter .essay { position: relative; z-index: 91; animation: walk-fade-in .45s var(--ease-out) .05s both; }
+  /* Note: the dealt column of cards is the screen; it fades away as the page arrives and the cards settle into their marks. */
+  html.walk-note::view-transition-old(root) { z-index: 2; mix-blend-mode: normal; animation: walk-fade-out .5s ease .06s both; }
+  html.walk-note::view-transition-new(root) { mix-blend-mode: normal; animation: none; }
   @keyframes walk-fade-out { to { opacity: 0; } }
   @keyframes walk-fade-in { from { opacity: 0; } }
 

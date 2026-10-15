@@ -489,3 +489,60 @@ html.js .piece[data-shape="note"] .card.pulled { box-shadow: 0 1px 0 rgba(255, 2
 @media (prefers-reduced-motion: reduce) {
   html.js .piece[data-shape="note"] .card, html.js .piece[data-shape="note"] .breakdown li { transition: none !important; }
 }
+
+/* ---------- phones and touch: one piece per screen (Task 49) ----------
+   Each piece sits in its own screen-high band, centred, with its own pool of light behind it (brighter while it is the lit one).
+   Desktop is unchanged. The moving pool still follows the centred piece (scripts/writing-desk.ts, light-pool.ts). */
+@media (max-width: 700px), (hover: none) {
+  html.js .desk, html.js .desk:not([data-cols="1"]):not([data-cols="2"]), html.js .desk[data-cols="4"] { gap: 0; }
+  html.js .piece {
+    /* half of what is left of the screen after the piece itself (the header takes the top 60px) */
+    --band: max(48px, calc((100vh - var(--header, 60px) - var(--ph, 300px)) / 2));
+    margin-block: var(--band);
+  }
+  @supports (height: 100svh) { html.js .piece { --band: max(48px, calc((100svh - var(--header, 60px) - var(--ph, 300px)) / 2)); } }
+  /* the first piece already has the header, the title and the desk padding above it */
+  html.js .piece:first-child { margin-top: max(0px, calc(var(--band) - 150px)); }
+  html.js .piece:last-child { margin-bottom: max(0px, calc(var(--band) - 150px)); }
+  html.js .piece[data-shape="paper"].is-open { margin-bottom: calc(var(--band) + var(--n, 6) * 46px); }
+  html.js .piece[data-shape="note"].is-open { margin-bottom: calc(var(--band) + 172px); }
+  /* its own pool of light: a wide warm glow behind the piece, a little stronger when the piece is the lit one */
+  html.js .piece::after {
+    content: ""; position: absolute; z-index: -1; pointer-events: none;
+    left: 50%; top: 50%; width: min(96vw, 420px); aspect-ratio: 1; transform: translate(-50%, -50%);
+    background: radial-gradient(closest-side, rgba(255, 196, 120, .13), rgba(255, 180, 100, .05) 55%, transparent);
+    opacity: calc(.45 + var(--lit, 0) * .55);
+  }
+}
+
+/* The scroll cue: three faint motes of dust that drift slowly down at the foot of the first screen, inviting a scroll to see more.
+   No words, no arrows. scripts/writing-desk.ts turns it on after a moment and off for good once the visitor scrolls. */
+.scroll-cue { display: none; }
+@media (max-width: 700px), (hover: none) {
+  html.js .scroll-cue {
+    display: block; position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); z-index: 5; width: 28px; height: 44px; margin-left: -14px;
+    pointer-events: none; opacity: 0; transition: opacity 1.4s ease;
+  }
+  html.js .scroll-cue.is-on { opacity: 1; }
+  html.js .scroll-cue.is-off { opacity: 0; transition-duration: .5s; }
+  .scroll-cue i {
+    position: absolute; left: 50%; top: 0; width: 3px; height: 3px; margin-left: -1.5px; border-radius: 50%;
+    background: var(--accent); opacity: 0; animation: cue-drift 4.2s ease-in-out infinite;
+  }
+  .scroll-cue i:nth-child(2) { margin-left: -9px; animation-delay: 1.4s; animation-duration: 4.6s; }
+  .scroll-cue i:nth-child(3) { margin-left: 5px; animation-delay: 2.8s; animation-duration: 4s; }
+  @keyframes cue-drift {
+    0% { opacity: 0; transform: translateY(0); }
+    25% { opacity: .55; }
+    70% { opacity: .3; }
+    100% { opacity: 0; transform: translateY(40px); }
+  }
+  .scroll-cue.is-off i { animation-play-state: paused; }
+  /* reduced motion: a still hint, a short faint trail of the same motes, no movement */
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-cue i { animation: none; opacity: .42; }
+    .scroll-cue i:nth-child(1) { transform: translateY(8px); }
+    .scroll-cue i:nth-child(2) { transform: translateY(20px); opacity: .28; }
+    .scroll-cue i:nth-child(3) { transform: translateY(32px); opacity: .16; }
+  }
+}
