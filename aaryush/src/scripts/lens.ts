@@ -39,7 +39,12 @@ export type Lens = {
   onRingHover(cb: (level: number | null) => void): void;
 };
 
-export function createLens(fig: HTMLElement): Lens | null {
+export type LensOptions = {
+  /** Phone window mode: under reduced motion the zoom jumps to its target instead of staying on the full picture. */
+  jump?: () => boolean;
+};
+
+export function createLens(fig: HTMLElement, opts: LensOptions = {}): Lens | null {
   const svg = fig.querySelector('svg');
   if (!svg) return null;
   const q = <T extends Element>(sel: string) => [...svg.querySelectorAll<T>(sel)];
@@ -89,7 +94,7 @@ export function createLens(fig: HTMLElement): Lens | null {
     any = 0;
     for (let i = 0; i < 4; i++) { a[i] += (tg[i] - a[i]) * ka; any = Math.max(any, a[i]); }
 
-    if (still) u = 0;
+    if (still) u = opts.jump?.() ? zt : 0;
     else {
       u += (zt - u) * (1 - Math.exp(-dt * 3));
       if (Math.abs(zt - u) < 0.004) u = zt;
@@ -200,8 +205,8 @@ export function createLens(fig: HTMLElement): Lens | null {
       tg.fill(0);
       if (i !== null) tg[i] = 1;
       fig.dataset.level = i === null ? '' : String(level);
-      if (reduced()) { still(); return; }
       zt = clamp(zoomTo, 0, 3);
+      if (reduced()) { if (!opts.jump?.()) zt = 0; still(); return; }
       if (i !== null && changed) {
         const from = last !== null ? last : (i === 0 ? 3 : 0);
         if (from !== i) ripList.push({ from: R[from], to: R[i], t0: clock, dur: 0.9 + Math.abs(from - i) * 0.25 });

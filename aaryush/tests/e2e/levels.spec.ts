@@ -143,7 +143,7 @@ test('mini lens stays pinned on a 375px phone and a tap zooms it', async ({ brow
   const box = (await lens.boundingBox())!;
   expect(box.y).toBeGreaterThanOrEqual(header.y + header.height - 0.5);
   expect(box.y + box.height).toBeLessThanOrEqual(812);
-  expect(box.height).toBeLessThan(140);
+  expect(box.height).toBeLessThan(0.35 * 812); // the zoom window stays under about a third of the screen
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(375);
   // the lens does not sit on the row being tapped
@@ -213,8 +213,88 @@ test.describe('phones: the level nearest the middle of the screen is the active 
     await page.goto('/');
     await toCentre(page, 3);
     await expect(fig(page)).toHaveAttribute('data-level', '3');
-    await expect(fig(page)).toHaveAttribute('data-zoom', '0');
+    await expect(fig(page)).toHaveAttribute('data-zoom', '2'); // the window jumps straight to the L3 framing
     await expect(fig(page)).toHaveAttribute('data-running', 'false'); // no frame loop: the switch is instant
+    expect(await fig(page).evaluate((el) => el.getAnimations({ subtree: true }).length)).toBe(0);
+    await context.close();
+  });
+
+  // ---- Task 43: the zoom window and pinch ----
+  const ringR = (page: import('@playwright/test').Page) => fig(page).locator('circle.ring').first().evaluate((c) => Number(c.getAttribute('r')));
+
+  test('the band is an opaque window whose framing changes with each level', async ({ browser }) => {
+    test.slow();
+    const context = await browser.newContext(phone);
+    const page = await context.newPage();
+    await page.goto('/');
+    await fig(page).scrollIntoViewIfNeeded();
+    const sizes: number[] = [];
+    for (const n of [1, 2, 3, 4]) {
+      await toCentre(page, n);
+      await expect(fig(page)).toHaveAttribute('data-level', String(n));
+      await expect.poll(async () => Math.abs(Number(await fig(page).getAttribute('data-zoom')) - (n - 1)), { timeout: SETTLE }).toBeLessThan(0.02);
+      sizes.push(await ringR(page)); // the outer ring's drawn radius: the framing's scale
+    }
+    for (let i = 1; i < sizes.length; i++) expect(sizes[i]).toBeGreaterThan(sizes[i - 1] * 1.2);
+    const band = (await fig(page).boundingBox())!;
+    expect(band.height).toBeLessThan(0.35 * 915);
+    expect(await fig(page).evaluate((el) => getComputedStyle(el).backgroundColor)).toMatch(/^rgb\(/); // no alpha channel
+    // text scrolling underneath never shows: everywhere over the band hits the band itself
+    for (const [fx, fy] of [[0.5, 0.5], [0.05, 0.1], [0.95, 0.9], [0.5, 0.97]]) {
+      expect(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('#lvfig'), [band.x + band.width * fx, band.y + band.height * fy])).toBe(true);
+    }
+    // the drawing stays vector: no raster in the figure
+    expect(await fig(page).locator('canvas, image, img').count()).toBe(0);
+    await context.close();
+  });
+
+  test('a two-finger pinch on the figure steps levels; scrolling on releases the pin', async ({ browser, browserName }) => {
+    test.skip(browserName !== 'chromium', 'synthetic multi-touch goes through the Chrome DevTools protocol');
+    test.slow();
+    const context = await browser.newContext(phone);
+    const page = await context.newPage();
+    await page.goto('/');
+    await fig(page).scrollIntoViewIfNeeded();
+    await toCentre(page, 2);
+    await expect(fig(page)).toHaveAttribute('data-level', '2');
+    const cdp = await context.newCDPSession(page);
+    const box = (await fig(page).boundingBox())!;
+    const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+    const touch = async (type: 'touchStart' | 'touchMove' | 'touchEnd', gap: number | null) =>
+      cdp.send('Input.dispatchTouchEvent', { type, touchPoints: gap === null ? [] : [{ x: cx - gap / 2, y: cy, id: 1 }, { x: cx + gap / 2, y: cy, id: 2 }] });
+    const pinch = async (from: number, to: number) => {
+      await touch('touchStart', from);
+      const n = 8;
+      for (let i = 1; i <= n; i++) await touch('touchMove', from + ((to - from) * i) / n);
+      await touch('touchEnd', null);
+    };
+    const y0 = await page.evaluate(() => scrollY);
+    await pinch(60, 105); // fingers apart: one level in
+    await expect(fig(page)).toHaveAttribute('data-level', '3');
+    await pinch(60, 105);
+    await expect(fig(page)).toHaveAttribute('data-level', '4');
+    await pinch(60, 105); // already at the deepest level
+    await expect(fig(page)).toHaveAttribute('data-level', '4');
+    await expectZoomAbove(fig(page));
+    await pinch(150, 60); // fingers together: out, two thresholds crossed in one gesture
+    await expect(fig(page)).toHaveAttribute('data-level', '2');
+    await pinch(105, 60);
+    await expect(fig(page)).toHaveAttribute('data-level', '1');
+    await pinch(105, 60); // already at the top
+    await expect(fig(page)).toHaveAttribute('data-level', '1');
+    expect(await page.evaluate(() => scrollY)).toBe(y0); // the gesture never scrolled the page
+    // the pin holds until the visitor scrolls on
+    await toCentre(page, 3);
+    await expect(fig(page)).toHaveAttribute('data-level', '3');
+    await context.close();
+  });
+
+  test('touch-action is pan-y on the figure only', async ({ browser }) => {
+    const context = await browser.newContext(phone);
+    const page = await context.newPage();
+    await page.goto('/');
+    expect(await fig(page).evaluate((el) => getComputedStyle(el).touchAction)).toBe('pan-y');
+    expect(await page.evaluate(() => getComputedStyle(document.body).touchAction)).toBe('auto');
     await context.close();
   });
 
@@ -225,4 +305,29 @@ test.describe('phones: the level nearest the middle of the screen is the active 
     await page.waitForTimeout(500);
     await expect(fig(page)).not.toHaveAttribute('data-level', /\d/);
   });
+});
+
+// ---- Task 43: trackpad pinch (wheel + ctrlKey) over the figure steps levels ----
+test('desktop: ctrl+wheel over the figure steps levels; elsewhere it is left alone', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'trackpad gesture');
+  await page.goto('/');
+  await fig(page).scrollIntoViewIfNeeded();
+  const wheel = (sel: string, deltaY: number, ctrlKey = true) =>
+    page.locator(sel).evaluate((el, [dy, ctrl]) => {
+      const ev = new WheelEvent('wheel', { deltaY: dy as number, ctrlKey: ctrl as boolean, bubbles: true, cancelable: true });
+      return !el.dispatchEvent(ev); // true when something called preventDefault
+    }, [deltaY, ctrlKey]);
+  expect(await wheel('#lvfig svg', -100)).toBe(true); // fingers apart: in
+  await expect(fig(page)).toHaveAttribute('data-level', '2');
+  await page.waitForTimeout(450); // the steps are paced
+  expect(await wheel('#lvfig svg', -100)).toBe(true);
+  await expect(fig(page)).toHaveAttribute('data-level', '3');
+  await page.waitForTimeout(450);
+  expect(await wheel('#lvfig svg', 100)).toBe(true); // together: out
+  await expect(fig(page)).toHaveAttribute('data-level', '2');
+  // ctrl+wheel anywhere else, and a plain wheel over the figure, are not claimed
+  expect(await wheel('#levels-title', -100)).toBe(false);
+  expect(await wheel('ol.levels', 100)).toBe(false);
+  expect(await wheel('#lvfig svg', -100, false)).toBe(false);
+  await expect(fig(page)).toHaveAttribute('data-level', '2');
 });

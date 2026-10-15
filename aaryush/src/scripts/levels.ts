@@ -3,7 +3,9 @@ import { reducedMotion } from './motion-pref';
 
 const STEP = 100; // ms between meter segments
 const fig = document.getElementById('lvfig');
-const lens = fig ? createLens(fig) : null;
+// Phones show the figure as a zoom window (see Levels.astro); under reduced motion the window jumps to each new framing.
+const windowMode = matchMedia('(max-width: 959px) and ((pointer: coarse) or (max-width: 700px))');
+const lens = fig ? createLens(fig, { jump: () => windowMode.matches }) : null;
 const section = document.getElementById('levels');
 
 type Row = { el: HTMLElement; depth: number; fill(): void; drain(): void };
@@ -56,6 +58,53 @@ function update() {
   }
   // Zoom follows the row (L1 is the full picture); a ring hover only highlights.
   lens?.set(next, rowLevel === null ? 0 : rowLevel - 1);
+}
+
+// Pinching the figure steps levels: fingers apart zooms in (toward L4), together zooms out (toward L1). A step pins
+// the level just like a tap, until the visitor scrolls on. Only the figure takes the gesture; the rest of the page
+// keeps its normal pinch-zoom.
+const PINCH_STEP = 40; // px of finger-distance change per level
+function stepLevel(dir: 1 | -1) {
+  const cur = hover ?? focus ?? pinned ?? scrolled ?? 1;
+  const next = Math.min(4, Math.max(1, cur + dir));
+  hover = null;
+  if (focus !== null) (document.activeElement as HTMLElement | null)?.blur();
+  focus = null;
+  if (next === cur && pinned === cur) return;
+  pinned = next;
+  update();
+}
+if (fig) {
+  let d0 = 0;
+  const dist = (t: TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  fig.addEventListener('touchstart', (e) => { d0 = e.touches.length === 2 ? dist(e.touches) : 0; }, { passive: true });
+  fig.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 2 || !d0) return;
+    e.preventDefault();
+    const d = dist(e.touches);
+    while (Math.abs(d - d0) >= PINCH_STEP) {
+      const dir = d > d0 ? 1 : -1;
+      stepLevel(dir);
+      d0 += dir * PINCH_STEP;
+    }
+  }, { passive: false });
+  fig.addEventListener('touchend', () => { d0 = 0; }, { passive: true });
+  fig.addEventListener('touchcancel', () => { d0 = 0; }, { passive: true });
+
+  // Trackpad pinch arrives as wheel + ctrlKey. Only claimed while over the figure; ctrl+wheel elsewhere is untouched.
+  let acc = 0, lockedUntil = 0, idle = 0;
+  fig.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    clearTimeout(idle);
+    idle = window.setTimeout(() => { acc = 0; }, 200);
+    if (e.timeStamp < lockedUntil) return;
+    acc -= e.deltaY; // fingers apart reports a negative deltaY
+    if (Math.abs(acc) < PINCH_STEP) return;
+    stepLevel(acc > 0 ? 1 : -1);
+    acc = 0;
+    lockedUntil = e.timeStamp + 350;
+  }, { passive: false });
 }
 
 rows.forEach(({ el, depth }) => {
