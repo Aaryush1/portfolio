@@ -79,6 +79,16 @@ After the landing choice, the visitor gets two doors, framed as the conversation
 - **The loop never breaks.** The two doors (talk to me, read) sit quietly on the sides while everything closes to blank and starts over.
 - **Visitors write what their probe carries.** They type it, it rises, and it becomes the dot. It's client-only and kept nowhere. Sharing everyone's answers is parked.
 
+## Feedback on the bustle prototype (Aaryush, 2026-10-15)
+
+- **The idea is fine; the magnitude isn't there.** The page doesn't yet have the scale or weight the story needs.
+- **Adding worlds feels like clicking a spreadsheet.** Planets must look like real generated planets, with water surfaces and textures.
+- **The letters don't read as messages.** There's nothing to see in them.
+- **The galaxy needs to be much stricter**, closer to a real galaxy. The colours, the variety and the overwhelming feeling are fine, but it isn't animated well enough.
+- **Runtime is fine.**
+- **Drag-to-realign is liked**, but it takes away the consequence. Correcting has to cost something, or be limited.
+- **For future mockups:** aim for the vibe and the visual magnitude, not a complete build of every mechanic.
+
 ## Questions for Aaryush to sit with (2026-10-15, overnight)
 
 **The arc**
