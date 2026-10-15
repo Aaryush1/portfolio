@@ -18,7 +18,7 @@ html:has(body.home){page:home}
   html,html.locked{overflow:visible !important;background:#fff !important}
   body{overflow:visible !important;background:#fff;color:#000}
   *,*::before,*::after{animation:none !important;transition:none !important}
-  /* never on paper: background layer, canvas, navigation, pop-ups, keyboard map, dust and the Lens */
+  /* never on paper: background layer, canvas, navigation, pop-ups, keyboard map, dust and the section schematic */
   .bg,canvas,.top,.foot,.progress,dialog,.dp-tag{display:none !important}
   .rv,.enter{opacity:1 !important;transform:none !important}
 

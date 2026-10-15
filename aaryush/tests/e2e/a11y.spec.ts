@@ -22,7 +22,8 @@ test('every interactive element shows a visible focus state', async ({ page }) =
     const outline = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement | null;
       if (!el || el === document.body) return 'none-needed';
-      const s = getComputedStyle(el);
+      // a card-wide link draws its ring on the card that holds it (:has), so look there too
+      const s = getComputedStyle(el.matches('.post-link') ? el.closest('.post')! : el);
       return s.outlineStyle !== 'none' && s.outlineWidth !== '0px' ? 'ok' : `missing on ${el.tagName}.${el.className}`;
     });
     expect(outline === 'ok' || outline === 'none-needed', outline).toBe(true);

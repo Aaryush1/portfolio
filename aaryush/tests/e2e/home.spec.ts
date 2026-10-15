@@ -21,7 +21,7 @@ test.describe('home structure', () => {
   });
 
   test('every system card and company inside-link points at /work/<slug>', async ({ page }) => {
-    const hrefs = await page.locator('[data-popup-link]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
+    const hrefs = await page.locator('#work [data-popup-link]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
     expect(hrefs.length).toBe(11);
     for (const h of hrefs) expect(h).toMatch(/^\/work\/[a-z0-9-]+$/);
     await expect(page.locator('#co-earlier a.more')).toHaveCount(0);
@@ -31,47 +31,9 @@ test.describe('home structure', () => {
     await expect(page.locator('#co-skale .date')).toHaveText('Jun 2024 – Feb 2026');
   });
 
-  test('level chips scroll to the referenced entry and flash it', async ({ page }) => {
-    await page.locator('li.level[data-level="3"] a.chip[href="#sys-ready-rebound-loop"]').click();
-    const card = page.locator('#sys-ready-rebound-loop');
-    await expect(card).toBeInViewport();
-    await expect(card).toHaveClass(/is-target/);
-  });
-
   test('no inside-link uses the word "More"', async ({ page }) => {
     await expect(page.locator('a.more', { hasText: /^More/ })).toHaveCount(0);
   });
-});
-
-test('level meter fills step by step on hover and drains on leave', async ({ page, isMobile }) => {
-  test.skip(isMobile, 'touch devices have no hover; the levels tap and scroll tests cover phones');
-  await page.goto('/');
-  const level = page.locator('li.level[data-level="3"]');
-  await level.scrollIntoViewIfNeeded();
-  // Record every change of the fill count in-page (MutationObserver), so the 100ms stagger can't race the assertion.
-  await level.evaluate((el) => {
-    const w = window as unknown as { __fills: number[] };
-    w.__fills = [];
-    const record = () => {
-      const n = el.querySelectorAll('.meter i.fill').length;
-      if (w.__fills[w.__fills.length - 1] !== n) w.__fills.push(n);
-    };
-    new MutationObserver(record).observe(el, { subtree: true, attributes: true, attributeFilter: ['class'] });
-  });
-  await level.hover();
-  await expect(level.locator('.meter i.fill')).toHaveCount(3, { timeout: 1000 });
-  const seen = await page.evaluate(() => (window as unknown as { __fills: number[] }).__fills);
-  // Filled progressively (never jumped straight 0 -> 3), and monotonically.
-  expect(seen[seen.length - 1]).toBe(3);
-  expect(seen, 'fills one segment at a time, in order').toEqual([1, 2, 3]);
-  await page.mouse.move(0, 0);
-  await expect(level.locator('.meter i.fill')).toHaveCount(0, { timeout: 1500 });
-});
-
-test('level meter fills on keyboard focus', async ({ page }) => {
-  await page.goto('/');
-  await page.locator('li.level[data-level="2"] a.chip').first().focus();
-  await expect(page.locator('li.level[data-level="2"] .meter i.fill')).toHaveCount(2, { timeout: 1000 });
 });
 
 test('there is no About section, and the section strips count to five', async ({ page }) => {

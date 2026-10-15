@@ -104,8 +104,6 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 .adv .more :global(svg){width:14px;height:14px;transition:transform .3s var(--ease),color .2s}
 .adv .more:hover{color:var(--text)}
 .adv .more:hover :global(svg){transform:translateX(3px);color:var(--accent)}
-.adv.is-target{animation:advFlash 2.2s var(--ease)}
-@keyframes advFlash{0%,30%{color:var(--text);text-shadow:0 0 18px rgba(242,181,68,.35)}100%{text-shadow:none}}
 .entry{position:relative;padding:30px 0 38px;display:grid;gap:12px;scroll-margin-top:calc(var(--header) + 24px)}
 .entry:last-child{padding-bottom:0}
 @media (min-width:860px){.entry{grid-template-columns:minmax(0,3fr) minmax(0,9fr);column-gap:28px;padding:38px 0 46px}}
@@ -117,8 +115,6 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 .entry.now::before{border-color:var(--text-2);background:radial-gradient(circle, var(--accent) 0 1.6px, var(--bg) 2px)}
 @media (min-width:860px){.entry::before{left:-44px;top:44px}}
 .entry:hover::before,.entry.is-near::before{border-color:var(--accent)}
-.entry.is-target::before{animation:nodeFlash 1.8s var(--ease)}
-@keyframes nodeFlash{0%,40%{border-color:var(--accent);box-shadow:0 0 0 6px rgba(242,181,68,.14)}100%{box-shadow:0 0 0 14px transparent}}
 .meta{display:flex;flex-wrap:wrap;gap:4px 14px;font:400 15px/1.5 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.01em}
 .meta .date{color:var(--text-2)}
 .meta .role{color:var(--text-3)}
@@ -148,8 +144,6 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 .card-open :global(svg){width:14px;height:14px;transition:transform .3s var(--ease),color .2s}
 .card:hover .card-open{color:var(--text)}
 .card:hover .card-open :global(svg){transform:translateX(3px);color:var(--accent)}
-.card.is-target{animation:cardFlash 2.2s var(--ease)}
-@keyframes cardFlash{0%,30%{border-color:rgba(242,181,68,.8);box-shadow:0 0 0 3px rgba(242,181,68,.12)}100%{border-color:var(--line);box-shadow:0 0 0 3px transparent}}
 @media (max-width:559px){
   .cards{gap:0;margin-top:14px;border-top:1px solid var(--line)}
   .card{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:6px 10px;min-height:48px;padding:10px 4px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0}
@@ -160,9 +154,5 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
   .card .lvs{order:3}
   .card-open{order:4;padding:0}
   .card-open span,.card p{display:none}
-  .card.is-target{animation:rowFlash 2.2s var(--ease)}
 }
-/* jumping here from a "seen in" chip: a short amber wash, on every screen */
-.entry.is-target{animation:rowFlash 2.2s var(--ease)}
-@keyframes rowFlash{0%,30%{background:rgba(242,181,68,.09);box-shadow:0 0 0 12px rgba(242,181,68,.09)}100%{background:transparent;box-shadow:0 0 0 12px transparent}}
 </style>

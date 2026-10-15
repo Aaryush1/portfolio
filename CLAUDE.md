@@ -81,6 +81,7 @@ They're **shown, never explained**. Nothing on the site hints at them, labels th
   - **The hero title block:** Dwg. no., Sheet, Region us-central, Last deploy (stamped at build), Scale NTS.
   - **Background:** the live star chart of the visitor's own sky (E17): real stars, planets, Moon, Sun and Milky Way, running fast and following the visitor's local time. Easter eggs `L` and `[` `]`. The ~360 brightest stars are baked in `src/data/sky/` for an instant first paint; the rest of the catalogue is fetched from our own site as binary tiles, only for the bands the latitude can show, and twinkles in (no outside request at all).
   - **Hero:** a shared-letter morph.
+  - **Fig. 2.1, "A section through an organization" (How AI fits):** four stacked floors, "Decisions" down a left spine and "Volume & feedback" up a right spine with one calm pulse. The active floor opens to hold the level's title (the hero's morph) and body, with its "Explore more" list beside it (desktop) or below it (phone). Native scroll through a short sticky track: never pinned, snapped or captured, the active level comes only from the scroll position, and clicking a floor scrolls to it. With no JS or reduced motion: four expanded levels, stacked. Styles are in `src/styles/levels.css`.
 - **Writing language: a warm, dim room.** The /writing page and essay pages do **not** use the drawing language. They have objects on a desk, a pool of light, dust, and the visitor's clock (9pm–7am is night).
 - **Motion:** warm, slow and never bouncy. Resting objects are 2D, so text stays crisp, and 3D only appears during interaction. With `prefers-reduced-motion`, everything shows its final frame. Nothing animates when it isn't on screen.
 - **Scraper protection (intentional):** the email address and phone number never appear in served HTML or JS literals. They're stored as reversed parts and assembled at runtime (`src/scripts/obf.ts`, `site.ts`). Leak tests enforce this.
@@ -90,12 +91,12 @@ They're **shown, never explained**. Nothing on the site hints at them, labels th
 - **`src/data/`:** content that isn't in collections.
   - `site.ts`: hero, footer, contact parts, drafts, the drawer.
   - `diagrams.ts`: system diagram specs.
-  - `levels.ts`
+  - `levels.ts`: the four levels' copy and refs.
   - `console.ts`: the DevTools note.
   - `revisions.ts`
 - **`src/content/`:** companies, systems and writing (Astro collections; schema in `content.config.ts`). Quote any frontmatter value that contains a comma.
-- **`src/lib/`:** pure, tested logic: timeline, diagram, daypart, sky (astronomy, place, geometry), morph timing, keymap, vcard, meet, writing layout and memory, OG cards, rehype plugins.
-- **`src/scripts/`:** client behaviour, one concern per file: hero-rotator and morph, hero-sky (and `sky/engine.ts`, loaded lazily), lens, popups, writing-desk, light-pool, dust, walk-in, keymap, contact-card, and so on.
+- **`src/lib/`:** pure, tested logic: timeline, diagram, daypart, sky (astronomy, place, geometry), morph timing, section (Fig. 2.1 geometry and scroll maths), keymap, vcard, meet, writing layout and memory, OG cards, rehype plugins.
+- **`src/scripts/`:** client behaviour, one concern per file: hero-rotator and morph, hero-sky (and `sky/engine.ts`, loaded lazily), levels (the Fig. 2.1 section schematic), popups, writing-desk, light-pool, dust, walk-in, keymap, contact-card, and so on.
 - **`src/components/`:**
   - `home/`: Hero, Levels, Timeline, TitleBlock, WritingTeaser, PrintSheet.
   - `popup/`

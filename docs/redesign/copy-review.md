@@ -110,7 +110,7 @@ Edited version (leave blank to keep the current text):
 
 ### 3a. Section intro
 
-**Source:** `aaryush/src/components/home/Levels.astro` (the `h2` and `lead` in `.levels-head`)
+**Source:** `aaryush/src/components/home/Levels.astro` (the `h2` and `lead` above the figure)
 
 Current heading:
 
@@ -165,11 +165,19 @@ L.04 heading:
 L.04 body:
 ```
 
-### 3c. "Seen in" chip labels (small)
+### 3c. "Explore more" list (small)
 
-**Source:** `aaryush/src/components/home/Levels.astro` (`chipLabels` and the "Seen in" label)
+**Source:** `aaryush/src/components/home/Levels.astro` (`companyLabels` and the "Explore more" heading)
 
-Current: the label "Seen in" precedes each level's links. Company chips read "Operating model" (Cylerity) and "Advisory" (Gupta Advisory); any other company chip reads "Overview". System chips use the system's title.
+**"Seen in" became "Explore more": approved by Aaryush on 2026-10-15.** The heading above each level's list of links reads "Explore more". Each item is the company in small caps over the system's name, with an arrow. A company item reads "Operating model" (Cylerity) or "Advisory" (Gupta Advisory); any other company item reads "Overview". A system item uses the system's title.
+
+### 3d. Fig. 2.1 caption and legend
+
+**Source:** `aaryush/src/components/home/Levels.astro` (the `figcaption`)
+
+- **Caption: "Fig. 2.1 — A section through an organization."** Drafted by Claude on 2026-10-15 because "Section" alone was not descriptive enough. **Approved by Aaryush on 2026-10-15.** (It is not behind a `site.drafts` flag.)
+- **Legend: "Decisions" and "Volume & feedback".** Approved by Aaryush on 2026-10-15. The same two words label the diagram's left and right spines.
+- Superseded: the Lens caption "Fig. 2.1 — Zoom in or out." (approved 2026-10-14, retired with the Lens on 2026-10-15) and the earlier draft "Fig. 2.1 — Section.".
 
 ---
 
@@ -678,7 +686,7 @@ The small header strip on each section (a "§" number, a name and a "Sheet" note
 | Writing | § 04 · Writing · Sheet 04 / 05 | Notes on where this is going. | none | `components/home/WritingTeaser.astro` |
 | Contact | § 05 · Contact · Sheet 05 / 05 | see section 10 | see section 10 | `components/SiteFooter.astro` |
 
-Also: the levels diagram caption in the How AI fits section reads "**Fig. 2.1** — Zoom in or out." (**approved by Aaryush on 2026-10-14**; the earlier "Four levels, outside in" is superseded), and the Writing section has a link reading "All writing".
+Also: the levels diagram caption in the How AI fits section reads "**Fig. 2.1** — A section through an organization." (**approved by Aaryush on 2026-10-15**; see 3d. The earlier "Zoom in or out." and "Four levels, outside in" are superseded), and the Writing section has a link reading "All writing".
 
 Edited headings (leave blank to keep):
 
