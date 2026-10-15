@@ -15,7 +15,7 @@ export function buildNote(): string[] {
  * Draft wording (copy-review section 19), proposed by the controller.
  */
 export type LocationSource = 'zone' | 'connection' | 'device';
-const FROM: Record<LocationSource, string> = { zone: 'from your time zone', connection: 'from your connection', device: 'from your device' };
+const FROM: Record<LocationSource, string> = { zone: 'from your time zone', connection: 'from your IP', device: 'from your device' };
 export function buildSkyNote(count: number, lat: number, lon: number, source: LocationSource = 'zone'): string[] {
   const d = source === 'device' ? 2 : 1;
   const place = `${Math.abs(lat).toFixed(d)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(d)}°${lon >= 0 ? 'E' : 'W'}`;

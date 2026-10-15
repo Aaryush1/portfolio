@@ -473,7 +473,7 @@ test('the console line says where the position came from', async ({ page }) => {
   await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ json: { lat: 51.5, lon: -0.1 } }));
   await onScreen(page);
-  await expect.poll(() => logs.find((l) => l.includes('your sky over')) ?? '', { timeout: 15000 }).toContain('51.5°N 0.1°W · from your connection');
+  await expect.poll(() => logs.find((l) => l.includes('your sky over')) ?? '', { timeout: 15000 }).toContain('51.5°N 0.1°W · from your IP');
   const line = logs.find((l) => l.includes('your sky over'))!;
   expect(logs.filter((l) => l.includes('your sky over'))).toHaveLength(1);
   expect(line).toContain('stars · Hipparcos via d3-celestial');
@@ -660,5 +660,46 @@ test('under reduced motion a click sets off nothing', async ({ browser }) => {
   await page.mouse.click(spot.x, spot.y);
   await page.waitForTimeout(400);
   expect(await spawned(page)).toBe(0);
+  await ctx.close();
+});
+
+// ---------- the trickle ----------
+test('stars trickle in: small batches, continuously, starting before the downloads are done', async ({ page }) => {
+  test.setTimeout(60000);
+  const phoneRun = test.info().project.name.includes('mobile');
+  await onScreen(page);
+  const read = async () => ({ revealed: Number(await dataset(page, 'revealed')), stars: Number(await dataset(page, 'stars')), t: Date.now() });
+  const series: { revealed: number; stars: number; t: number }[] = [];
+  for (let k = 0; k < 200; k++) {
+    const r = await read();
+    series.push(r);
+    if (r.revealed >= r.stars && (await dataset(page, 'sweep')) === 'done' && r.stars > 1000) break;
+    await page.waitForTimeout(250);
+  }
+  const last = series.at(-1)!;
+  expect(last.revealed).toBe(last.stars); // all of them arrive in the end
+  const base = series[0].revealed;
+  const growing = series.filter((r) => r.revealed > base + 50 && r.revealed < last.stars - 50);
+  expect(growing.length).toBeGreaterThanOrEqual(phoneRun ? 3 : 10); // a continuous fill, sampled many times on the way
+  // no big jumps: 150 to 300 stars per 80 to 120 ms is at most 3,750 a second (a whole tile at once would be far more)
+  for (let i = 1; i < series.length; i++) {
+    const dt = (series[i].t - series[i - 1].t) / 1000;
+    expect(series[i].revealed - series[i - 1].revealed, `step ${i}`).toBeLessThanOrEqual(Math.ceil(4000 * dt) + 300);
+  }
+  const first = series.find((r) => r.revealed > base + 50)!;
+  const seconds = (last.t - first.t) / 1000;
+  expect(seconds).toBeGreaterThan(phoneRun ? 1 : 4);
+  expect(seconds).toBeLessThan(phoneRun ? 9 : 16);
+  // it began while tiles were still being fetched or decoded: some of the sky was waiting its turn when the sweep ended
+  expect(series.some((r) => r.revealed < r.stars && r.revealed > base)).toBe(true);
+});
+
+test('under reduced motion every star is in place at once, with no trickle', async ({ browser }) => {
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await onScreen(page);
+  await swept(page);
+  await page.waitForTimeout(400);
+  expect(Number(await dataset(page, 'revealed'))).toBe(Number(await dataset(page, 'stars')));
   await ctx.close();
 });

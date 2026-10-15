@@ -43,9 +43,14 @@ const GLIDE_MS = 2000;
 /** When the visitor opts in to a precise position, the readout's second decimal fades in over this long. */
 const DIGIT_MS = 800;
 
-/** Each fetched star fades in over FADE_MS, after a random delay of up to STAGGER_MS. */
-const FADE_MS = 2600;
-const STAGGER_MS = 2800;
+/**
+ * Fetched stars arrive as a trickle, not a tile at a time: once a tile is decoded its stars are released in small batches (150 to 300
+ * stars every 80 to 120 ms, brightest first), so the field fills continuously over several seconds. Each star's reveal time is set
+ * when it is added; the frame loop does the rest (no per-star timers). A newly revealed star blooms to about 1.6x its resting
+ * brightness over about 0.5 s, with a hint of its own colour, then settles; the faintest just fade in.
+ */
+const BATCH_MIN = 150, BATCH_MAX = 300, GAP_MIN = 80, GAP_MAX = 120;
+const BLOOM_MS = 520, BLOOM_PEAK = 1.6, BLOOM_RISE_MS = 120, FAINT_FADE_MS = 700, FAINT_MAG = 7;
 /** Quiet time after load and fonts before the catalogue fetch starts. */
 const SETTLE_MS = 1200;
 const FRAME_MS = 1000 / 30;
@@ -97,6 +102,9 @@ const BIN_RGB = [-0.1, 0.2, 0.6, 1.0, 1.4].map((bv) => starColour(bv, 5.5));
 const LEVELS = 8;
 /** Faint stars are collected here by colour class and brightness level, then drawn in one fill each (fewer canvas calls). */
 const batches: number[][] = Array.from({ length: 5 * LEVELS }, () => []);
+/** The soft coloured glow of a star that is blooming in: a slightly larger square in its own, more saturated colour. */
+const BLOOM_RGB = [-0.1, 0.2, 0.6, 1.0, 1.4].map((bv) => starColour(bv, 2));
+const bloomBatches: number[][] = Array.from({ length: 5 * LEVELS }, () => []);
 for (let i = 0; i < N; i++) setStar(S, i, data.stars.ra[i] / 100, data.stars.dec[i] / 100, data.stars.mag[i] / 10, data.stars.bv[i] / 100);
 const NAMED: [number, string][] = Object.entries(data.names).map(([i, n]) => [Number(i), n]);
 
@@ -189,7 +197,8 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   let mwBorn = 0; // when the Milky Way grid arrived (it fades in)
   let loadStarted = false;
   let catalogue: 'pending' | 'loaded' | 'failed' = 'pending';
-  let baseKey = '', baseDone = 0;
+  let baseKey = '', baseDone = 0, lastRevealCount = -1e9;
+  let revealT = 0, revealLeft = 0; // the reveal clock and the room left in the current batch
   const askedTiles = new Set<string>();
   let tilesOn = false, pumping = false, pumpAgain = false, sweepDone = false;
   let tilesLanded = 0, tilesFailed = 0, tileBytes = 0;
@@ -586,15 +595,24 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
       }
       if (x > qx0 && x < qx1 && y > qy0 && y < qy1) a *= quietFactor(qz, x, y);
       const ap = apps[i];
+      let glow = 0;
       if (ap > 0 && !still) {
-        // a newly fetched star twinkles in: a fade with a little flicker on the way
-        const t = (now - ap) / FADE_MS;
-        if (t <= 0) continue;
-        if (t < 1) a *= smooth(0, 1, t) * (1 + 0.7 * Math.sin(t * 16) * (1 - t));
+        const t = now - ap; // ms since this star was revealed
+        if (t <= 0) continue; // not yet: it is waiting for its batch
+        if (m >= FAINT_MAG) { if (t < FAINT_FADE_MS) a *= smooth(0, FAINT_FADE_MS, t); }
+        else if (t < BLOOM_MS) {
+          const boost = t < BLOOM_RISE_MS ? BLOOM_PEAK * smooth(0, BLOOM_RISE_MS, t) : 1 + (BLOOM_PEAK - 1) * (1 - smooth(BLOOM_RISE_MS, BLOOM_MS, t));
+          glow = boost > 1 ? ((boost - 1) / (BLOOM_PEAK - 1)) * a : 0;
+          a *= boost;
+        }
       }
       if (a < 0.02) continue;
       const r = (0.45 + (6.3 - m) * 0.3) * (phone ? 0.9 : 1);
-      if (r < 0.95) { batches[S.bin[i] * LEVELS + Math.min(LEVELS - 1, (Math.min(a, 0.99) * 14) | 0)].push(x, y); continue; }
+      if (r < 0.95) {
+        batches[S.bin[i] * LEVELS + Math.min(LEVELS - 1, (Math.min(a, 0.99) * 14) | 0)].push(x, y);
+        if (glow > 0.02) bloomBatches[S.bin[i] * LEVELS + Math.min(LEVELS - 1, (Math.min(glow * 0.6, 0.99) * 14) | 0)].push(x, y);
+        continue;
+      }
       if (m < 2.2) { c.globalAlpha = Math.min(0.5, a * 0.45); const hr = r * 5; c.drawImage(halo, x - hr, y - hr, 2 * hr, 2 * hr); }
       c.globalAlpha = Math.min(1, a);
       c.fillStyle = S.col[i];
@@ -608,6 +626,16 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
       c.fillStyle = `rgba(${rgbc[0]},${rgbc[1]},${rgbc[2]},${((lv + 0.5) / 14).toFixed(3)})`;
       c.beginPath();
       for (let j = 0; j < bt.length; j += 2) c.rect(bt[j] - 0.65, bt[j + 1] - 0.65, 1.3, 1.3);
+      c.fill();
+      bt.length = 0;
+    }
+    for (let k = 0; k < bloomBatches.length; k++) {
+      const bt = bloomBatches[k];
+      if (!bt.length) continue;
+      const rgbc = BLOOM_RGB[(k / LEVELS) | 0], lv = k % LEVELS;
+      c.fillStyle = `rgba(${rgbc[0]},${rgbc[1]},${rgbc[2]},${((lv + 0.5) / 14).toFixed(3)})`;
+      c.beginPath();
+      for (let j = 0; j < bt.length; j += 2) c.rect(bt[j] - 1.3, bt[j + 1] - 1.3, 2.6, 2.6);
       c.fill();
       bt.length = 0;
     }
@@ -802,6 +830,13 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     if (labels || labelA > 0.02) {
       if (force || digitStart >= 0 || now - lastReadout >= (still ? 1000 : 50)) { lastReadout = now; updateReadout(sky); }
     }
+    if (force || now - lastRevealCount > 250) {
+      lastRevealCount = now;
+      let n = 0;
+      const ap = S.appear;
+      for (let i = 0; i < S.n; i++) if (ap[i] <= now) n++;
+      cv.dataset.revealed = String(n);
+    }
     if (!cv.classList.contains('on')) {
       cv.classList.add('on');
       cv.dataset.firstDraw = String(Math.round(performance.now())); // ms after navigation start
@@ -855,13 +890,20 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   }
 
   // ---------- the rest of the catalogue: tiles, in the background ----------
+  // the reveal clock and the room left in the current batch
   function appendTile(t: Tile, landed: number) {
     reserve(t.n);
     const n0 = S.n, still = reduced();
-    for (let i = 0; i < t.n; i++) {
-      setStar(S, n0 + i, t.ra[i], t.dec[i], t.mag[i], t.bv[i]);
-      S.appear[n0 + i] = still ? 0 : landed + 1 + Math.random() * STAGGER_MS;
-    }
+    // Brightest first. The reveal clock runs on from where the last tile left it (or from now), a batch at a time.
+    const order = Array.from({ length: t.n }, (_, i) => i).sort((p, q) => t.mag[p] - t.mag[q]);
+    if (revealT < landed + 40) { revealT = landed + 40; revealLeft = 0; }
+    order.forEach((i, k) => {
+      setStar(S, n0 + k, t.ra[i], t.dec[i], t.mag[i], t.bv[i]);
+      if (still) { S.appear[n0 + k] = 0; return; }
+      if (revealLeft <= 0) revealLeft = BATCH_MIN + Math.floor(Math.random() * (BATCH_MAX - BATCH_MIN + 1));
+      S.appear[n0 + k] = revealT;
+      if (--revealLeft <= 0) revealT += GAP_MIN + Math.random() * (GAP_MAX - GAP_MIN);
+    });
     S.n = n0 + t.n;
     baseDone = Math.min(baseDone, n0); // the new stars get their brightness worked out next frame
   }

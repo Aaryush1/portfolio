@@ -46,7 +46,7 @@ describe('the sky line in the console', () => {
   it('is one line with a star count and the visitor sky, in the note style', () => {
     const [fmt, ...styles] = buildSkyNote(5044, 43.07, -89.4);
     expect(String(fmt)).toBe('%c✦%c 5,044 stars · Hipparcos via d3-celestial · your sky over 43.1°N 89.4°W · from your time zone');
-    expect(String(buildSkyNote(5044, 43.07, -89.4, 'connection')[0])).toContain('89.4°W · from your connection');
+    expect(String(buildSkyNote(5044, 43.07, -89.4, 'connection')[0])).toContain('89.4°W · from your IP');
     expect(String(buildSkyNote(5044, 43.0731, -89.4012, 'device')[0])).toContain('43.07°N 89.40°W · from your device');
     expect(styles).toHaveLength(2);
     expect(String(fmt)).not.toContain('\n');

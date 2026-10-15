@@ -109,3 +109,10 @@ The key decisions behind the October 2026 redesign, and why. Every entry is date
 - **Staging protects LCP.** Same as the catalogue before it: after the page load, the fonts and a 1.2 s settle, in idle time, shell by shell (two tiles at once, low priority). Each tile's stars twinkle in over a few seconds.
 - **Cost of 24,000 stars.** Each star's constant brightness is worked out once and cached; each frame only rotates, projects, drops stars that are off the frame or too faint, and works out the quiet zone only near it. Faint stars are drawn as batched rectangles by colour class and brightness level (about 40 fills instead of thousands). Frame JS is about 3.7 ms median, 5 ms at p90 on desktop at night.
 - **Looks:** the faintest magnitude drawn is 8.2 at night, 7.4 in the evening, 6.0 in the morning and 5.2 in the afternoon, so daytime stays quiet.
+
+### The trickle (2026-10-15)
+
+- **Why:** a whole tile's stars faded in together a few seconds after it landed, which read as a wait and then everything at once.
+- **How:** the fetch keeps its settled-stage gate (that is what protects LCP). Only the reveal is paced: when a tile is decoded, its stars are sorted brightest first and given a reveal time in batches of 150 to 300, one batch every 80 to 120 ms, on a clock that runs on from the previous tile's. The frame loop reads each star's reveal time (no per-star timers), so a field of 24,000 fills in about 10 s on desktop and about 4 s on a phone. A star blooms to about 1.6 times its brightness over about 0.5 s with a soft square glow in its own, more saturated colour, then settles; stars fainter than magnitude 7 only fade. Under reduced motion every star is in place at once.
+- **Cost:** frame JS stays near 4 ms during the trickle: the glow is another set of batched fills, not per-star sprites.
+- **Console labels:** the sky line says `from your IP` (the `/api/sky` answer), `from your device` (the precise opt-in) or `from your time zone` (the fallback).
