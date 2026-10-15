@@ -7,6 +7,9 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const posts = (await getCollection('writing', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 3);
+const all = (await getCollection('writing', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .map((p) => ({ slug: p.id, title: p.data.title, total: sectionCount(p.data.kind, p.body ?? '', (p.data.breakdown ?? []).length) }));
 const label = (d: Date) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 ---
 <section class="sec" id="writing" aria-labelledby="writing-title">
@@ -17,14 +20,29 @@ const label = (d: Date) => `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
     </div>
     <div class="posts rv">
       {posts.map((p) => (
-        <a class="post" href={`/writing/${p.id}`} data-slug={p.id} data-total={sectionCount(p.data.kind, p.body ?? '', (p.data.breakdown ?? []).length)} data-title={p.data.title}>
-          <time datetime={p.data.date.toISOString().slice(0, 7)}>{label(p.data.date)}</time>
-          <div><h3>{p.data.title}</h3><p>{p.data.summary}</p></div>
+        <div class="post" data-slug={p.id} data-kind={p.data.kind} data-total={sectionCount(p.data.kind, p.body ?? '', (p.data.breakdown ?? []).length)} data-title={p.data.title}>
+          <div class="when"><time datetime={p.data.date.toISOString().slice(0, 7)}>{label(p.data.date)}</time></div>
+          <div><h3><a class="post-link" href={`/writing/${p.id}`}>{p.data.title}</a></h3><p>{p.data.summary}</p></div>
           <Icon class="arr" name="arrow-up-right" />
-        </a>
+        </div>
       ))}
     </div>
-    <div class="more-row rv"><a class="more" href="/writing">All writing<Icon name="arrow-right" /></a><a class="pickup-home mono" data-pickup-home hidden></a></div>
+    <div class="more-row rv"><a class="more" href="/writing">All writing<Icon name="arrow-right" /></a><a class="pickup-home mono" data-pickup-home></a></div>
+    <script type="application/json" id="writing-index" set:html={JSON.stringify(all)} />
   </div>
 </section>
+<script is:inline>
+// Before first paint: if a started piece is not listed above, reserve the line for the named "Pick up" link so nothing moves when it fills in.
+(function () {
+  try {
+    var m = JSON.parse(localStorage.getItem('writing:v1') || 'null');
+    var all = JSON.parse(document.getElementById('writing-index').textContent);
+    var shown = {};
+    // test-only hook, inert unless a test sets the global before this runs: list only the first n pieces, so the rest count as "not in the teaser"
+    if (typeof window.__test_teaserCount === 'number') Array.prototype.slice.call(document.querySelectorAll('#writing .post[data-slug]'), window.__test_teaserCount).forEach(function (r) { r.remove(); });
+    document.querySelectorAll('#writing .post[data-slug]').forEach(function (r) { shown[r.getAttribute('data-slug')] = 1; });
+    if (m && m.v === 1 && m.pieces && all.some(function (p) { var e = m.pieces[p.slug]; return !shown[p.slug] && e && e.sec >= 1 && e.sec <= p.total - 2; })) document.documentElement.setAttribute('data-wr-off', '');
+  } catch (e) { /* storage blocked: nothing to reserve */ }
+})();
+</script>
 <script>import '../../scripts/writing-memory-client';</script>

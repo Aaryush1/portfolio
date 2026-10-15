@@ -143,35 +143,46 @@ test('phone system cards are compact rows: number, title, levels, arrow; no desc
 test.describe('E8: the room remembers you on the home teaser', () => {
   const seed = (sec: number) => JSON.stringify({ v: 1, pieces: { 'quiet-singularity': { sec, t: 1 } }, last: 'quiet-singularity' });
 
-  test('a ribbon and a pick-up link for a piece you are partway through', async ({ page, isMobile }) => {
+  test('a started piece gets "Keep reading" with its place on its date line', async ({ page }) => {
     await page.addInitScript((m) => localStorage.setItem('writing:v1', m), seed(2));
     await page.goto('/');
-    const row = page.locator('#writing a.post[href="/writing/quiet-singularity"]');
-    // the ribbon is a hover-device mark: on touch it is in the DOM but hidden, and a dot beside the date shows instead (ribbon.spec.ts covers that)
-    if (isMobile) await expect(row.locator('.ribbon')).toBeAttached(); else await expect(row.locator('.ribbon')).toBeVisible();
-    await expect(page.locator('#writing').getByRole('link', { name: /Pick up where you left off/ })).toHaveAttribute('href', '/writing/quiet-singularity#pickup');
+    const keep = page.locator('#writing a.keep');
+    await expect(keep).toHaveCount(1);
+    await expect(keep).toHaveAttribute('href', '/writing/quiet-singularity#pickup');
+    await expect(page.locator('#writing .post[data-slug="quiet-singularity"] .when .keep')).toBeAttached();
+    await expect(keep.locator('.k')).toHaveText('Keep reading');
+    // no ribbon, no generic "Pick up where you left off", no named bottom link (the only started piece is listed)
+    await expect(page.locator('#writing .ribbon')).toHaveCount(0);
+    await expect(page.locator('#writing').getByText('Pick up where you left off')).toHaveCount(0);
+    await expect(page.locator('[data-pickup-home]')).toBeHidden();
   });
 
-  test('nothing when nothing is remembered, and the section does not change height when the ribbon appears', async ({ page, isMobile }) => {
+  test('two started pieces, both listed: each has its own Keep reading, and there is no bottom link', async ({ page }) => {
+    await page.addInitScript((m) => localStorage.setItem('writing:v1', m), JSON.stringify({ v: 1, pieces: { 'quiet-singularity': { sec: 2, t: 2 }, 'bigger-than-electricity': { sec: 1, t: 1 } } }));
     await page.goto('/');
-    await expect(page.locator('#writing .ribbon')).toHaveCount(0);
-    await expect(page.locator('#writing').getByRole('link', { name: /Pick up where you left off/ })).toHaveCount(0);
+    await expect(page.locator('#writing a.keep')).toHaveCount(2);
+    await expect(page.locator('#writing .post[data-slug="bigger-than-electricity"] .keep')).toHaveAttribute('href', '/writing/bigger-than-electricity#pickup');
+    await expect(page.locator('[data-pickup-home]')).toBeHidden();
+  });
+
+  test('nothing when nothing is remembered, and the section does not change height when Keep reading appears', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('#writing .keep')).toHaveCount(0);
+    await expect(page.locator('#writing').getByText(/Pick up|Keep reading/)).toHaveCount(0);
     await page.evaluate(() => document.fonts.ready);
     const h = await page.locator('#writing').evaluate((e) => e.getBoundingClientRect().height);
     await page.evaluate((m) => localStorage.setItem('writing:v1', m), seed(2));
     await page.reload();
-    if (isMobile) await expect(page.locator('#writing .ribbon')).toBeAttached(); else await expect(page.locator('#writing .ribbon')).toBeVisible();
+    await expect(page.locator('#writing .keep')).toBeAttached();
     await page.evaluate(() => document.fonts.ready);
-    // KNOWN (task 45): below about 400px (an iPhone) the pick-up link no longer fits beside "All writing", wraps to its own line and the section grows by one line when it appears.
-    // Reserving that space would add a gap for every visitor with nothing remembered, which is a design call for Aaryush, so the height check covers wider screens only.
-    const w = await page.evaluate(() => innerWidth);
-    if (w >= 400) expect(await page.locator('#writing').evaluate((e) => e.getBoundingClientRect().height)).toBe(h);
+    // at every width, including iPhones (ribbon.spec.ts asserts this at 320, 360, 390, 412 and 1280)
+    expect(await page.locator('#writing').evaluate((e) => e.getBoundingClientRect().height)).toBe(h);
   });
 
-  test('a piece read to its final section gets no ribbon and no offer', async ({ page }) => {
+  test('a piece read to its final section gets no Keep reading and no offer', async ({ page }) => {
     await page.addInitScript((m) => localStorage.setItem('writing:v1', m), seed(5));
     await page.goto('/');
-    await expect(page.locator('#writing .ribbon')).toHaveCount(0);
-    await expect(page.locator('#writing').getByRole('link', { name: /Pick up where you left off/ })).toHaveCount(0);
+    await expect(page.locator('#writing .keep')).toHaveCount(0);
+    await expect(page.locator('[data-pickup-home]')).toBeHidden();
   });
 });

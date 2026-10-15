@@ -2,14 +2,13 @@
  * The room remembers you: one script for the three places that show it.
  *  - /writing: pieces you have opened are left pulled out of place, with a mark where you got to (flag, thumbprint or pulled card); a quiet "forget" clears it.
  *  - an essay page: records the furthest section (papers: essay:section; letters: scroll fraction) and offers "Pick up".
- *  - the home teaser: the same ribbon and a pick-up link for a piece you are partway through.
+ *  - the home teaser: \"Keep reading\" on each started piece it lists, and a named \"Pick up\" link for a started piece it does not list.
  * Storage is read and written only through ../lib/writing-memory, which never throws.
  */
-import { forget, inRange, noteOpened, noteSection, pickup, readMemory } from '../lib/writing-memory';
+import { forget, inRange, noteOpened, noteSection, offPagePickup, pickup, placeLabel, readMemory, type PieceRef } from '../lib/writing-memory';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-const ribbon = () => { const i = document.createElement('i'); i.className = 'ribbon'; i.setAttribute('aria-hidden', 'true'); return i; };
 
 // ---------- the desk ----------
 // "Where you left off": one mark per kind, at the part the visitor reached. All are decoration (aria-hidden).
@@ -159,36 +158,35 @@ if (article && slug) {
 }
 
 // ---------- the home teaser ----------
-const rows = Array.from(document.querySelectorAll<HTMLAnchorElement>('#writing a.post[data-slug]'));
+// Every started piece the teaser lists gets "Keep reading · <place> →" on its date line. The one named bottom link,
+// "Pick up <Title> →", is only for the most recently read started piece that the teaser does not list.
+const rows = Array.from(document.querySelectorAll<HTMLElement>('#writing .post[data-slug]'));
 if (rows.length) {
-  const mem = readMemory();
-  let best: { row: HTMLAnchorElement; t: number } | null = null;
   for (const row of rows) {
     const s = row.dataset.slug ?? '';
-    if (!pickup(s, Number(row.dataset.total) || 0)) continue;
-    const r = ribbon();
-    const e = mem.pieces[s];
-    const total = Number(row.dataset.total) || 0;
-    r.style.setProperty('--rib', String(e && total > 0 ? Math.min(1, (e.sec + 1) / total) : 1));
-    row.appendChild(r);
+    const p = pickup(s, Number(row.dataset.total) || 0);
+    if (!p) continue;
+    const when = row.querySelector('.when');
+    if (!when) continue;
+    const place = placeLabel(row.dataset.kind ?? '', p.sec);
+    const a = document.createElement('a');
+    a.className = 'keep';
+    a.href = `/writing/${s}#pickup`;
+    a.setAttribute('aria-label', `Keep reading ${row.dataset.title ?? ''}, ${place}`);
+    a.innerHTML = '<span class="k">Keep reading</span><span class="k-place"><span class="sep"> · </span>' + place + '</span><span class="k-arr" aria-hidden="true"> →</span>';
+    when.appendChild(a);
     row.classList.add('seen');
-    const t = mem.pieces[s]?.t ?? 0;
-    if (!best || t > best.t) best = { row, t };
   }
   const link = document.querySelector<HTMLAnchorElement>('[data-pickup-home]');
-  if (best && link) {
-    link.href = `/writing/${best.row.dataset.slug}#pickup`;
-    link.textContent = 'Pick up where you left off';
-    link.setAttribute('aria-label', `Pick up where you left off: ${best.row.dataset.title ?? ''}`);
-    link.hidden = false;
-    // the ribbon (hover devices) shows only while the link is hovered or focused
-    const target = best.row;
-    const show = () => target.classList.add('show-rib');
-    const hide = () => target.classList.remove('show-rib');
-    link.addEventListener('pointerenter', show);
-    link.addEventListener('pointerleave', hide);
-    link.addEventListener('focus', show);
-    link.addEventListener('blur', hide);
+  let all: PieceRef[] = [];
+  try { all = JSON.parse(document.getElementById('writing-index')?.textContent ?? '[]'); } catch { /* no index: no off-page link */ }
+  const off = link ? offPagePickup(all, rows.map((r) => r.dataset.slug ?? '')) : null;
+  if (link && off) {
+    link.href = `/writing/${off.piece.slug}#pickup`;
+    link.replaceChildren('Pick up ');
+    const em = document.createElement('em');
+    em.textContent = off.piece.title;
+    link.append(em, ' →');
   }
 }
 
