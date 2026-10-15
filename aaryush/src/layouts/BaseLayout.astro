@@ -19,9 +19,9 @@ const markPart = bare ? '' : " try { if (!matchMedia('(prefers-reduced-motion: r
 const rvGuard = " window.__rvT = setTimeout(function () { document.documentElement.classList.add('rv-fallback'); }, 4000);";
 const boot = "document.documentElement.classList.add('js'); try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rot-pre'); } catch (e) {}" + markPart;
 const bootAll = boot + rvGuard;
-// Phones, writing only (Task 32): tell the view transition how this page was reached. A piece that walked in leaves a
+// Writing only (Task 32; widened for the note's opening in Task 49, whose marks settle on every width): tell the view transition how this page was reached. A piece that walked in leaves a
 // short-lived flag (see scripts/walk-in.ts); a Back to the desk or from an essay gets the soft fade-and-scale.
-const reveal = "try { if ('onpagereveal' in window && matchMedia('(max-width: 559px)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches && location.pathname.indexOf('/writing') === 0) addEventListener('pagereveal', function (e) { if (!e.viewTransition) return; var c = document.documentElement.classList, k = ''; try { var v = (sessionStorage.getItem('walk-in') || '').split('|'); sessionStorage.removeItem('walk-in'); if ((v[0] === 'letter' || v[0] === 'paper') && Date.now() - Number(v[1]) < 8000) k = v[0]; } catch (x) {} if (k) c.add('walk-' + k); else { var a = window.navigation && navigation.activation; if (a && a.navigationType === 'traverse') c.add('vt-back'); } }); } catch (x) {}";
+const reveal = "try { if ('onpagereveal' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches && location.pathname.indexOf('/writing') === 0) addEventListener('pagereveal', function (e) { if (!e.viewTransition) return; var c = document.documentElement.classList, k = ''; try { var v = (sessionStorage.getItem('walk-in') || '').split('|'); sessionStorage.removeItem('walk-in'); if ((v[0] === 'letter' || v[0] === 'paper' || v[0] === 'note') && Date.now() - Number(v[1]) < 8000) k = v[0]; } catch (x) {} if (k) c.add('walk-' + k); else { var a = window.navigation && navigation.activation; if (a && a.navigationType === 'traverse') c.add('vt-back'); } }); } catch (x) {}";
 ---
 <!doctype html>
 <html lang="en">

@@ -26,23 +26,93 @@ for (const w of [360, 375, 412, 430]) {
   });
 }
 
-test('/writing at 375x812: the newest pieces come first and the first two fit on the first screen, objects at ~60% height', async ({ browser }) => {
-  const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, ...phone });
+for (const [w, h] of [[375, 812], [430, 932], [360, 740]]) {
+  test(`/writing at ${w}x${h}: each piece gets its own screen, centred, objects at ~60% height (Task 49)`, async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: w, height: h }, ...phone });
+    const page = await ctx.newPage();
+    await afternoon(page);
+    await page.goto('/writing');
+    const pieces = page.locator('[data-piece]');
+    const n = await pieces.count();
+    expect(n).toBeGreaterThan(1);
+    const box = async (i: number) => (await pieces.nth(i).boundingBox())!;
+    // newest first: the note, then the letter, then the paper
+    expect(await page.locator('[data-piece]').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.shape))).toEqual(['note', 'letter', 'paper']);
+    const first = await box(0);
+    expect(first.height).toBeLessThan(478 * 0.7);
+    // the first piece sits in the middle of the first screen, below the "Writing" heading
+    expect(Math.abs(first.y + first.height / 2 - h / 2)).toBeLessThan(h * 0.14);
+    expect(first.y).toBeGreaterThan((await page.locator('h1').boundingBox())!.y);
+    // and the next one is a whole screen further down: never more than a sliver of it shows on the first screen
+    expect((await box(1)).y).toBeGreaterThanOrEqual(h - 4);
+    // every piece, scrolled to, is centred in its own screen
+    for (let i = 1; i < n; i++) {
+      await pieces.nth(i).evaluate((e) => e.scrollIntoView({ block: 'center' }));
+      // the scroll may still be easing in; wait for it to land
+      await expect.poll(async () => { const c = await box(i); return Math.abs(c.y + c.height / 2 - (h + 60) / 2); }).toBeLessThan(h * 0.14);
+      const b = await box(i);
+      expect(b.y).toBeGreaterThan(40);
+      expect(b.y + b.height).toBeLessThan(h);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await ctx.close();
+  });
+}
+
+test('phones: the piece nearest the middle of the screen is the lit one, and the light follows as you scroll', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, ...phone });
   const page = await ctx.newPage();
   await afternoon(page);
   await page.goto('/writing');
-  // the desk has three pieces, newest first (PR #5): the note, then the letter, then the paper
-  const note = (await page.locator('[data-shape="note"]').boundingBox())!;
-  const letter = (await page.locator('[data-shape="letter"]').boundingBox())!;
-  const paper = (await page.locator('[data-shape="paper"]').boundingBox())!;
-  expect(note.y).toBeLessThan(letter.y);
-  expect(letter.y).toBeLessThan(paper.y);
-  expect(letter.height).toBeLessThan(478 * 0.7);
-  expect(paper.height).toBeLessThan(290 * 0.7);
-  expect(letter.y + letter.height).toBeLessThanOrEqual(812); // the two newest are on the first screen
-  // below the "Writing" heading
-  expect(note.y).toBeGreaterThan((await page.locator('h1').boundingBox())!.y);
+  const lit = () => page.locator('[data-piece].is-lit').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.slug));
+  const slugs = await page.locator('[data-piece]').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.slug));
+  await expect.poll(lit).toEqual([slugs[0]]);
+  await page.locator('[data-piece]').nth(1).evaluate((e) => e.scrollIntoView({ block: 'center' }));
+  await expect.poll(lit).toEqual([slugs[1]]);
+  // each piece carries its own pool of light
+  expect(await page.locator('[data-piece]').first().evaluate((e) => getComputedStyle(e, '::after').backgroundImage)).toContain('radial-gradient');
   await ctx.close();
+});
+
+test('phones: a faint drift of dust invites a scroll, says nothing, and goes for good once you scroll', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, ...phone });
+  const page = await ctx.newPage();
+  await afternoon(page);
+  await page.goto('/writing');
+  const cue = page.locator('[data-scroll-cue]');
+  await expect(cue).toHaveAttribute('aria-hidden', 'true');
+  expect(((await cue.textContent()) ?? '').trim()).toBe('');
+  await expect(cue).toHaveClass(/is-on/, { timeout: 4000 });
+  expect(await cue.locator('i').first().evaluate((e) => getComputedStyle(e).animationName)).toBe('cue-drift');
+  await page.mouse.wheel(0, 400);
+  await page.evaluate(() => window.scrollTo(0, 400));
+  await expect(cue).toHaveClass(/is-off/);
+  await expect(cue).not.toHaveClass(/is-on/);
+  await expect(cue).toHaveCSS('opacity', '0');
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(600);
+  await expect(cue).not.toHaveClass(/is-on/); // it does not come back
+  await ctx.close();
+});
+
+test('reduced motion: the scroll cue is a still hint, no animation', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, ...phone, reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await page.goto('/writing');
+  const cue = page.locator('[data-scroll-cue]');
+  await expect(cue).toHaveClass(/is-on/, { timeout: 4000 });
+  expect(await cue.locator('i').first().evaluate((e) => getComputedStyle(e).animationName)).toBe('none');
+  expect(Number(await cue.locator('i').first().evaluate((e) => getComputedStyle(e).opacity))).toBeGreaterThan(0.2);
+  await ctx.close();
+});
+
+test('desktop: no scroll cue, and the desk is unchanged (pieces side by side)', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'a touch device gets the phone desk by design');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/writing');
+  await expect(page.locator('[data-scroll-cue]')).toBeHidden();
+  const ys = await page.locator('[data-piece]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+  expect(ys.filter((y) => y < 900).length).toBeGreaterThan(1);
 });
 
 test('phones: only the first fold phrase shows at rest, the why fades when the letter opens and returns on close; taps unchanged', async ({ browser }) => {
@@ -73,23 +143,18 @@ test('phones: only the first fold phrase shows at rest, the why fades when the l
   await ctx.close();
 });
 
-test('paper pile dock on a phone: a compact translucent pill in the bottom-right corner', async ({ browser }) => {
+test('the reading bar on a phone is the same hairline under the header, with the section gaps', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, ...phone });
   const page = await ctx.newPage();
   await afternoon(page);
   await page.goto('/writing/quiet-singularity');
   await page.locator('.essay-body h2').nth(2).evaluate((e) => e.scrollIntoView({ block: 'start' }));
-  const dock = page.locator('.pile-dock');
-  await expect(dock).toBeVisible();
-  const b = (await dock.boundingBox())!;
-  expect(b.x + b.width).toBeGreaterThan(375 - 30);
-  expect(b.x + b.width).toBeLessThanOrEqual(375);
-  expect(b.y + b.height).toBeGreaterThan(812 - 30);
-  expect(b.width).toBeLessThan(160);
-  expect(await dock.evaluate((e) => getComputedStyle(e).backdropFilter)).toContain('blur');
-  await expect(page.locator('.pile-label')).toHaveAttribute('data-short', 'III / VI');
-  // the full label still exists for assistive tech
-  await expect(page.locator('.pile-label')).toHaveText('Section III of VI');
+  const bar = page.locator('[data-reading-progress]');
+  await expect(page.locator('.pile-dock')).toHaveCount(0);
+  const b = (await bar.boundingBox())!;
+  expect(b.width).toBe(375);
+  expect(b.height).toBeLessThanOrEqual(3);
+  expect(await bar.locator('.tick').count()).toBeGreaterThanOrEqual(5);
   await ctx.close();
 });
 

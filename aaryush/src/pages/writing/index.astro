@@ -26,6 +26,7 @@ const ordered = layout.placements.map((place) => ({ piece: views.find((v) => v.s
         {ordered.map(({ piece, place }) => <Piece piece={piece} place={place} />)}
       </ul>
     </div>
+    <span class="scroll-cue" data-scroll-cue aria-hidden="true"><i></i><i></i><i></i></span>
     <Drawer />
     <button type="button" class="forget" data-forget aria-label="Forget what this room remembers" hidden>forget</button>
   </div></main>
