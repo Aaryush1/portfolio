@@ -92,7 +92,8 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
 }
 .rot{
   position:relative;margin-top:26px;max-width:20em;
-  font-size:clamp(23px, 3.1vw, 38px);line-height:1.2;letter-spacing:-.022em;font-weight:400;
+  /* The floor gives way on the narrowest phones: the longest phrase ("how problems solve themselves.") is ~14.2em wide and never wraps. */
+  font-size:clamp(min(23px, calc((100vw - 32px) / 14.8)), 3.1vw, 38px);line-height:1.2;letter-spacing:-.022em;font-weight:400;
 }
 .rot-1,.rot-2{display:block}
 .rot-1{color:var(--text-2)}

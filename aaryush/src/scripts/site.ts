@@ -1,3 +1,5 @@
+// The bundle is here, so the 4s "show everything" fallback armed by the inline boot script is not needed.
+clearTimeout((window as unknown as { __rvT?: number }).__rvT);
 import { decode, emailOf, phoneOf } from './obf';
 
 const top = document.getElementById('top');

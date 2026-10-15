@@ -23,3 +23,25 @@ test('titles are unique across pages', async ({ page }) => {
   for (const path of pages) { await page.goto(path); titles.add(await page.title()); }
   expect(titles.size).toBe(pages.length);
 });
+
+test('/qr is noindex, other pages are not', async ({ page }) => {
+  await page.goto('/qr');
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  await page.goto('/');
+  await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
+});
+
+test('canonicals match the sitemap (trailing slash), /qr is not in it, robots.txt names it', async ({ page, request }) => {
+  const sitemap = await (await request.get('/sitemap-0.xml')).text();
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  expect(locs.length).toBeGreaterThan(5);
+  expect(locs.filter((l) => /\/qr\/?$/.test(l))).toEqual([]);
+  for (const path of pages) {
+    await page.goto(path);
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+    expect(locs, `${path} canonical ${canonical}`).toContain(canonical);
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', canonical!);
+  }
+  const robots = await (await request.get('/robots.txt')).text();
+  expect(robots).toMatch(/^Sitemap: https:\/\/aaryush\.com\/sitemap-index\.xml$/m);
+});

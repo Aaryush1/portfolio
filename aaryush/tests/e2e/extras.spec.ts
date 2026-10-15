@@ -1,5 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { settled } from './settle';
+import { HOST_NAME, PHONE } from '../contact-fixture';
 
 const NOTE = 'fellow inspector';
 const map = (page: Page) => page.getByRole('dialog', { name: 'Keyboard map' });
@@ -33,7 +34,7 @@ test.describe('E1 console note', () => {
     expect(text).toContain('shipped');
     expect(text).toContain('?');
     expect(text).toContain('— ag.');
-    for (const s of ['@', 'outlook', '949', '331', '2850', 'mailto', 'tel:']) expect(text.toLowerCase()).not.toContain(s);
+    for (const s of ['@', HOST_NAME, ...PHONE.split(' '), 'mailto', 'tel:']) expect(text.toLowerCase()).not.toContain(s);
   });
 
   test('re-evaluating the module does not log again', async ({ page }) => {
@@ -130,9 +131,10 @@ test.describe('E2 keyboard map', () => {
   });
 
   test('a g sequence times out after 1.2s', async ({ page }) => {
+    await page.clock.install(); // the timeout is moved on the page's own clock, not slept through
     await page.goto('/');
     await page.keyboard.press('g');
-    await page.waitForTimeout(1400);
+    await page.clock.fastForward(1400);
     await page.keyboard.press('w');
     await expect(page).not.toHaveURL(/#work/);
   });

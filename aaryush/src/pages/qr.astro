@@ -6,8 +6,8 @@ import { LIMITS } from '../lib/meet';
 const topics = await getTopics();
 const L = site.meet.labels;
 ---
-<BaseLayout title="QR — Aaryush Gupta" description="Scan to open aaryush.com." ogImage="/og/home.png" path="/qr" bare>
-  <main class="wrap qr" data-qr data-base={site.url}>
+<BaseLayout title="QR — Aaryush Gupta" description="Scan to open aaryush.com." ogImage="/og/home.png" path="/qr" bare skipTo="main">
+  <main id="main" tabindex="-1" class="wrap qr" data-qr data-base={site.url}>
     <div class="qr-box" data-qr-box>
       <img class="qr-img" src="/assets/QR.png" alt="QR code for aaryush.com" width="300" height="300" />
     </div>

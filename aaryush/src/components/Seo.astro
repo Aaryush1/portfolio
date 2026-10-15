@@ -1,12 +1,14 @@
 ---
 import { site } from '../data/site';
-interface Props { title: string; description: string; ogImage: string; path: string }
-const { title, description, ogImage, path } = Astro.props;
-const canonical = new URL(path, site.url).href;
+interface Props { title: string; description: string; ogImage: string; path: string; noindex?: boolean }
+const { title, description, ogImage, path, noindex = false } = Astro.props;
+// Same form as the sitemap: pages are directories, so they end in a slash (the 404 page is a file).
+const canonical = new URL(path.endsWith('/') || path === '/404' ? path : `${path}/`, site.url).href;
 const image = new URL(ogImage, site.url).href;
 ---
 <title>{title}</title>
 <meta name="description" content={description} />
+{noindex && <meta name="robots" content="noindex" />}
 <link rel="canonical" href={canonical} />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={site.name} />

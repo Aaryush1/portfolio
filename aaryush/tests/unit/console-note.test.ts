@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { consoleNote } from '../../src/data/console';
 import { buildNote, logNote } from '../../src/lib/console-note';
+import { HOST_NAME, PHONE } from '../contact-fixture';
 
 // The approved console note (copy-review section 14, approved by Aaryush 2026-10-14).
 describe('console note', () => {
@@ -23,7 +24,7 @@ describe('console note', () => {
   });
   it('never contains contact details', () => {
     const all = [...consoleNote.text, ...consoleNote.art, ...buildNote().map(String)].join('\n').toLowerCase();
-    for (const s of ['@', 'outlook', 'mailto', 'tel:', '949', '331', '2850', 'gmail']) expect(all).not.toContain(s);
+    for (const s of ['@', HOST_NAME, 'mailto', 'tel:', ...PHONE.split(' '), 'gmail']) expect(all).not.toContain(s);
   });
   it('logs once per document, even if evaluated again', () => {
     const calls: unknown[][] = [];

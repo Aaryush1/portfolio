@@ -15,7 +15,6 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function markSaved(a: HTMLAnchorElement) {
   if (a.classList.contains('is-saved')) return;
   a.classList.add('is-saved');
-  a.setAttribute('aria-label', 'Contact saved');
   const status = a.closest('.cta')?.querySelector('[data-save-status]');
   if (status) status.textContent = 'Contact saved';
   const slot = a.querySelector<HTMLElement>('.save-label');
@@ -96,11 +95,11 @@ function download(url: string, filename: string) {
     let url: string;
     try {
       const text = vcardFor(a);
-      if (!text) return; // anything missing: let the link fall back to the static .vcf
+      if (!text) return; // anything missing: leave the click alone (the link goes to LinkedIn)
       url = URL.createObjectURL(new Blob([text], { type: 'text/vcard;charset=utf-8' }));
-    } catch { return; } // fall back to the static .vcf
+    } catch { return; } // same: leave the click alone
     e.preventDefault(); // only now: the card and its URL exist
-    download(url, a.getAttribute('download') || 'contact.vcf');
+    download(url, a.dataset.filename || 'contact.vcf');
     markSaved(a); // E9: only after the download has been triggered
   });
 }

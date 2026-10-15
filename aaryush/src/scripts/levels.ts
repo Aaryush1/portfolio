@@ -8,11 +8,12 @@ const section = document.getElementById('levels');
 
 type Row = { el: HTMLElement; depth: number; fill(): void; drain(): void };
 
-// The active level comes from three row sources (pointer hover, keyboard focus, a touch tap
-// that stays pinned) and one figure source (hovering a ring lights its row but does not zoom).
+// The active level comes from four row sources (pointer hover, keyboard focus, a touch tap
+// that stays pinned, and on phones the scroll position) and one figure source (hovering a ring lights its row but does not zoom).
 let hover: number | null = null;
 let focus: number | null = null;
 let pinned: number | null = null;
+let scrolled: number | null = null; // phones: the level nearest the middle of the screen
 let ring: number | null = null;
 let lit: number | null = null;
 
@@ -43,7 +44,7 @@ function buildRow(el: HTMLElement): Row {
 const rows = [...document.querySelectorAll<HTMLElement>('li.level[data-level]')].map(buildRow);
 
 function update() {
-  const rowLevel = hover ?? focus ?? pinned;
+  const rowLevel = hover ?? focus ?? pinned ?? scrolled;
   const next = rowLevel ?? ring;
   if (next !== lit) {
     rows.forEach((r) => {
@@ -72,6 +73,29 @@ rows.forEach(({ el, depth }) => {
   });
 });
 
+// Phones (touch, or a narrow window) have no hover, so the level nearest the middle of the screen becomes the active one as
+// the list scrolls past, exactly as a tap would. An IntersectionObserver on a thin band at the viewport centre: nothing
+// runs per scroll event, nothing snaps and nothing scrolls the page.
+const followScroll = matchMedia('(pointer: coarse), (max-width: 700px)');
+const list0 = document.querySelector<HTMLElement>('ol.levels');
+if (list0 && rows.length && 'IntersectionObserver' in window) {
+  const crossing = new Set<HTMLElement>();
+  const byEl = new Map(rows.map((r) => [r.el, r.depth]));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => { if (en.isIntersecting) crossing.add(en.target as HTMLElement); else crossing.delete(en.target as HTMLElement); });
+    if (!followScroll.matches) return;
+    const hit = entries.filter((en) => en.isIntersecting).pop()?.target as HTMLElement | undefined;
+    let next: number | null | undefined;
+    if (hit) next = byEl.get(hit);
+    else if (crossing.size === 0 && list0.getBoundingClientRect().top > innerHeight / 2) next = null; // above the list: the full picture
+    if (next === undefined || (next === scrolled && pinned === null)) return;
+    scrolled = next;
+    pinned = null; // scrolling on releases a tap's pin
+    update();
+  }, { rootMargin: '-50% 0px -49% 0px' });
+  rows.forEach((r) => io.observe(r.el));
+}
+
 // Hovering a ring lights its row (no zoom); the ring markup is lens.ts's business.
 lens?.onRingHover((level) => { ring = level; update(); });
 
@@ -83,7 +107,7 @@ if (section && 'IntersectionObserver' in window) {
     const left = wasIn && !now;
     wasIn = now;
     if (!left) return;
-    hover = focus = pinned = ring = null;
+    hover = focus = pinned = scrolled = ring = null;
     update();
   }).observe(section);
 }

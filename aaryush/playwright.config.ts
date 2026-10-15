@@ -15,7 +15,7 @@ export default defineConfig({
   webServer: {
     command: `npm run build && npm run preview -- --port ${port}`,
     url: `http://localhost:${port}`,
-    reuseExistingServer: false,
+    reuseExistingServer: !!process.env.PW_REUSE,
     timeout: 240_000,
   },
   projects: [
@@ -23,5 +23,6 @@ export default defineConfig({
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
     { name: 'mobile-safari', use: { ...devices['iPhone 13'] } },
+    { name: 'mobile-chrome', use: { ...devices['Pixel 7'] } },
   ],
 });

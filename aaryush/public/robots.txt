@@ -51,6 +51,7 @@ Disallow: /
 User-agent: YouBot
 Disallow: /
 
-# Block contact file from all bots
 User-agent: *
-Disallow: /Aaryush Contact Info.vcf
+Allow: /
+
+Sitemap: https://aaryush.com/sitemap-index.xml

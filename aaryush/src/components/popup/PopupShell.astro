@@ -9,7 +9,7 @@ const { openSlug, backHref, backName } = Astro.props;
       <a class="back" data-popup-back href={backHref ?? '#'} hidden={!backHref}><Icon name="back" /><span>{backName ?? 'Back'}</span></a>
       <span class="crumb mono" data-popup-crumb></span>
     </div>
-    <a class="x" data-popup-close href="/" aria-label="Close"><span class="k">Esc</span><Icon name="close" /></a>
+    <a class="x" data-popup-close href="/" aria-label="Close (Esc)"><span class="k">Esc</span><Icon name="close" /></a>
   </div>
   <div class="sheet-view" data-popup-body><slot name="open" /></div>
 </dialog>
@@ -109,5 +109,8 @@ a.sys-row:hover .go svg{transform:translateX(3px);color:var(--accent)}
 
 /* Without JS the dialog is an open, non-modal element: make it a full overlay. */
 html:not(.js) dialog.sheet[open]{position:fixed;inset:0;margin:auto;z-index:50;opacity:1;transform:none;box-shadow:0 0 0 100vmax rgba(4,5,7,.74)}
-html.locked{overflow:hidden}
+/* The page behind never scrolls while a pop-up is open (phones chain scrolls through otherwise), and the sheet is its own
+   stacking context. A modal dialog sits in the top layer, so nothing on the page (header, canvas, fixed layers) can paint over it. */
+html.locked,html.locked body{overflow:hidden;overscroll-behavior:none}
+dialog.sheet{isolation:isolate}
 </style>

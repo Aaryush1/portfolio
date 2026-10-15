@@ -44,12 +44,12 @@ test('opening it moves nothing', async ({ page }) => {
 
 test('Enter and Space open it from the keyboard; Esc closes it and focus returns to the cell', async ({ page }) => {
   await page.goto('/');
-  await cell(page).focus();
+  await cell(page).locator('button').focus();
   await page.keyboard.press('Enter');
   await expect(block(page)).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(block(page)).toBeHidden();
-  await expect(cell(page)).toBeFocused();
+  await expect(cell(page).locator('button')).toBeFocused();
   await page.keyboard.press(' ');
   await expect(block(page)).toBeVisible();
   await page.keyboard.press('Enter');
@@ -66,6 +66,17 @@ test('an outside click and a second click on the cell both close it', async ({ p
   await expect(block(page)).toBeVisible();
   await cell(page).click();
   await expect(block(page)).toBeHidden();
+});
+
+test('the control is a button that says what it opens and whether it is open', async ({ page }) => {
+  await page.goto('/');
+  const btn = cell(page).locator('button');
+  await expect(btn).toHaveAttribute('aria-controls', 'revs');
+  await expect(btn).toHaveAttribute('aria-expanded', 'false');
+  await btn.click();
+  await expect(btn).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Escape');
+  await expect(btn).toHaveAttribute('aria-expanded', 'false');
 });
 
 test('a click inside the block does not close it', async ({ page }) => {

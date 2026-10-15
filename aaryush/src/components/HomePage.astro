@@ -37,8 +37,8 @@ const views = slugs.map((slug) => {
   return { kind: 'system' as const, slug, system, company: parent };
 });
 ---
-<BaseLayout {...seo} bodyClass="home">
-  <main>
+<BaseLayout {...seo} bodyClass="home" skipTo="main">
+  <main id="main" tabindex="-1">
     <Hero />
     <Levels />
     <Timeline />

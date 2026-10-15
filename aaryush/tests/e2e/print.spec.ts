@@ -1,10 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import { EMAIL, HOST_NAME, PHONE, PHONE_DIGITS, PHONE_E164, PHONE_FULL, USER } from '../contact-fixture';
 
 // E4: printing the home page produces a drawing sheet. Layout checks run in every browser under
 // emulated print media; PDF page counts run in Chromium only (page.pdf() is Chromium-only).
 
-const EMAIL = 'aaryush@outlook.com';
-const PHONE = '949 331 2850';
 const printed = async (page: Page, path = '/') => {
   await page.goto(path);
   await page.emulateMedia({ media: 'print' });
@@ -94,8 +93,9 @@ test.describe('E4 print sheet: contact lines', () => {
   test('email and phone are never in the served HTML', async ({ request }) => {
     const html = await (await request.get('/')).text();
     // (the existing scraper protection stores the parts reversed in data-v, so single parts may appear; the joined forms never do)
-    for (const s of [EMAIL, PHONE, '9493312850', '+19493312850', '+1 949', 'mailto:', 'tel:']) expect(html, s).not.toContain(s);
-    expect(html).not.toMatch(/aaryush@|@outlook/);
+    for (const s of [EMAIL, PHONE, PHONE_DIGITS, PHONE_E164, PHONE_FULL.slice(0, 6), 'mailto:', 'tel:']) expect(html, s).not.toContain(s);
+    expect(html).not.toContain(`${USER}@`);
+    expect(html).not.toContain(`@${HOST_NAME}`);
   });
 
   test('beforeprint assembles the contact text and afterprint removes it', async ({ page }) => {
@@ -110,12 +110,12 @@ test.describe('E4 print sheet: contact lines', () => {
     await fire(page, 'afterprint');
     // (the runtime mailto/tel hrefs legitimately hold the address in the live DOM; the print text must be gone)
     const html = await page.locator('[data-print-contact]').evaluate((e) => e.outerHTML);
-    for (const s of [EMAIL, PHONE, 'aaryush@']) expect(html, s).not.toContain(s);
+    for (const s of [EMAIL, PHONE, `${USER}@`]) expect(html, s).not.toContain(s);
     expect(await text(page)).not.toContain(EMAIL);
     // printing twice works again, and does not duplicate the lines
     await fire(page, 'beforeprint');
     await fire(page, 'beforeprint');
-    expect(((await text(page)).match(/aaryush@outlook\.com/g) ?? []).length).toBe(1);
+    expect(((await text(page)).split(EMAIL).length - 1)).toBe(1);
     await fire(page, 'afterprint');
   });
 
@@ -131,7 +131,8 @@ test.describe('E4 print sheet: contact lines', () => {
     const page = await ctx.newPage();
     await printed(page);
     const t = await text(page);
-    expect(t).not.toMatch(/e-?mail|phone|@|outlook|949/i);
+    expect(t).not.toMatch(/e-?mail|phone|@/i);
+    for (const s of [HOST_NAME, PHONE.slice(0, 3)]) expect(t.toLowerCase(), s).not.toContain(s);
     expect(t).toContain('linkedin.com/in/aaryush');
     expect(t).toContain('Aaryush Gupta');
     expect(t.toLowerCase()).toContain('gupta advisory');

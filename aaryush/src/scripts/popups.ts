@@ -17,6 +17,9 @@ function init(dialog: HTMLDialogElement) {
   let trigger: HTMLElement | null = null;
   let openedAt = 0;
   let closing = false;
+  let originSlug: string | null = null; // the view the pop-up first opened on, for the focus fallback after a direct load
+  let inRaf = 0;
+  let escAt = -1e9; // when Esc was last pressed: tells a keyboard close request from the Android Back one
 
   const template = (slug: string) => document.getElementById(`popup-${slug}`) as HTMLTemplateElement | null;
   const state = (): PopupState | null => {
@@ -52,24 +55,46 @@ function init(dialog: HTMLDialogElement) {
     body.querySelector<HTMLElement>('.view h2')?.focus({ preventScroll: true });
   }
 
+  // Everything behind the pop-up is inert while it is open (a modal dialog already inerts the page, this also covers
+  // engines and states where it doesn't). Dialogs (the key map), scripts and templates stay live.
+  const behind = () => [...document.body.children].filter((el) => !['DIALOG', 'SCRIPT', 'TEMPLATE'].includes(el.tagName));
+  function lock(on: boolean) {
+    document.documentElement.classList.toggle('locked', on);
+    behind().forEach((el) => el.toggleAttribute('inert', on));
+  }
+
   function show() {
     if (dialog.open && !dialog.matches(':modal')) dialog.close();
     if (!dialog.open) { dialog.showModal(); openedAt = performance.now(); }
-    document.documentElement.classList.add('locked');
-    requestAnimationFrame(() => dialog.classList.add('is-in'));
+    lock(true);
+    cancelAnimationFrame(inRaf);
+    inRaf = requestAnimationFrame(() => dialog.classList.add('is-in'));
+  }
+
+  // Where focus lands when the pop-up closes: the card that opened it, else (after a direct load) its card on the page, else the work section.
+  function focusTarget(): HTMLElement | null {
+    if (trigger?.isConnected) return trigger;
+    const slug = originSlug;
+    const card = slug ? document.querySelector<HTMLElement>(`#sys-${slug}, #co-${slug} a.more`) : null;
+    if (card) return card;
+    const work = document.getElementById('work');
+    if (work && !work.hasAttribute('tabindex')) work.tabIndex = -1;
+    return work;
   }
 
   function hide() {
     closing = false;
+    cancelAnimationFrame(inRaf);
     stopDiagrams();
     dialog.classList.remove('is-in');
     if (dialog.open) dialog.close();
-    document.documentElement.classList.remove('locked');
+    lock(false);
     document.title = homeTitle;
     current = null;
     currentParent = null;
-    const t = trigger;
+    const t = focusTarget();
     trigger = null;
+    originSlug = null;
     t?.focus({ preventScroll: true });
   }
 
@@ -83,6 +108,7 @@ function init(dialog: HTMLDialogElement) {
       return;
     }
     trigger = from;
+    originSlug = slug;
     history.pushState({ popup: slug, depth: 1 } satisfies PopupState, '', `/work/${slug}`);
     if (render(slug, 'none')) { show(); focusTitle(); }
   }
@@ -105,9 +131,25 @@ function init(dialog: HTMLDialogElement) {
     open(slug, a.closest('dialog') ? null : a);
   });
 
-  // The browser may close the dialog natively (Esc without user activation): resync our state.
-  dialog.addEventListener('close', () => { if (current && !dialog.open) requestClose(); });
-  dialog.addEventListener('cancel', (e) => { e.preventDefault(); requestClose(); });
+  // One step back through the pop-up's own history: diagram -> company -> closed.
+  function stepBack() {
+    if (closing) return;
+    const s = state();
+    if (s && s.depth > 0) history.back();
+    else requestClose();
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') escAt = performance.now(); }, true);
+  const fromKeyboard = () => performance.now() - escAt < 400;
+  // A close request is Esc on a keyboard (close the whole pop-up) or the Android hardware/gesture Back (one step back).
+  dialog.addEventListener('cancel', (e) => { e.preventDefault(); if (fromKeyboard()) requestClose(); else stepBack(); });
+  // The browser may also close the dialog natively (Esc or Back without user activation): resync our state.
+  dialog.addEventListener('close', () => {
+    if (!current || dialog.open) return;
+    const s = state();
+    // Deeper than the first view and not Esc: go back one view; popstate re-renders and reopens the modal.
+    if (s && s.depth > 1 && !fromKeyboard() && !closing) history.back();
+    else requestClose();
+  });
   // Ignore the second half of a double-click landing on the freshly opened backdrop.
   dialog.addEventListener('click', (e) => { if (e.target === dialog && performance.now() - openedAt > 350) requestClose(); });
 
@@ -134,15 +176,20 @@ function init(dialog: HTMLDialogElement) {
     const slug = parseWorkPath(location.pathname);
     closing = false;
     if (!slug) { if (current) hide(); return; }
+    if (!current) originSlug = slug;
     const direction: Direction = !current ? 'none' : slug === currentParent ? 'back' : 'forward';
     if (render(slug, direction)) { show(); focusTitle(); }
   });
 
   // Direct load of /work/<slug>: put the homepage underneath in history so Back stays on the site.
+  // A reload on /work/<slug> already carries the pop-up state (and the homepage entry below it): add nothing then.
   const initial = parseWorkPath(location.pathname);
   if (initial && template(initial)) {
-    history.replaceState(null, '', '/');
-    history.pushState({ popup: initial, depth: 1 } satisfies PopupState, '', `/work/${initial}`);
+    originSlug = initial;
+    if (!state()) {
+      history.replaceState(null, '', '/');
+      history.pushState({ popup: initial, depth: 1 } satisfies PopupState, '', `/work/${initial}`);
+    }
     render(initial, 'none');
     show();
     focusTitle();
