@@ -1,0 +1,17 @@
+---
+import { getCollection, render } from 'astro:content';
+import EssayLayout from '../../layouts/EssayLayout.astro';
+import { readingMinutes, sectionCount, wordCount } from '../../lib/writing';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('writing', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content, remarkPluginFrontmatter } = await render(post);
+const minutes = readingMinutes(wordCount(post.body ?? ''));
+---
+<EssayLayout title={post.data.title} subtitle={post.data.subtitle} date={post.data.date} summary={post.data.summary} slug={post.id} pdf={post.data.pdf} minutes={minutes} kind={post.data.kind} sections={sectionCount(post.data.kind, post.body ?? '', (post.data.breakdown ?? []).length)} references={remarkPluginFrontmatter.referencesHtml}>
+  <Content />
+</EssayLayout>

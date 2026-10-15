@@ -1,0 +1,53 @@
+---
+import { pieceLabel, type PieceView } from '../../lib/writing';
+import type { Placement } from '../../lib/writing-layout';
+import ObjectLetter from './ObjectLetter.astro';
+import ObjectNote from './ObjectNote.astro';
+import ObjectPaper from './ObjectPaper.astro';
+import ObjectSheet from './ObjectSheet.astro';
+
+interface Props {
+  piece: PieceView;
+  place?: Placement;
+}
+const { piece, place } = Astro.props;
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+const n = piece.breakdown.length;
+
+// Letter panel heights always add up to 478px: a cover, a closing panel, and the rest shared out between.
+function foldHeights(count: number): number[] {
+  if (count <= 0) return [];
+  if (count === 1) return [478];
+  if (count === 2) return [250, 228];
+  const mid = (478 - 150 - 128) / (count - 2);
+  return [150, ...Array.from({ length: count - 2 }, () => mid), 128];
+}
+const heights = piece.shape === 'letter' ? foldHeights(Math.min(n, 6)) : [];
+const vars: string[] = [`view-transition-name:piece-${piece.slug}`];
+if (place) vars.push(`--rot:${place.rot.toFixed(2)}deg`, `--dx:${place.dx.toFixed(1)}px`, `--dy:${place.dy.toFixed(1)}px`, `--col:${place.col + 1}`, `--row:${Math.round(place.y / 4) + 1}`, `--span:${Math.ceil(place.h / 4)}`);
+// heights scale with --hs (1 on desktop, smaller on phones; see writing-room.css)
+heights.forEach((h, i) => vars.push(`--h${i + 1}:calc(${h}px * var(--hs, 1))`));
+if (heights.length) vars.push(`--tlast:var(--t${heights.length})`, `--hlast:var(--h${heights.length})`);
+if (piece.shape === 'paper') vars.push(`--n:${Math.min(n, 6)}`);
+---
+<li class="piece" data-piece data-slug={piece.slug} data-total={piece.sections} data-kind={piece.kind} data-shape={piece.shape} data-folds={heights.length || undefined} style={vars.join(';')}>
+  <span class="cast" aria-hidden="true"></span>
+  {piece.shape === 'letter' && <ObjectLetter folds={heights.length} />}
+  {piece.shape === 'paper' && <ObjectPaper sheets={Math.min(n, 6)} />}
+  {piece.shape === 'note' && <ObjectNote cards={Math.min(n, 4)} />}
+  {piece.shape === 'sheet' && <ObjectSheet />}
+  <a class="piece-link" href={`/writing/${piece.slug}`} aria-label={pieceLabel(piece.title, piece.kind, piece.minutes)}>{piece.title}</a>
+  <p class="piece-meta mono">
+    <span>{piece.kind}</span>
+    <span>{piece.minutes} min read</span>
+    <time datetime={piece.date.toISOString().slice(0, 10)}>{fmt(piece.date)}</time>
+  </p>
+  {piece.why && <p class="piece-why">{piece.why}</p>}
+  {n > 0 && (
+    <ol class="breakdown">
+      {piece.breakdown.slice(0, 6).map((b) => (
+        <li><span class="ph-label">{b.label}</span>{b.gist && <> <span class="gist" data-sep="— ">{b.gist}</span></>}</li>
+      ))}
+    </ol>
+  )}
+</li>

@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content';
+import HomePage from '../../components/HomePage.astro';
+import { workSlugs } from '../../lib/timeline';
+import { site } from '../../data/site';
+
+export async function getStaticPaths() {
+  const companies = await getCollection('companies');
+  const systems = await getCollection('systems');
+  return workSlugs(companies, systems).map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params as { slug: string };
+const company = (await getCollection('companies')).find((c) => c.id === slug);
+const system = company ? undefined : (await getCollection('systems')).find((s) => s.id === slug);
+const name = company?.data.name ?? system!.data.title;
+const description = company?.data.ogDescription ?? company?.data.summary ?? system!.data.summary;
+---
+<HomePage openSlug={slug} title={`${name} — ${site.name}`} description={description} ogImage={`/og/work/${slug}.png`} path={`/work/${slug}`} />

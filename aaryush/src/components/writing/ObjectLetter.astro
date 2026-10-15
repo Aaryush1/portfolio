@@ -1,0 +1,10 @@
+---
+/** Decorative letter skin: one flat panel per breakdown entry. The panels fold by chained transforms (see writing-room.css). */
+interface Props { folds: number }
+const { folds } = Astro.props;
+---
+<span class="skin" aria-hidden="true">
+  {folds === 0
+    ? <span class="letter-base"></span>
+    : Array.from({ length: folds }, (_, i) => <span class={`fold fold-${i + 1}`}></span>)}
+</span>

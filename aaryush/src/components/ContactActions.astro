@@ -1,0 +1,87 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+interface Props { variant: 'hero' | 'footer' }
+const { variant } = Astro.props;
+const c = site.contact;
+const [given, ...rest] = site.name.split(' ');
+const family = rest.join(' ');
+// "Save contact": href is the static .vcf (the no-JS fallback). scripts/contact-card.ts replaces the click with a vCard built
+// at runtime so it can carry the "where we met" note; it reads this instance's own [data-obf][data-v] anchors below.
+// Selector dependency (E4): the print contact lines (scripts/site.ts, beforeprint) read the HERO instance's
+// [data-obf][data-v] anchors, so keep that markup and the data-contact="hero" wrapper stable.
+// Email and phone: parts are reversed and joined with "|", so neither the address nor the number appears in HTML.
+// E9: after the download, the label morphs to "Saved." (scripts/contact-card.ts). The status line is the polite announcement.
+const enc = (parts: readonly string[]) => [...parts].reverse().join('|');
+const links = [
+  { label: 'Email', href: undefined, icon: 'mail', obf: 'mail', v: enc(c.emailParts) },
+  { label: 'Call', href: undefined, icon: 'phone', obf: 'tel', v: enc(c.phoneParts) },
+  { label: 'LinkedIn', href: c.linkedin, icon: 'linkedin', obf: undefined, v: undefined },
+  { label: 'GitHub', href: c.github, icon: 'github', obf: undefined, v: undefined },
+] as const;
+---
+<div class="cta" data-contact={variant}>
+  <a class="btn btn-primary" href={c.vcard} download="Aaryush Gupta.vcf" data-vcard data-given={given} data-family={family} data-url={site.url}><Icon name="card" class="ic-card" /><Icon name="check" class="ic-check" /><span class="save-label">Save contact</span></a>
+  <span class="sr-only" role="status" aria-live="polite" data-save-status></span>
+  <span class="sep-v" aria-hidden="true"></span>
+  <div class="icons">
+    {links.map((l) => (
+      <a class="ico" href={l.href} aria-label={l.label} rel={l.href ? 'noopener' : undefined} data-obf={l.obf} data-v={l.v}>
+        <Icon name={l.icon} /><span class="lbl" aria-hidden="true">{l.label}</span>
+      </a>
+    ))}
+  </div>
+</div>
+<style>
+.cta{margin-top:34px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;height:44px;padding:0 18px 0 16px;
+  border-radius:10px;font-size:15px;font-weight:500;letter-spacing:-.005em;white-space:nowrap;
+  transition:background-color .2s var(--ease),transform .2s var(--ease),box-shadow .3s var(--ease);
+}
+.btn :global(svg){width:17px;height:17px}
+.btn :global(.ic-check){display:none}
+.btn-primary{background:var(--text);color:#0A0B0E}
+.btn-primary:hover{background:#fff}
+.btn-primary:active{transform:translateY(1px)}
+/* E9: the saved state. An amber hairline, the check icon, and a slightly dimmed fill. Only until the next page load. */
+.btn-primary.is-saved,.btn-primary.is-saved:hover{background:color-mix(in srgb,var(--text) 80%,var(--bg));box-shadow:inset 0 0 0 1px var(--accent)}
+.btn-primary.is-saved :global(.ic-card){display:none}
+.btn-primary.is-saved :global(.ic-check){display:block}
+/* the morph's letters (shared with the hero, see scripts/morph.ts) */
+.btn-primary .save-label{position:relative;display:inline-block}
+.btn-primary :global(.mw){display:inline-block;white-space:nowrap}
+.btn-primary :global(.mc){display:inline-block;white-space:pre}
+.btn-primary :global(.mc.ghost){position:absolute;margin:0;pointer-events:none}
+.icons{display:flex;gap:8px}
+.ico{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:44px;min-width:44px;padding:0 12px;border-radius:10px;
+  border:1px solid var(--line-2);background:rgba(10,11,14,.6);color:var(--text-2);
+  transition:border-color .2s var(--ease),background-color .2s var(--ease),color .2s var(--ease);
+}
+.ico :global(svg){width:16px;height:16px;flex:none}
+.ico:hover{border-color:rgba(242,181,68,.45);background:rgba(255,255,255,.04);color:var(--text)}
+.ico .lbl{font-size:12px}
+@media (min-width:720px){
+  .ico{padding:0}
+  .ico .lbl{
+    position:absolute;bottom:calc(100% + 8px);left:50%;transform:translate(-50%,4px);
+    font:500 11.5px/1 var(--mono);letter-spacing:.02em;color:var(--text);white-space:nowrap;
+    background:var(--s3);border:1px solid var(--line-2);border-radius:6px;padding:6px 8px;
+    opacity:0;pointer-events:none;transition:opacity .18s var(--ease),transform .18s var(--ease);
+  }
+  .ico:hover .lbl,.ico:focus-visible .lbl{opacity:1;transform:translate(-50%,0)}
+  .cta .sep-v{width:1px;height:24px;background:var(--line-2);margin:0 6px}
+}
+@media (max-width:719px){
+  .cta{margin-top:22px;display:grid;grid-template-columns:1fr;gap:8px}
+  .cta .btn-primary{height:48px;width:100%}
+  .cta .sep-v{display:none}
+  /* Phones: one full-width primary button, then small icon-only buttons (44px targets) in a row. */
+  .icons{display:flex;gap:8px}
+  .ico{width:44px;height:44px;padding:0}
+  .ico .lbl{display:none}
+}
+:global(html:not(.js)) .ico[data-obf]{display:none}
+</style>

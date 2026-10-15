@@ -1,0 +1,10 @@
+---
+/** Decorative paper skin: a cover plus one sheet per breakdown entry, stapled at the left. */
+interface Props { sheets: number }
+const { sheets } = Astro.props;
+---
+<span class="skin" aria-hidden="true">
+  {Array.from({ length: sheets }, (_, i) => <span class="sheet" style={`--i:${sheets - i}`}></span>)}
+  <span class="sheet cover" style="--i:0"></span>
+  <span class="staple"></span>
+</span>

@@ -1,0 +1,37 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import '../styles/essay.css';
+import '../styles/writing-transitions.css';
+import { knownKind } from '../lib/writing';
+import Signature from '../components/writing/Signature.astro';
+interface Props { title: string; subtitle: string; date: Date; summary: string; slug: string; pdf?: string; minutes: number; kind?: string; sections?: number; references?: string }
+const { title, subtitle, date, summary, slug, pdf, minutes, kind, sections, references } = Astro.props;
+const shape = knownKind(kind ?? '');
+const isPaper = kind === 'paper';
+const month = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+---
+<BaseLayout title={`${title} — Aaryush Gupta`} description={summary} ogImage={`/og/writing/${slug}.png`} path={`/writing/${slug}`} bodyClass="essay-page">
+  {!isPaper && <div class="progress" data-reading-progress aria-hidden="true"></div>}
+  <main class:list={['wrap', 'essay', { 'essay--paper': isPaper }]}>
+    <header class="essay-head" style={`view-transition-name:piece-${slug};view-transition-class:vt-${shape}`}>
+      <p class="mono kicker"><a href="/writing">Writing</a> · {month}</p>
+      <h1>{title}</h1>
+      {subtitle && <p class="sub">{subtitle}</p>}
+      <p class="mono meta"><span>Aaryush Gupta</span><span>{minutes} min read</span></p>
+    </header>
+    <div class="pickup-slot" id="pickup"></div>
+    <article class="essay-body" data-kind={kind} data-slug={slug} data-sections={sections}><slot /><Signature />{references && <Fragment set:html={references} />}</article>
+    <footer class="essay-foot">
+      <a class="more" href="/writing">All writing</a>
+      {pdf && <a class="more" href={pdf} download>Download PDF</a>}
+      <a class="more" href="/#contact">Get in touch</a>
+    </footer>
+  </main>
+  {isPaper && (
+    <div class="pile-dock">
+      <div class="piles" data-piles aria-hidden="true"></div>
+      <p class="pile-label mono" role="status" aria-live="off"></p>
+    </div>
+  )}
+  <script>import '../scripts/reading-progress'; import '../scripts/citations'; import '../scripts/writing-memory-client'; import '../scripts/lamp';</script>
+</BaseLayout>

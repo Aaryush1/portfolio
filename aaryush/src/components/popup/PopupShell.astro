@@ -1,0 +1,113 @@
+---
+import Icon from '../Icon.astro';
+interface Props { openSlug?: string; backHref?: string; backName?: string }
+const { openSlug, backHref, backName } = Astro.props;
+---
+<dialog id="popup" class="sheet" aria-labelledby="popup-title" open={openSlug ? true : undefined}>
+  <div class="sheet-bar">
+    <div class="l">
+      <a class="back" data-popup-back href={backHref ?? '#'} hidden={!backHref}><Icon name="back" /><span>{backName ?? 'Back'}</span></a>
+      <span class="crumb mono" data-popup-crumb></span>
+    </div>
+    <a class="x" data-popup-close href="/" aria-label="Close"><span class="k">Esc</span><Icon name="close" /></a>
+  </div>
+  <div class="sheet-view" data-popup-body><slot name="open" /></div>
+</dialog>
+<style is:global>
+
+dialog.sheet{
+  padding:0;margin:auto;border:1px solid var(--line-2);border-radius:16px;
+  background:var(--s1);color:var(--text);
+  width:min(1000px, calc(100% - 48px));max-width:none;max-height:calc(100dvh - 48px);
+  overflow:auto;overscroll-behavior:contain;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 48px 120px -24px rgba(0,0,0,.8);
+  opacity:0;transform:translateY(12px) scale(.992);
+  transition:opacity .28s var(--ease),transform .5s var(--ease-out);
+}
+dialog.sheet.is-in{opacity:1;transform:none}
+dialog.sheet::backdrop{background:rgba(4,5,7,.74);opacity:0;transition:opacity .3s var(--ease)}
+dialog.sheet.is-in::backdrop{opacity:1}
+@media (max-width:640px){
+  dialog.sheet{width:100%;height:100%;max-height:none;max-width:100%;border:0;border-radius:0}
+}
+.sheet-bar{
+  position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  height:52px;padding:0 8px 0 12px;
+  background:rgba(14,16,21,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+@media (min-width:640px){.sheet-bar{padding:0 10px 0 20px}}
+.sheet-bar .l{display:flex;align-items:center;gap:10px;min-width:0}
+.crumb{color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.crumb b{color:var(--text-2);font-weight:400}
+.back,.x{
+  display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:8px;flex:none;
+  border:1px solid var(--line-2);color:var(--text-2);font:400 12px/1 var(--mono);letter-spacing:.04em;
+  transition:border-color .2s,color .2s,background-color .2s;
+}
+.back:hover,.x:hover{border-color:var(--line-3);color:var(--text);background:rgba(255,255,255,.04)}
+.back svg,.x svg{width:13px;height:13px}
+.x .k{color:var(--text-3)}
+@media (max-width:420px){.x .k{display:none}}
+.sheet-view{position:relative}
+.view{--vx:0px}
+@media (prefers-reduced-motion:no-preference){
+  .view.from-r{--vx:22px}.view.from-l{--vx:-22px}
+  .view.enter-v{animation:vin .46s var(--ease-out) both}
+  .view.leaving{opacity:0;transform:translateX(var(--vo,0px));transition:opacity .17s var(--ease),transform .2s var(--ease)}
+}
+@keyframes vin{from{opacity:0;transform:translateX(var(--vx))}}
+.v-head{padding:28px 20px 0}
+@media (min-width:640px){.v-head{padding:36px 36px 0}}
+.v-head .crumbs{color:var(--text-3)}
+.v-head h2{margin-top:12px;font-size:clamp(30px, 4.2vw, 44px);font-weight:500;letter-spacing:-.034em;line-height:1.04;outline:none}
+.v-role{margin-top:8px;color:var(--text-2);font-size:16px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.tags .lv{padding:5px 8px 4px}
+.v-body{display:grid;gap:32px;padding:28px 20px 8px}
+@media (min-width:760px){.v-body{grid-template-columns:minmax(0,7fr) minmax(0,5fr);column-gap:48px;padding:36px 36px 8px}}
+.v-sec + .v-sec{margin-top:28px}
+.v-sec h3,.v-sys h3{color:var(--text-3);margin-bottom:10px}
+.v-sec p{color:var(--text-2);font-size:16px;line-height:1.7;max-width:38em}
+.v-sec p.first{color:var(--text)}
+.owns{display:grid;border-top:1px solid var(--line)}
+.owns li{display:grid;gap:4px;padding:14px 0;border-bottom:1px solid var(--line)}
+@media (min-width:560px){.owns li{grid-template-columns:200px minmax(0,1fr);gap:20px}}
+.owns b{font-weight:500;font-size:15.5px;color:var(--text)}
+.owns span{color:var(--text-2);font-size:15px;line-height:1.6}
+.spec{border-top:1px solid var(--line-3);align-self:start}
+.spec > div{display:grid;grid-template-columns:104px 1fr;gap:12px;padding:11px 0 12px;border-bottom:1px solid var(--line)}
+.spec dt{font:400 11.5px/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);padding-top:2px}
+.spec dd{font-size:14.5px;color:var(--text);line-height:1.5}
+.stub-note{margin-top:20px;color:var(--text-3)}
+/* Company view order: header, systems (full width), facts (a strip), then the story. Same on every width. */
+.v-sys{padding:28px 20px 0}
+@media (min-width:640px){.v-sys{padding:32px 36px 0}}
+.v-body.job{display:block;padding-bottom:40px}
+.v-body.job > .spec{margin-bottom:32px}
+@media (min-width:640px){.v-body.job > .spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));column-gap:32px}.v-body.job > .spec > div{grid-template-columns:72px 1fr}}
+@media (min-width:760px){.v-body.job > div:not(.spec){max-width:46em}}
+.sys-list{border-top:1px solid var(--line)}
+.sys-row{
+  position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;align-items:center;
+  padding:16px 12px;margin:0 -12px;border-radius:10px;border-bottom:1px solid var(--line);
+  transition:background-color .2s var(--ease);
+}
+@media (min-width:640px){.sys-row{grid-template-columns:64px minmax(0,1fr) auto auto}}
+.sys-row .id{font:400 12px/1 var(--mono);color:var(--text-3);letter-spacing:.06em}
+.sys-row .t{font-size:16px;font-weight:500;letter-spacing:-.01em;display:flex;flex-direction:column;gap:3px}
+.sys-row .t small{font-size:14px;font-weight:400;color:var(--text-2);letter-spacing:0}
+.sys-row .lvs{grid-column:2}
+.sys-row .go{grid-column:2;font:400 12px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--text-2);display:inline-flex;align-items:center;gap:8px}
+@media (min-width:640px){.sys-row .lvs,.sys-row .go{grid-column:auto}}
+.sys-row .go svg{width:14px;height:14px;transition:transform .3s var(--ease)}
+a.sys-row:hover{background:var(--s2)}
+a.sys-row:hover .go{color:var(--text)}
+a.sys-row:hover .go svg{transform:translateX(3px);color:var(--accent)}
+.sys-row.muted .go{color:var(--text-3)}
+.lv{font:400 11.5px/1 var(--mono);letter-spacing:.04em;color:var(--text-2);border:1px solid var(--line-2);border-radius:4px;padding:4px 6px 3px}
+
+/* Without JS the dialog is an open, non-modal element: make it a full overlay. */
+html:not(.js) dialog.sheet[open]{position:fixed;inset:0;margin:auto;z-index:50;opacity:1;transform:none;box-shadow:0 0 0 100vmax rgba(4,5,7,.74)}
+html.locked{overflow:hidden}
+</style>

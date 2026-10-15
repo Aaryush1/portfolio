@@ -1,128 +1,132 @@
-# CLAUDE.md
+# aaryush.com
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Aaryush Gupta's personal site. It helps people understand who he is as a builder and want to talk to him because he's interesting, not to hire him. There's no selling, no testimonials and no "hire me".
 
-## Project Overview
+The app lives in `aaryush/` (Astro 5, static, deployed on Vercel).
 
-Personal portfolio site for Aaryush Gupta at aaryush.com. The site's primary purpose is to be the first and only place someone needs to go to understand what Aaryush does and decide whether to reach out. Built with Astro. Active codebase lives in `aaryush/`. Root-level HTML/CSS files are legacy — do not edit them.
+## Who visits, and on what
+
+- **Most visitors arrive on a phone,** by scanning Aaryush's QR code in person. Design, review and test for phones first: 430 (iPhone 16 Pro Max), 412 and 360 (Galaxy S20), and 375. Desktop matters, but second.
+- **The QR moment:** the person saves his contact, puts the phone away, and opens the site later.
+- **Investors and founders read the site too.** The companies lead, and the advisory practice (Gupta Advisory) stays a quiet single line.
+
+## How we work together
+
+This is the working style that built the redesign (October 2026). Keep it.
+
+- **Interview, don't assume.** Ask about intent before building anything with content or taste in it. Group related questions in one message, offer concrete options, and say which one you'd pick and why.
+- **Bring your own ideas.** Aaryush wants Claude's taste. Every option list should include at least one original idea, not just variations on his. Several of the site's best details came from Claude: the room that remembers you, the shared-letter morph in the hero, the stepped index cards.
+- **Show, don't describe.** For anything visual, build a throwaway comparison page in `C:\Users\aaryu\code\personal\portfolio-explorations\` (served on port 4400; see `.claude/launch.json` in the parent folder) and let him react. Throwaway work never goes in the app.
+- **The queue is visible.** Keep `portfolio-explorations/queue.md` current: what's building, what's next in order, what's waiting on him, and what's parked. It's rendered live at `localhost:4400/queue.html`, so keep that open in a Browser pane tab. Update it whenever work starts, finishes or gets reordered.
+- **Copy is his.** Never ship new wording as final. Draft it, mark it as a draft (`site.drafts.*`, or `draft: true` in content), list it in `docs/redesign/copy-review.md`, and flip it only after he approves it. When he approves something, record the date in the copy review.
+- **The bar is "it works".** This site gets a few visitors a week, so keep testing proportionate.
+  - **Per change:** run only the specs you changed, in Chromium, plus `npm test` and `npm run check`.
+  - **Before a release:** run the full four-browser suite once and patch whatever it finds.
+  - Don't chase flaky tests past one re-run. Don't leave Playwright or preview servers running; the machine is shared.
+- **Subagents and reviews.**
+  - **Haiku** implements mechanical, well-specified tasks.
+  - **Sonnet** implements anything that needs judgement, debugging or visual taste, and does all reviews.
+  - Small visual fixes get a controller check, meaning a screenshot plus a read of the diff. Features get a reviewer.
+  - Parallel builders either use separate ports (`PW_PORT=4323`, `4324`; `playwright.config.ts` reads it) or separate worktrees.
+  - Builders never use `git stash` and stage only their own paths.
+  - For a worktree, link `node_modules` with a junction, and remove the junction before removing the worktree.
+- **Docs travel with changes.** When content or structure changes, update in the same change:
+  - the spec it belongs to (`docs/redesign/*.md`);
+  - the copy review;
+  - the easter-egg register (`docs/easter-eggs.md`);
+  - the revision block (`src/data/revisions.ts`), for anything meaningful that ships;
+  - the link-preview cards (`src/lib/og.ts`), if a page's title, kind or structure changes.
+
+## Writing a new piece (letters, papers, notes, and kinds to come)
+
+Pieces live in `aaryush/src/content/writing/`. When one is added:
+
+1. Aaryush writes it, possibly elsewhere first. Claude helps when asked.
+2. Pick its **kind**. Each kind is a physical object on the /writing desk:
+   - `letter` is a folded sheet;
+   - `paper` is a stapled stack;
+   - `note` is a clipped stack of index cards with stepped edges when closed (each card wider than the one in front), a fan from the clip when open, and quiet section marks when reading (the top edge of a card, widening 58%, 70%, 84%, 100% of the text column). "Once, for Good" is the first.
+
+   The desk's "where you left off" memory is a mark per kind, replacing the old ribbon: a sticky flag on a paper, a faint amber thumbprint on a letter's fold, and a pulled-out card on a note. The home teaser keeps its dot and ribbon.
+
+   A new kind gets its own object, designed together when the first one arrives. Until then it renders as a plain sheet.
+3. Write the **breakdown** together: 3–6 entries with a `label` and an optional `gist` of 5 words or fewer. It's what the object shows when it opens:
+   - a letter's folds;
+   - a paper's sections;
+   - a note's cards.
+4. Write the **"why I wrote this"** line together: one line in his voice, handwritten on the object. This is a co-writing step every time; don't draft it alone and ship it.
+5. Reading time is computed from the word count. Don't hand-write it.
+6. Every piece ends with the "ag." signature, which draws itself. A paper's references go in `<div class="references">`, so they aren't counted as a section and the signature lands before them.
+7. Update the copy review, and check the piece's link-preview card.
+
+## Easter eggs
+
+They're **shown, never explained**. Nothing on the site hints at them, labels them or explains them. `docs/easter-eggs.md` lists every one. Add a row (and a spec section) for each new one.
+
+## Voice and content rules
+
+- **Never show on the site** the Ready Rebound engineering tool's name, the Ready Rebound city product, or any city. Repo docs may mention them; the site must not. The confidentiality test in `tests/unit/` scans the site source.
+- **No buzzwords:** leverage, unlock, transform, seamless, paradigm shift.
+- **No metrics,** except people ratios like "two people now ship what four did" and facts he's given ("under 500ms a turn").
+- **Real titles are reframed:** "Lead AI Engineer" appears as "AI Lead" and "AI & Engineering Lead". Gupta Advisory's role is "Founder".
+- **Dates:** Skale.win ended Feb 2026. The resume has been the standard for *centuries*.
+
+## Design system (short)
+
+- **Dark only.**
+  - **Palette:** `--bg #0A0B0E`; text `#E6E7EA`, `#A0A4AE` and `#8B909C`; one amber accent `#F2B544`, used sparingly. All tokens live in `src/styles/tokens.css`.
+  - **Fonts** (self-hosted): Instrument Sans, JetBrains Mono for labels, and Instrument Serif. Serif italic is for one emphasized word at a time. Upright serif is only for writing titles.
+- **Homepage language: engineering drawings.**
+  - **Section strips:** "§ NN … Sheet NN / 05".
+  - **The hero title block:** Dwg. no., Sheet, Region us-central, Last deploy (stamped at build), Scale NTS.
+  - **Background:** the topography, which follows the visitor's local time.
+  - **Hero:** a shared-letter morph.
+- **Writing language: a warm, dim room.** The /writing page and essay pages do **not** use the drawing language. They have objects on a desk, a pool of light, dust, and the visitor's clock (9pm–7am is night).
+- **Motion:** warm, slow and never bouncy. Resting objects are 2D, so text stays crisp, and 3D only appears during interaction. With `prefers-reduced-motion`, everything shows its final frame. Nothing animates when it isn't on screen.
+- **Scraper protection (intentional):** the email address and phone number never appear in served HTML or JS literals. They're stored as reversed parts and assembled at runtime (`src/scripts/obf.ts`, `site.ts`). Leak tests enforce this.
+
+## Code map
+
+- **`src/data/`:** content that isn't in collections.
+  - `site.ts`: hero, footer, contact parts, drafts, the drawer.
+  - `diagrams.ts`: system diagram specs.
+  - `levels.ts`
+  - `console.ts`: the DevTools note.
+  - `revisions.ts`
+- **`src/content/`:** companies, systems and writing (Astro collections; schema in `content.config.ts`). Quote any frontmatter value that contains a comma.
+- **`src/lib/`:** pure, tested logic: timeline, diagram, daypart, morph timing, keymap, vcard, meet, writing layout and memory, OG cards, rehype plugins.
+- **`src/scripts/`:** client behaviour, one concern per file: hero-rotator and morph, hero-topography, lens, popups, writing-desk, light-pool, dust, walk-in, keymap, contact-card, and so on.
+- **`src/components/`:**
+  - `home/`: Hero, Levels, Timeline, TitleBlock, WritingTeaser, PrintSheet.
+  - `popup/`
+  - `writing/`: objects, Drawer, Signature.
+- **Pages:** `/`, `/work/<slug>` (the pop-up content as standalone pages), `/writing`, `/writing/<slug>`, `/qr` (Aaryush's contact-card tool), `/og/...png`, `404`.
 
 ## Commands
 
-All commands run from the `aaryush/` directory:
+Run these from `aaryush/`:
 
-```bash
-npm run dev       # Dev server at localhost:4321
-npm run build     # Production build to ./dist/
-npm run preview   # Preview production build locally
-```
+- `npm run dev`: dev server on port 4321.
+- `npm run build` / `npm run preview`
+- `npm test`: unit tests (Vitest).
+- `npm run check`: types. It must report 0 errors.
+- `npx playwright test tests/e2e/<spec> --project=chromium`: one e2e spec. The full suite runs only before a release.
+- `npm run test:release`: the release gate. It fails while any copy is still a draft.
 
-No tests or linting. Always run `npm run build` to verify changes compile.
+**Windows quirk:** `~/.npmrc` contains `os=linux`. Install with `npm_config_os=win32 npm install …`, and never edit `~/.npmrc`.
 
-## How We Work on This Site
+## Where things are written down
 
-This site was built through an iterative, collaborative process. The pattern matters for future work:
+- **Specs:**
+  - `docs/redesign/prd.md`: the redesign.
+  - `prd-addendum-extras.md`: E1–E16, the details and easter eggs.
+  - `prd-writing-room.md`
+- **Plans:** `docs/redesign/plan.md` and `plan-writing-room.md`.
+- **Copy:** `docs/redesign/copy-review.md`, with every approval dated.
+- **Decisions and reasoning:** `docs/redesign/decisions.md`.
+- **Easter eggs:** `docs/easter-eggs.md`.
+- **The live queue:** `portfolio-explorations/queue.md`.
 
-1. **Ask before building.** Content and positioning decisions require alignment. When Aaryush gives a direction, ask targeted questions before writing code. Understand the *intent* — not just the words.
+## Release
 
-2. **The site is self-contained.** It should not send people elsewhere to understand what Aaryush does. Contact links (email, phone, LinkedIn, GitHub) are fine as icons — they're entry points, not content destinations. No outbound content links. No "read my article" references. Everything someone needs is on this page.
-
-3. **Story over metrics.** User numbers, throughput stats, and engineering metrics were deliberately cut. The narrative does the work. Impact pills on project cards are outcome-oriented ("Same-day decisions", "Viral campus adoption") not number-oriented.
-
-4. **Short and scannable.** Every section was tightened through multiple rounds. Cards get one paragraph. Modals get 2-3 paragraphs of narrative. No bullet-point résumé language. A CEO scanning this in 30 seconds should know exactly what Aaryush does.
-
-5. **Content changes go through conversation.** Don't guess at positioning, tone, or what Aaryush wants to emphasize. Ask. The voice and framing were refined over several iterations and reflect specific decisions about what to include, what to cut, and how to order things.
-
-## Positioning & Voice
-
-The site positions Aaryush as **AI Strategy & Organizational Design**.
-
-- **Operator, not engineer.** Think: someone a CEO calls, not someone who submits pull requests. Role titles are reframed — his actual title at companies is "Lead AI Engineer" but the site uses "AI Lead", "AI & Engineering Lead", etc.
-- **Confident but not salesy.** The site should make people think "I should reach out" without ever saying "hire me."
-- **No buzzwords:** don't say "leverage AI," "unlock potential," "digital transformation," "paradigm shift."
-- **Frame work as outcomes and operating model decisions**, not technical implementation.
-- **No personal workflow details.** Don't mention things like "I don't write code by hand anymore." The perspective and credentials speak for themselves.
-- **Target audience:** founders, CEOs, VPs — people thinking about what AI means for their organization.
-
-## Content Structure
-
-### About Section
-Three tight paragraphs: (1) big-picture insight about AI and organizations, (2) what Aaryush does and light career arc, (3) open-door line. No essay energy. No personal proof points. Detached observation first, then shift to "I."
-
-### Experience Section
-Four roles, ordered intentionally:
-
-1. **Gupta Advisory — AI Strategy & Systems** (Dec 2024 – Present) — FIRST because it's why most people visit the site. This is the advisory practice. Card describes the engagement model directly. Modal explains the full process: deep business understanding → targeted experiments → ROI on day one → commit to something larger.
-
-2. **Ready Rebound — AI & Engineering Lead** (Dec 2025 – Present) — Workers' comp platform. Key concept: "Native AI Workflows" — a structured system where every team member can evaluate and adopt AI capabilities independently. Spec-driven development, tool-agnostic environment, V1 shipped on schedule.
-
-3. **Cylerity — AI Lead** (Jan 2024 – Present) — Fintech-healthcare claims underwriting. Key story: redesigned the operating model so everyone in the company uses Claude Code and produces output independently. Structured business-to-technical pipeline. Eight-figure lending facility.
-
-4. **Skale.win — Founding Member, Product & Strategy** (Jun 2024 – Present) — End-to-end career platform. Key insight: reinventing hiring using higher-dimensional embedding models to capture real capability. White-label and enterprise hiring. "Making meritocracy scalable."
-
-All experience entries have clickable "More" buttons that open `<dialog>` modals with 2-3 paragraphs of narrative. No bullet points. No metrics grids. Story only.
-
-### Selected Work (Projects)
-Five projects in `src/data/projects.ts`. Each rendered as a card with a "More" button opening a modal. Modal structure: value one-liner → "The challenge" → "What I designed" (3 bullets) → "The outcome." No metrics grid — that was deliberately removed. Tech badges and filter chips remain for functional filtering but are secondary to the narrative.
-
-### Areas of Focus
-Four static capability cards (not clickable — deliberate design decision). Categories: AI Operating Model Design, Human-AI Workflow Architecture, Healthcare & Compliance Systems, Product Strategy & Delivery. Each has a title and one sentence that tells the reader what they get, not what the category means.
-
-## Data Architecture
-
-### Project data: `src/data/projects.ts`
-
-Single source of truth for project content. Exports a typed `Project[]` array:
-
-```typescript
-type Project = {
-    id: string;          // HTML element ID for modals and filters
-    title: string;
-    value: string;       // One-liner at top of modal
-    problem: string;     // "The challenge" in modal
-    result: string;      // "The outcome" in modal
-    summary: string;     // Shown on card
-    impact: string[];    // Gradient pills on card (outcome-oriented, no user numbers)
-    stack: string[];     // Tech stack — only tags matching filterTags render
-    details: string[];   // "What I designed" bullets in modal (max 3)
-    links?: { label: string; href: string }[];
-};
-```
-
-### Experience data
-
-Experience entries are hardcoded in `index.astro` (not data-driven). Each entry has a card with a "More" button and a `<dialog>` modal with narrative paragraphs.
-
-### Filter system
-
-`index.astro` defines a `filterTags` array (~9 tech names). A project's `stack` entries are intersected with `filterTags` to produce visible badges (max 4) and `data-techs` attributes for the client-side filter. If adding a new project, its `stack` must overlap with `filterTags` or it won't be filterable.
-
-## Client-Side Interactivity
-
-Three scripts in `src/scripts/`, loaded by BaseLayout:
-
-- **`motion.ts`** — IntersectionObserver scroll reveals (`[data-reveal]` elements), section visibility (triggers `::after` underline sweep), hero parallax. All skipped if `prefers-reduced-motion: reduce`.
-- **`modals.ts`** — Click delegation on `[data-open-modal]` to open `<dialog>` by ID. Computes animation origin from nearest `.project-card` or `.card--link`. Close via `[data-close-modal]` or backdrop click with exit animation.
-- **`filters.ts`** — AND-logic tech filter. Maintains a `Set<string>` of active tags. Cards with `data-techs` that don't match all active tags get `is-hidden`.
-
-## Styling
-
-- Dark theme: `--bg: #0B0B0F`, `--surface: #121218`, `--primary: #7C5CFF`, `--accent: #00E5A8`
-- 12-column CSS Grid. Responsive breakpoints: 900px, 620px, 520px.
-- BEM-like naming: `hero__text`, `card--link`, `modal__title`
-- Hero contact links are icon-only (`hero__icon` class) — 36px circles with `currentColor` SVGs, purple glow on hover.
-- `prefers-reduced-motion: reduce` disables all transitions/animations globally.
-
-## Static Assets
-
-- `public/Aaryush Contact Info.vcf` — vCard for "Download Contact Card" button
-- `public/assets/HS Grad.jpg` — Headshot (URL-encoded as `HS%20Grad.jpg`)
-- Various legacy images/SVGs in `public/assets/` — not all actively used
-
-## Contact Information
-
-- Email: aaryush@outlook.com
-- Phone: (949) 331-2850
-- LinkedIn: /in/aaryush
-- GitHub: Aaryush1
-- Location: Madison, WI
-- Advisory practice: Gupta Advisory, LLC
+Push only with the Aaryush1 account: `GH_TOKEN=$(gh auth token --user Aaryush1)`. Set per-repo credentials first, and never run `gh auth switch`. Ask before pushing, opening a PR or merging. Vercel builds previews from branches.

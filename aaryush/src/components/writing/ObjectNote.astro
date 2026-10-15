@@ -1,0 +1,10 @@
+---
+/** Decorative note skin: a clipped stack of index cards, each wider than the one in front. The labels live in the real breakdown list. */
+interface Props { cards: number }
+const { cards } = Astro.props;
+---
+<span class="skin" aria-hidden="true">
+  {Array.from({ length: cards }, (_, i) => cards - i).map((k) => <span class={`card n${k}`} style={`--k:${k}`}></span>)}
+  <span class="card n0" style="--k:0"></span>
+  <span class="clip"><i class="wire a"></i><i class="wire b"></i><i class="body"></i></span>
+</span>

@@ -1,0 +1,86 @@
+---
+import { diagrams } from '../data/diagrams';
+import { boxPath, isDiamond, nodeHits, pathD, pointAt, polylineLength, type DiagramKey, type DiagramRuntime } from '../lib/diagram';
+interface Props { name: DiagramKey }
+const { name } = Astro.props;
+const S = diagrams[name];
+const runtime: DiagramRuntime = { pulse: S.pulse, inputs: S.inputs, loopStart: S.loopStart, hits: nodeHits(S), speed: S.speed };
+const rest = pointAt(S.pulse, polylineLength(S.pulse) * 0.62);
+const ms = (d: number) => `--d:${Math.round(d)}ms`;
+const pad = (n: number) => String(n).padStart(2, '0');
+const arrow = (x: number, y: number, dx: number, dy: number) => {
+  const b = 6, s = 4;
+  return `M${x - dx * b - dy * s} ${y - dy * b + dx * s} L${x} ${y} L${x - dx * b + dy * s} ${y - dy * b - dx * s}`;
+};
+---
+<svg class="dg" viewBox={`0 0 ${S.vb[0]} ${S.vb[1]}`} role="img" aria-labelledby={`dg-t-${name} dg-d-${name}`} data-runtime={JSON.stringify(runtime)}>
+  <title id={`dg-t-${name}`}>{S.title}</title>
+  <desc id={`dg-d-${name}`}>{S.desc}</desc>
+  <g>
+    {S.inputs.map(([x, y1, y2, , d]) => (
+      <Fragment>
+        <path d={`M${x} ${y1} V${y2}`} pathLength="1" class="ln draw" style={`${ms(d)};--dur:520ms`} />
+        <path d={arrow(x, y2, 0, 1)} class="ah fade" style={ms(d + 420)} />
+      </Fragment>
+    ))}
+    {S.edges.map((e) => {
+      const dur = e.dur ?? 500;
+      const a = e.p[e.p.length - 2], b = e.p[e.p.length - 1];
+      return (
+        <Fragment>
+          {e.dash
+            ? <path d={pathD(e.p, false)} class="ln dash fade" style={ms(e.d)} />
+            : <path d={pathD(e.p, false)} pathLength="1" class={`ln draw${e.fb ? ' fb' : ''}`} style={`${ms(e.d)};--dur:${dur}ms`} />}
+          <path d={arrow(b[0], b[1], Math.sign(b[0] - a[0]), Math.sign(b[1] - a[1]))} class={`ah fade${e.fb ? ' fb' : ''}`} style={ms(e.d + (e.dash ? 200 : dur * 0.85))} />
+        </Fragment>
+      );
+    })}
+  </g>
+  <g>
+    <circle class="halo on" r="8" cx={rest[0]} cy={rest[1]} />
+    <circle class="pulse on" r="3.25" cx={rest[0]} cy={rest[1]} />
+  </g>
+  <g>
+    {S.nodes.map((n, i) => {
+      const d = boxPath(n);
+      const human = !isDiamond(n) && n.human;
+      return (
+        <g class="node" data-node={i}>
+          <path d={d} class="fill fade" style={ms(n.d)} />
+          {!isDiamond(n) && n.dashed
+            ? <path d={d} class="box dbox fade" style={ms(n.d)} />
+            : <path d={d} pathLength="1" class={`box draw${human ? ' hum' : ''}`} style={`${ms(n.d)};--dur:620ms`} />}
+          {isDiamond(n)
+            ? <path d={d} class="lit fade" style={ms(n.d + 560)} />
+            : <path d={d} class="flash" style={ms(n.d + 520)} />}
+          <path d={d} class="hl" />
+          <path d={d} class="ring" />
+          {human && !isDiamond(n) && <rect x={n.x + n.w - 9} y={n.y + 4} width="5" height="5" class="hm fade" style={ms(n.d + 400)} />}
+        </g>
+      );
+    })}
+  </g>
+  <g>
+    {S.inputs.map(([x, y1, , label, d]) => (
+      <Fragment>
+        <text x={x} y={y1 - 10} class="lb fade" style={ms(d)} text-anchor="middle">{label}</text>
+        <circle class="in-dot" cx={x} cy={y1} r="2.5" style="opacity:0" />
+      </Fragment>
+    ))}
+    {S.edges.flatMap((e) => (e.l ?? []).map(([t, x, y, anchor]) => (
+      <text x={x} y={y} class="lb fade" style={ms(e.d + (e.dash ? 150 : (e.dur ?? 500) * 0.5))} text-anchor={anchor}>{t}</text>
+    )))}
+    {S.nodes.map((n, i) => isDiamond(n) ? (
+      <Fragment>
+        <text x={n.cx} y={n.cy + 5} class="nt fade" style={ms(n.d + 220)} text-anchor="middle">{n.t}</text>
+        <text x={n.cx + n.r * 0.55 + 8} y={n.cy - n.r * 0.55 - 6} class="id fade" style={ms(n.d + 220)} text-anchor="start">{`N.${pad(i + 1)}`}</text>
+      </Fragment>
+    ) : (
+      <Fragment>
+        <text x={n.x + n.w / 2} y={n.s ? n.y + n.h / 2 - 1 : n.y + n.h / 2 + 5} class="nt fade" style={ms(n.d + 220)} text-anchor="middle">{n.t}</text>
+        {n.s && <text x={n.x + n.w / 2} y={n.y + n.h / 2 + 16} class={`ns fade${n.human ? ' hum' : ''}`} style={ms(n.d + 300)} text-anchor="middle">{n.s}</text>}
+        <text x={n.x} y={n.y - 7} class="id fade" style={ms(n.d + 220)} text-anchor="start">{`N.${pad(i + 1)}`}</text>
+      </Fragment>
+    ))}
+  </g>
+</svg>

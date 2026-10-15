@@ -1,0 +1,67 @@
+---
+import ContactActions from './ContactActions.astro';
+import { site } from '../data/site';
+---
+<footer class="foot" id="contact" aria-labelledby="contact-title">
+  <div class="wrap">
+    <div class="sec-head mono"><span class="n">§ 05</span><span>Contact</span><span class="f">Sheet 05 / 05</span></div>
+    <div class="foot-grid">
+      <div>
+        <h2 id="contact-title">{site.footer.heading}</h2>
+        <p class="lead">{site.footer.lead}</p>
+        <ContactActions variant="footer" />
+      </div>
+      <figure class="frag" aria-hidden="true">
+        <svg viewBox="0 0 300 196">
+          <path class="fd" pathLength="1" style="--d:0ms" d="M28 36 H272 V160"/>
+          <path class="fd fl" pathLength="1" style="--d:900ms" d="M272 160 H28 V36"/>
+          <path class="fd" pathLength="1" style="--d:400ms" d="M150 36 V96 H210"/>
+          <rect class="fn fz" style="--d:200ms" x="23.5" y="31.5" width="9" height="9"/>
+          <rect class="fn fz" style="--d:500ms" x="145.5" y="31.5" width="9" height="9"/>
+          <rect class="fn fz" style="--d:700ms" x="267.5" y="31.5" width="9" height="9"/>
+          <rect class="fn fz" style="--d:800ms" x="205.5" y="91.5" width="9" height="9"/>
+          <rect class="fn fa fz" style="--d:1100ms" x="267.5" y="155.5" width="9" height="9"/>
+          <text class="fz" style="--d:300ms" x="23" y="22">N.01</text>
+          <text class="fz" style="--d:600ms" x="145" y="22">N.02</text>
+          <text class="fz" style="--d:900ms" x="232" y="184">N.04</text>
+          <circle class="halo fz" style="--d:1900ms" cx="92" cy="160" r="8"/>
+          <circle class="dot fz" style="--d:1900ms" cx="92" cy="160" r="3"/>
+        </svg>
+        <figcaption class="mono"><b>Fig. 5.1</b> — The loop, closed. Your turn.</figcaption>
+      </figure>
+    </div>
+    <div class="foot-bar mono" data-footer-meta>
+      <span>© {new Date().getFullYear()} Aaryush Gupta</span>
+      <span>{site.location} · {site.education}</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+<style>
+.foot{position:relative;padding:clamp(72px, 10vw, 136px) 0 40px}
+.foot-grid{display:grid;gap:40px;margin-top:44px}
+@media (min-width:960px){.foot-grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr);align-items:center;margin-top:56px}}
+.foot h2{font-weight:500;font-size:clamp(40px, 6vw, 72px);line-height:1;letter-spacing:-.045em}
+.foot :global(.cta){margin-top:36px}
+.foot-bar{margin-top:clamp(56px, 8vw, 96px);padding-top:20px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 24px;font:400 12px/1.4 var(--mono);color:var(--text-3)}
+.foot-bar a:hover{color:var(--text)}
+/* schematic fragment (desktop only) */
+.frag{display:none}
+@media (min-width:960px){
+  .frag{display:block;justify-self:end;width:100%;max-width:300px}
+  .frag svg{width:100%;height:auto;overflow:visible}
+  .frag .fd{fill:none;stroke:rgba(255,255,255,.16);stroke-width:1}
+  .frag .fn{fill:var(--bg);stroke:rgba(255,255,255,.34);stroke-width:1}
+  .frag .fa{fill:var(--bg);stroke:rgba(242,181,68,.8)}
+  .frag .fl{stroke:rgba(242,181,68,.5)}
+  .frag text{font:400 10.5px var(--mono);fill:var(--text-3);letter-spacing:.06em}
+  .frag .dot{fill:var(--accent)}
+  .frag .halo{fill:var(--accent);opacity:.16}
+  .frag figcaption{margin-top:12px;color:var(--text-3)}
+  .frag figcaption b{color:var(--text-2);font-weight:400}
+  :global(.js) .frag .fd{stroke-dasharray:1 1;stroke-dashoffset:1;transition:stroke-dashoffset 1.8s var(--ease-d) var(--d,0ms)}
+  :global(.js) .frag .fz{opacity:0;transition:opacity .6s var(--ease) var(--d,0ms)}
+  :global(.js) .frag:global(.in) .fd{stroke-dashoffset:0}
+  :global(.js) .frag:global(.in) .fz{opacity:1}
+}
+</style>

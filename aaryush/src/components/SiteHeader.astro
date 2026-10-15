@@ -1,0 +1,30 @@
+---
+import Mark from "./Mark.astro";
+---
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="mark" href="/" aria-label="Aaryush Gupta, home"><Mark /><span class="mark-text">Aaryush Gupta</span></a>
+    <nav class="nav" aria-label="Sections">
+      <a class="opt" href="/#levels">How AI fits</a>
+      <a class="opt" href="/#work">Work</a>
+      <a href="/writing">Writing</a>
+      <a href="/#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+<style>
+.top{
+  position:sticky;top:0;z-index:20;height:var(--header);
+  background:rgba(10,11,14,.8);
+  -webkit-backdrop-filter:saturate(140%) blur(12px);backdrop-filter:saturate(140%) blur(12px);
+  border-bottom:1px solid transparent;transition:border-color .3s var(--ease);
+}
+.top:global(.scrolled){border-bottom-color:var(--line)}
+.top .wrap{height:100%;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.mark{display:inline-flex;align-items:center;gap:10px;font:500 13px/1 var(--mono);color:var(--text-2);letter-spacing:.01em;padding:6px 4px;margin-left:-4px;transition:color .2s}
+.mark:hover{color:var(--text)}
+.nav{display:flex;gap:2px}
+.nav a{font-size:14px;color:var(--text-2);padding:8px 12px;border-radius:8px;transition:color .2s,background-color .2s}
+.nav a:hover{color:var(--text);background:rgba(255,255,255,.04)}
+@media (max-width:639px){.nav a.opt{display:none}.nav a{padding:8px 10px}}
+</style>

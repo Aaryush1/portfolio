@@ -1,0 +1,164 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from '../Icon.astro';
+import { site } from '../../data/site';
+import { levels } from '../../data/levels';
+import { levelsFor } from '../../lib/levels';
+import { buildTimeline, formatRange, numberSystems } from '../../lib/timeline';
+
+const companies = await getCollection('companies');
+const systems = await getCollection('systems');
+const timeline = buildTimeline(companies, systems);
+const sysNumbers = numberSystems(timeline);
+const advisory = timeline.find((t) => t.company.id === 'gupta-advisory');
+const entriesShown = timeline.filter((t) => t.company.id !== 'gupta-advisory');
+// Descriptor: the first clause of the existing summary (no new copy).
+const advisoryClause = advisory ? advisory.company.data.summary.split(',')[0].replace(/\.$/, '') + '.' : '';
+const levelTitle = (n: number) => levels.find((l) => l.n === n);
+---
+<section class="sec" id="work" aria-labelledby="work-title">
+  <div class="wrap">
+    <div class="sec-head mono rv"><span class="n">§ 03</span><span>Work</span><span class="f">Fig. 3.1 — Timeline, newest first</span></div>
+    <div class="sec-intro rv">
+      <h2 class="h2" id="work-title">Companies, and the systems inside them.</h2>
+    </div>
+
+    <div class="tl-wrap">
+      <p class="next rv"><b>Next</b> — <span class="nx-word">{site.next.name}</span><span class="nx-dot">.</span> <span class="soon">{site.next.note}</span></p>
+
+      {advisory && (
+        <p class="adv rv" id="co-gupta-advisory">
+          <b>{advisory.company.data.name}</b>
+          <span class="role">{advisory.company.data.role}</span>
+          <span class="desc">{advisoryClause}</span>
+          <a class="more" href={`/work/${advisory.company.id}`} data-popup-link>{site.companyLinkLabel(advisory.company.data.name)}<Icon name="arrow-right" /></a>
+        </p>
+      )}
+
+      {entriesShown.map(({ company, systems: syss }) => {
+        const c = company.data;
+        const isGroup = c.kind === 'group';
+        return (
+          <article class:list={['entry', 'rv', { now: c.end === null }]} id={`co-${company.id}`}>
+            <div class="meta"><span class="date">{formatRange(c.start, c.end, isGroup)}</span><span class="role">{isGroup ? 'Earlier work' : c.role}</span></div>
+            <div class="co">
+              <h3>{c.name}</h3>
+              <p class="desc">{c.summary}</p>
+              {!isGroup && (
+                <a class="more" href={`/work/${company.id}`} data-popup-link>{site.companyLinkLabel(c.name)}<Icon name="arrow-right" /></a>
+              )}
+              {syss.length > 0 && (
+                <div class:list={['cards', { three: isGroup }]}>
+                  {syss.map((s) => (
+                    <a class:list={['card', 'hl', { wide: syss.length === 1 }]} id={`sys-${s.id}`} href={`/work/${s.id}`} data-popup-link>
+                      <div class="card-top">
+                        <span>{sysNumbers.get(s.id)}</span>
+                        <span class="lvs">{levelsFor(s.id, levels).map((l) => <span class="lv" title={levelTitle(l.n)?.title + (levelTitle(l.n)?.em ?? '')}>L{l.n}</span>)}</span>
+                      </div>
+                      <h4>{s.data.title}</h4>
+                      <p>{s.data.summary}</p>
+                      {s.data.outcome && <p class="out">{s.data.outcome}</p>}
+                      <div class="card-open" aria-hidden="true"><span>{s.data.diagram ? 'Open schematic' : 'Read'}</span><Icon name="arrow-right" /></div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</section>
+<script>import '../../scripts/contextos';</script>
+<style>
+.tl-wrap{position:relative;margin-top:44px;padding-left:30px}
+@media (min-width:860px){.tl-wrap{margin-top:64px;padding-left:44px}}
+.tl-wrap::before{content:"";position:absolute;left:4px;top:30px;bottom:12px;width:1px;background:linear-gradient(to bottom, var(--line-3), var(--line-2) 85%, transparent)}
+.next{position:relative;padding:0 0 28px;color:var(--text-2);font:400 13px/1.4 var(--mono);letter-spacing:.01em}
+.next b{font-weight:500;color:var(--text)}
+.next::before{content:"";position:absolute;left:-30px;top:4px;width:9px;height:9px;border:1px solid rgba(242,181,68,.8);background:var(--bg)}
+.next::after{content:"";position:absolute;left:-26px;top:14px;height:calc(100% - 4px);border-left:1px dashed var(--line-3)}
+@media (min-width:860px){.next::before{left:-44px}.next::after{left:-40px}}
+.next .soon{color:var(--text-3)}
+/* contextOS (E8): the word re-types with the hero's morph (scripts/morph.ts); its letters are created at runtime. */
+.nx-word{position:relative;display:inline-block;white-space:nowrap}
+.nx-word :global(.mw){display:inline-block;white-space:nowrap}
+.nx-word :global(.mc){display:inline-block;white-space:pre}
+.nx-word :global(.mc.ghost){position:absolute;margin:0;pointer-events:none}
+.nx-word.is-tint{color:var(--accent)}
+@media (prefers-reduced-motion:no-preference){.nx-word{transition:color 1.2s var(--ease)}}
+/* the caret that replaces the period once JS runs: amber, the weight of the hero's letters, a slow 1.1s ease */
+.next .nx-dot.caret{display:inline-block;width:2px;height:1.05em;margin-left:1px;vertical-align:-.14em;background:var(--accent)}
+@media (prefers-reduced-motion:no-preference){
+  .next .nx-dot.caret{animation:caret 1.1s ease-in-out infinite}
+  @keyframes caret{0%,100%{opacity:1}50%{opacity:.12}}
+}
+@media (prefers-reduced-motion:no-preference){.next::before{animation:breathe 3.6s var(--ease) infinite}}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(242,181,68,0)}50%{box-shadow:0 0 0 4px rgba(242,181,68,.12)}}
+.adv{position:relative;padding:0 0 26px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:15.5px;line-height:1.5;color:var(--text-2);scroll-margin-top:calc(var(--header) + 24px)}
+.adv b{font-weight:500;color:var(--text);letter-spacing:-.01em}
+.adv .role{font:400 12px/1 var(--mono);letter-spacing:.04em;color:var(--text-3);text-transform:uppercase}
+.adv .desc{flex:1 1 18rem;min-width:0}
+.adv .more{display:inline-flex;align-items:center;gap:8px;font:400 12px/1 var(--mono);letter-spacing:.04em;color:var(--text-2);min-height:44px}
+.adv .more :global(svg){width:14px;height:14px;transition:transform .3s var(--ease),color .2s}
+.adv .more:hover{color:var(--text)}
+.adv .more:hover :global(svg){transform:translateX(3px);color:var(--accent)}
+.adv.is-target{animation:advFlash 2.2s var(--ease)}
+@keyframes advFlash{0%,30%{color:var(--text);text-shadow:0 0 18px rgba(242,181,68,.35)}100%{text-shadow:none}}
+.entry{position:relative;padding:30px 0 38px;display:grid;gap:12px;scroll-margin-top:calc(var(--header) + 24px)}
+.entry:last-child{padding-bottom:0}
+@media (min-width:860px){.entry{grid-template-columns:minmax(0,3fr) minmax(0,9fr);column-gap:28px;padding:38px 0 46px}}
+.entry::before{
+  content:"";position:absolute;left:-30px;top:36px;width:9px;height:9px;
+  background:var(--bg);border:1px solid var(--line-3);
+  transition:border-color .3s var(--ease),background-color .3s var(--ease),box-shadow .3s var(--ease);
+}
+.entry.now::before{border-color:var(--text-2);background:radial-gradient(circle, var(--accent) 0 1.6px, var(--bg) 2px)}
+@media (min-width:860px){.entry::before{left:-44px;top:44px}}
+.entry:hover::before{border-color:var(--accent)}
+.entry.is-target::before{animation:nodeFlash 1.8s var(--ease)}
+@keyframes nodeFlash{0%,40%{border-color:var(--accent);box-shadow:0 0 0 6px rgba(242,181,68,.14)}100%{box-shadow:0 0 0 14px transparent}}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;font:400 12.5px/1.5 var(--mono);letter-spacing:.01em}
+.meta .date{color:var(--text-2)}
+.meta .role{color:var(--text-3)}
+@media (min-width:860px){.meta{flex-direction:column;gap:6px;padding-top:6px}}
+.co h3{font-size:clamp(24px, 2.6vw, 30px);font-weight:500;letter-spacing:-.028em;line-height:1.15}
+.co .desc{margin-top:10px;color:var(--text-2);font-size:16.5px;line-height:1.7;max-width:40rem}
+.cards{margin-top:22px;display:grid;gap:12px}
+@media (min-width:640px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1000px){.cards.three{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.card{
+  position:relative;display:flex;flex-direction:column;gap:8px;color:inherit;
+  background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:18px 20px 16px;
+  transition:border-color .25s var(--ease),background-color .25s var(--ease);
+  scroll-margin-top:calc(var(--header) + 32px);
+}
+.card:focus-visible{outline-offset:2px}
+.card:hover{border-color:var(--line-2);background:var(--s2)}
+.card.wide{grid-column:1/-1}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font:400 11.5px/1 var(--mono);color:var(--text-3);letter-spacing:.06em}
+.lvs{display:flex;gap:4px}
+.lv{font:400 11.5px/1 var(--mono);letter-spacing:.04em;color:var(--text-2);border:1px solid var(--line-2);border-radius:4px;padding:4px 6px 3px}
+.card h4{font-size:16.5px;font-weight:500;letter-spacing:-.012em;line-height:1.35;margin-top:4px}
+.card p{color:var(--text-2);font-size:14.5px;line-height:1.62}
+.card .out{margin-top:auto;font:400 12px/1.5 var(--mono);letter-spacing:.01em;color:var(--text)}
+.card .out::before{content:"→ ";color:var(--accent)}
+.card-open{display:flex;align-items:center;justify-content:space-between;font:400 12px/1 var(--mono);color:var(--text-2);letter-spacing:.04em;text-transform:uppercase;padding-top:6px}
+.card-open :global(svg){width:14px;height:14px;transition:transform .3s var(--ease),color .2s}
+.card:hover .card-open{color:var(--text)}
+.card:hover .card-open :global(svg){transform:translateX(3px);color:var(--accent)}
+.card.is-target{animation:cardFlash 2.2s var(--ease)}
+@keyframes cardFlash{0%,30%{border-color:rgba(242,181,68,.8);box-shadow:0 0 0 3px rgba(242,181,68,.12)}100%{border-color:var(--line);box-shadow:0 0 0 3px transparent}}
+@media (max-width:559px){
+  .cards{gap:0;margin-top:14px;border-top:1px solid var(--line)}
+  .card{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:6px 10px;min-height:48px;padding:10px 4px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0}
+  .card:hover{background:var(--s1)}
+  .card-top{display:contents}
+  .card-top > span:first-child{order:1;font-size:12px}
+  .card h4{order:2;margin:0;font-size:15.5px}
+  .card .lvs{order:3}
+  .card-open{order:4;padding:0}
+  .card-open span,.card p{display:none}
+}
+</style>

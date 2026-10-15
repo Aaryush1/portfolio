@@ -1,0 +1,66 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Icon from '../Icon.astro';
+import { levels } from '../../data/levels';
+import { levelsFor } from '../../lib/levels';
+import { formatRange } from '../../lib/timeline';
+interface Props { company: CollectionEntry<'companies'>; systems: CollectionEntry<'systems'>[]; numbers: Map<string, string> }
+const { company, systems, numbers } = Astro.props;
+const c = company.data;
+const { Content } = await render(company);
+const advisory = company.id === 'gupta-advisory';
+const found = new Set([...levelsFor(company.id, levels), ...systems.flatMap((s) => levelsFor(s.id, levels))].map((l) => l.n));
+const tagLevels = levels.filter((l) => found.has(l.n));
+const levelLabel = (l: (typeof levels)[number]) => `L${l.n} — ${l.title}${l.em}`;
+---
+<article class="view" data-title={c.name} data-crumb={`Work · ${formatRange(c.start, c.end)}`}>
+  <header class="v-head">
+    <p class="mono crumbs">Work · {formatRange(c.start, c.end)}</p>
+    <h2 id="popup-title" tabindex="-1">{c.name}</h2>
+    {c.role && <p class="v-role">{c.role}</p>}
+    {tagLevels.length > 0 && <ul class="tags">{tagLevels.map((l) => <li class="lv">{levelLabel(l)}</li>)}</ul>}
+  </header>
+  {systems.length > 0 && (
+    <section class="v-sys">
+      <h3 class="mono">Systems built here</h3>
+      <ul class="sys-list">
+        {systems.map((s) => (
+          <li>
+            <a class="sys-row" href={`/work/${s.id}`} data-popup-link>
+              <span class="id">{numbers.get(s.id)}</span>
+              <span class="t">{s.data.title}<small>{s.data.summary}</small></span>
+              <span class="lvs">{levelsFor(s.id, levels).map((l) => <span class="lv">L{l.n}</span>)}</span>
+              <span class="go">{s.data.diagram ? 'Open schematic' : 'Read'}<Icon name="arrow-right" /></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+  <div class="v-body job">
+    <dl class="spec">
+      {c.facts.map((f) => <div><dt>{f.label}</dt><dd>{f.value}</dd></div>)}
+    </dl>
+    <div>
+      <section class="v-sec">
+        <h3 class="mono">{advisory ? 'The practice' : 'The company'}</h3>
+        <p class="first">{c.summary}</p>
+      </section>
+      {c.problem && (
+        <section class="v-sec">
+          <h3 class="mono">The problem space</h3>
+          <p>{c.problem}</p>
+        </section>
+      )}
+      <section class="v-sec">
+        <h3 class="mono">{advisory ? 'How I work' : 'What I own'}</h3>
+        <div class="story"><Content /></div>
+        {c.owns.length > 0 && (
+          <ol class="owns">
+            {c.owns.map((o) => <li><b>{o.title}</b><span>{o.detail}</span></li>)}
+          </ol>
+        )}
+      </section>
+    </div>
+  </div>
+</article>

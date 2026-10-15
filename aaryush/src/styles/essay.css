@@ -1,0 +1,92 @@
+.essay{--essay-font:var(--font);--essay-size:18px;--essay-measure:66ch;--essay-head:var(--font);--essay-head-weight:500}
+/* Variant B (if chosen in Step 1): --essay-font:"Newsreader Variable",Georgia,serif; --essay-size:20px; --essay-measure:62ch; --essay-head:var(--serif); --essay-head-weight:400 */
+.essay{padding-block:clamp(48px,8vw,104px) clamp(72px,10vw,136px)}
+.essay-head,.essay-body{max-width:var(--essay-measure);margin:0 auto}
+.essay-head .kicker{color:var(--text-3)}
+.essay-head h1{margin-top:18px;font-family:var(--essay-head);font-weight:var(--essay-head-weight);font-size:clamp(36px,5.4vw,60px);line-height:1.04;letter-spacing:-.035em}
+.essay-head .sub{margin-top:14px;color:var(--text-2);font-size:clamp(18px,2vw,22px);line-height:1.4}
+.essay-head .meta{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--text-3)}
+.essay-body{margin-top:clamp(40px,6vw,64px);font-family:var(--essay-font);font-size:var(--essay-size);line-height:1.75;color:var(--text)}
+.essay-body p{margin:0 0 1.15em;color:color-mix(in srgb,var(--text) 88%,transparent)}
+.essay-body h2{margin:2.4em 0 .8em;font-family:var(--essay-head);font-weight:var(--essay-head-weight);font-size:1.45em;letter-spacing:-.02em;line-height:1.2}
+.essay-body h3{margin:1.8em 0 .6em;font-size:1.1em;font-weight:500}
+.essay-body .pullquote,.essay-body .callout{margin:1.8em 0;padding-left:20px;border-left:1px solid var(--accent);font-family:var(--serif);font-style:italic;font-size:1.35em;line-height:1.4;color:var(--text)}
+.essay-body .divider{margin:2.4em 0;text-align:center;color:var(--text-3);letter-spacing:.4em}
+.essay-body .closing{margin-top:2em;font-family:var(--serif);font-style:italic;font-size:1.5em;line-height:1.35;color:var(--text)}
+.essay-body sup{font-family:var(--mono);font-size:.62em;color:var(--accent)}
+.essay-body .data-table{width:100%;border-collapse:collapse;margin:1.6em 0;font-family:var(--font);font-size:15px}
+.essay-body .data-table th,.essay-body .data-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.essay-body .data-table th{font:400 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)}
+.essay-body .table-note{font:400 12.5px/1.5 var(--mono);color:var(--text-3)}
+.essay-body .references{margin-top:3em;font-family:var(--font);font-size:14px;color:var(--text-2)}
+.essay-body .references ol{list-style:decimal;padding-left:1.4em;display:grid;gap:6px}
+.essay-foot{max-width:var(--essay-measure);margin:clamp(48px,7vw,80px) auto 0;display:flex;flex-wrap:wrap;gap:12px 24px}
+.progress{position:fixed;top:var(--header);left:0;right:0;height:2px;z-index:19;background:transparent}
+.progress::after{content:"";position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--progress,0));background:var(--accent)}
+/* Papers: two piles of sheets instead of the bar. Decoration only (aria-hidden); hidden without JS. */
+.pile-dock{display:none}
+html.js .pile-dock{display:block;position:fixed;right:24px;bottom:20px;z-index:19;width:max-content;min-width:112px;pointer-events:none}
+.pile-dock{transition:opacity .25s,visibility 0s}
+html.js .pile-dock.is-away{opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+.piles{position:relative;height:calc(44px + var(--n,6) * 2.6px);width:112px}
+.pile-sh{position:absolute;left:0;bottom:0;width:34px;height:44px;border:1px solid var(--line-3);border-radius:2px;background:var(--s3);
+  transform:translate(0,calc(var(--i) * -2.6px));transition:transform .45s var(--ease-out)}
+.pile-sh.moved{transform:translate(70px,calc(var(--i) * -2.6px)) rotate(calc(var(--r) * 1deg));border-color:var(--line-2);background:var(--s2)}
+.pile-label{margin:6px 0 0;font-size:12px;line-height:1.3;color:var(--text-2);text-align:center;white-space:nowrap}
+.essay--paper{padding-bottom:clamp(72px,10vw,136px)}
+html.js .essay--paper{padding-bottom:max(clamp(72px,10vw,136px),150px)}
+@media (max-width:719px){
+  /* phones: a compact translucent pill in the bottom-right corner, tiny piles plus "III / VI" (same glass as the Lens mini band) */
+  html.js .pile-dock{right:max(12px,env(safe-area-inset-right,0px));left:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));
+    display:flex;align-items:center;gap:8px;min-width:0;padding:6px 12px 6px 10px;border:1px solid var(--line-2);border-radius:999px;background:rgba(14,16,21,.72)}
+  @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    html.js .pile-dock{-webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1)}
+  }
+  html.js .piles{width:48px;height:calc(20px + var(--n,6) * 1.3px)}
+  html.js .pile-sh{width:15px;height:20px;transform:translate(0,calc(var(--i) * -1.3px))}
+  html.js .pile-sh.moved{transform:translate(32px,calc(var(--i) * -1.3px)) rotate(calc(var(--r) * 1deg))}
+  html.js .pile-label{margin:0;font-size:0;line-height:1}
+  html.js .pile-label::after{content:attr(data-short);font-size:12px;line-height:1.3;color:var(--text-2)}
+  html.js .essay--paper{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:719px){.essay-body .data-table{display:block;overflow-x:auto}}
+.essay-body a.cite{color:inherit;text-decoration:none}
+.essay-body .references li:target{color:var(--text)}
+/* the marker button: a larger tap target than the glyphs, without moving the line */
+.essay-body button.cite{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:.55em .22em;margin:-.55em -.05em;border-radius:4px}
+.essay-body button.cite:hover,.essay-body button.cite[aria-expanded="true"]{background:rgba(242,181,68,.14)}
+.essay-body button.cite:focus-visible{outline:2px solid var(--accent);outline-offset:0}
+.cite-sheet{position:absolute;z-index:40;box-sizing:border-box;padding:14px 16px 12px;border:1px solid var(--line-3);border-radius:8px;background:rgba(14,16,21,.94);box-shadow:0 14px 34px rgba(0,0,0,.45);
+  opacity:0;transform:translateY(4px);transition:opacity .18s ease,transform .18s ease}
+.cite-sheet[hidden]{display:none}
+.cite-sheet.is-open{opacity:1;transform:none}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.cite-sheet{-webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);background:rgba(14,16,21,.78)}}
+.cite-head{margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.cite-text{margin:0;font:400 14px/1.5 var(--font);color:var(--text)}
+.cite-more{display:inline-block;margin-top:10px;padding:6px 0;font-size:12px;color:var(--text-2);text-decoration:underline;text-underline-offset:3px}
+.cite-more:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:719px){
+  .cite-sheet{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto!important;border-radius:14px 14px 0 0;border-width:1px 0 0;padding:16px 20px calc(16px + env(safe-area-inset-bottom,0px));transform:translateY(12px)}
+  .cite-text{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){.cite-sheet,.cite-sheet.is-open{transition:none;transform:none}}
+@media print{.cite-sheet{display:none}}
+@media print{.top,.foot,.progress,.pile-dock,.essay-foot{display:none}body{background:#fff;color:#000}.essay-body p,.essay-body{color:#000}}
+
+/* pick-up offer: sits in the gap between the header and the body, so showing it moves nothing */
+.pickup-slot{max-width:var(--essay-measure);margin:0 auto;height:0;position:relative}
+.pickup{position:absolute;left:0;top:10px;font:400 13px/1.35 var(--mono);letter-spacing:.02em;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
+.pickup:hover{color:var(--text)}
+
+/* A note reads as a plain page; each card opens with a quiet mark: the top edge of an index card, a little wider every time. */
+.essay-body[data-kind="note"]{counter-reset:card}
+.essay-body[data-kind="note"] h2{counter-increment:card;position:relative;width:100%;height:26px;margin:38px auto 16px;padding-top:13px;box-sizing:border-box;
+  font:500 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;text-align:center;white-space:nowrap;color:var(--text-3)}
+.essay-body[data-kind="note"] h2:first-child{margin-top:0}
+.essay-body[data-kind="note"] h2::before{content:counter(card,decimal-leading-zero);margin-right:8px;color:var(--accent);opacity:.8}
+.essay-body[data-kind="note"] h2::after{content:"";position:absolute;inset:0 0 auto 0;height:9px;border:1px solid rgba(255,235,200,.11);border-bottom:none;border-radius:2px 2px 0 0}
+.essay-body[data-kind="note"] h2:nth-of-type(1){width:58%}
+.essay-body[data-kind="note"] h2:nth-of-type(2){width:70%}
+.essay-body[data-kind="note"] h2:nth-of-type(3){width:84%}
+.essay-body[data-kind="note"] h2:nth-of-type(n+4){width:100%}
+.essay-body[data-kind="note"] em{font-family:var(--serif);font-size:1.12em}
