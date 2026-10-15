@@ -5,7 +5,7 @@ export const diagrams: Record<DiagramKey, DiagramSpec> = {
     vb: [320, 572],
     title: 'Engineering intake system diagram',
     desc: 'Anyone in the company starts a conversation in a shared Claude project. The conversation is classified as an idea, which is tracked and revisited as it sharpens, or a scope, which is ready to build and goes to an engineer. Shipped work feeds back to the people who asked.',
-    inputs: [[110, 26, 54, 'OPS', 0], [150, 26, 54, 'FIN', 110], [190, 26, 54, 'SALES', 220]],
+    inputs: [[110, 26, 54, 'Ops', 0], [150, 26, 54, 'Fin', 110], [190, 26, 54, 'Sales', 220]],
     nodes: [
       { x: 75, y: 54, w: 150, h: 50, t: 'Anyone', s: 'IN THE COMPANY', d: 380 },
       { x: 50, y: 140, w: 200, h: 54, t: 'Conversation', s: 'SHARED CLAUDE PROJECT', d: 900 },
@@ -30,7 +30,7 @@ export const diagrams: Record<DiagramKey, DiagramSpec> = {
     vb: [320, 640],
     title: 'Engineering loop system diagram',
     desc: 'An engineer hands over a ticket. A person sets the spec and decisions. The loop then implements and reviews in repeated passes, keeps the documentation tree current and builds from it, opens a pull request and QA-tests it in a real browser. It comes back to a person only for decisions, specs and architecture.',
-    inputs: [[150, 26, 54, 'ENGINEER', 0]],
+    inputs: [[150, 26, 54, 'Engineer', 0]],
     nodes: [
       { x: 75, y: 54, w: 150, h: 48, t: 'Ticket', s: 'FROM AN ENGINEER', d: 300 },
       { x: 50, y: 138, w: 200, h: 54, t: 'Spec & decisions', s: 'HUMAN', d: 780, human: true },
@@ -58,7 +58,7 @@ export const diagrams: Record<DiagramKey, DiagramSpec> = {
     vb: [320, 452],
     title: 'UMN Discovery Launchpad system diagram',
     desc: 'Founders upload their documents and materials. The system builds rubrics, structure and documentation of where each company stands. The Launchpad team uses that picture to bring in the right people and support, and progress feeds back into the profile so nothing is relearned.',
-    inputs: [[112, 26, 54, 'DOCS', 0], [160, 26, 54, 'DECKS', 110], [208, 26, 54, 'NOTES', 220]],
+    inputs: [[104, 26, 54, 'Docs', 0], [160, 26, 54, 'Decks', 110], [216, 26, 54, 'Notes', 220]],
     nodes: [
       { x: 75, y: 54, w: 150, h: 50, t: 'Founder materials', s: 'UPLOADED', d: 380 },
       { x: 50, y: 140, w: 200, h: 54, t: 'Structure built', s: 'RUBRICS · DOCS', d: 900 },
@@ -78,7 +78,7 @@ export const diagrams: Record<DiagramKey, DiagramSpec> = {
     vb: [320, 760],
     title: 'Skale.win career platform system diagram',
     desc: 'An optional job link goes through Perplexity and comes back as structured job requirements, alongside an optional industry and a difficulty level. An interview planner turns that into a dynamic question plan, reshaped after every answer. The interview itself is a real-time voice loop: speech to text, a language model on OpenRouter, text to speech, back to the candidate in under 500 milliseconds a turn. An evaluator scores competencies plus categories generated for that interview and writes specific feedback. The profile embeds skills and preferences to match roles by vector similarity, and the weakest categories seed the next interview.',
-    inputs: [[92, 26, 54, 'JOB URL', 0], [168, 26, 54, 'INDUSTRY', 110], [240, 26, 54, 'LEVEL', 220]],
+    inputs: [[92, 26, 54, 'Job URL', 0], [168, 26, 54, 'Industry', 110], [240, 26, 54, 'Level', 220]],
     nodes: [
       { x: 45, y: 54, w: 210, h: 50, t: 'Job context', s: 'PERPLEXITY · STRUCTURED', d: 380 },
       { x: 50, y: 140, w: 200, h: 50, t: 'Interview planner', s: 'DYNAMIC · PER ANSWER', d: 900 },

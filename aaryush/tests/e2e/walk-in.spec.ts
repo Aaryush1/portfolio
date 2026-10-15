@@ -94,7 +94,8 @@ test('320px: the opened sheet never causes sideways scroll on the desk or the es
 });
 
 // Task 49: the note's opening, "the deal".
-test('note: the clip lifts, the cards are dealt down the screen each wider than the last, then the page settles them into section marks', async ({ page }) => {
+test('note: the clip lifts, the cards are dealt down the screen each wider than the last, then the page settles them into section marks', async ({ page, browserName }) => {
+  test.skip(browserName === 'firefox', 'Firefox has no cross-document view transitions (no onpagereveal), so the walk-in is off there by design');
   await openTwice(page, 'once-for-good');
   await expect(page.locator('.walk-clone')).toHaveCount(1);
   await expect(page.locator('.walk-veil')).toHaveCount(1);
