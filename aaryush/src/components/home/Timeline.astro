@@ -160,5 +160,9 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
   .card .lvs{order:3}
   .card-open{order:4;padding:0}
   .card-open span,.card p{display:none}
+  .card.is-target{animation:rowFlash 2.2s var(--ease)}
 }
+/* jumping here from a "seen in" chip: a short amber wash, on every screen */
+.entry.is-target{animation:rowFlash 2.2s var(--ease)}
+@keyframes rowFlash{0%,30%{background:rgba(242,181,68,.09);box-shadow:0 0 0 12px rgba(242,181,68,.09)}100%{background:transparent;box-shadow:0 0 0 12px transparent}}
 </style>

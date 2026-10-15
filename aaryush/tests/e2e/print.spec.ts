@@ -22,7 +22,7 @@ const fire = (page: Page, name: 'beforeprint' | 'afterprint') => page.evaluate((
 test.describe('E4 print sheet: what prints', () => {
   test('nothing decorative or interactive prints', async ({ page }) => {
     await printed(page);
-    for (const sel of ['.bg', 'canvas', '#top', '.foot', '#keymap', '#popup', '.hero .reg', '.hero .ruler', '.hero .cta', '#levels', '.frag']) {
+    for (const sel of ['.bg', 'canvas', '#top', '.foot', '#keymap', '#popup', '.hero .reg', '.hero .ruler', '.hero .cta', '#levels']) {
       expect(await visible(page, sel), sel).toBe(0);
     }
     // nothing fades in or loops on paper

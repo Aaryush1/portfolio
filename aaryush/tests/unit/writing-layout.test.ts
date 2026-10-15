@@ -28,9 +28,16 @@ describe('layoutDesk', () => {
       expect(top).toBeLessThan(shortest);
     }
   });
-  it('lists placements in visual reading order (y, then x)', () => {
-    const p = layoutDesk(mk(8)).placements;
-    for (let i = 1; i < p.length; i++) expect(p[i].y > p[i - 1].y || (p[i].y === p[i - 1].y && p[i].x >= p[i - 1].x)).toBe(true);
+  it('keeps newest first: input order, newest in the left column and at its top', () => {
+    const pieces = mk(8);
+    const p = layoutDesk(pieces).placements;
+    expect(p.map((x) => x.slug)).toEqual(pieces.map((x) => x.slug));
+    expect(p[0].col).toBe(0);
+    expect(p.filter((x) => x.col === 0).every((x) => x.y >= p[0].y)).toBe(true);
+    for (const c of new Set(p.map((x) => x.col))) {
+      const inCol = p.filter((x) => x.col === c);
+      for (let k = 1; k < inCol.length; k++) expect(inCol[k].y).toBeGreaterThan(inCol[k - 1].y);
+    }
   });
   it('rotates every object a little but never more than 3 degrees, and never exactly 0', () => {
     for (const p of layoutDesk(mk(15)).placements) { expect(Math.abs(p.rot)).toBeGreaterThan(0); expect(Math.abs(p.rot)).toBeLessThanOrEqual(3); }
