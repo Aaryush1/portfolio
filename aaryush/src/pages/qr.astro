@@ -50,7 +50,7 @@ const L = site.meet.labels;
   .qr-form { width: min(420px, 100%); display: grid; gap: 18px; }
   :global(html:not(.js)) .qr-form { display: none; }
   .field { display: grid; gap: 8px; }
-  label, .label { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+  label, .label { font: 500 14.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .08em; color: var(--text-2); }
   input {
     width: 100%; height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line-2);
     background: var(--s2); color: var(--text); font: 400 16px/1 var(--font);
@@ -66,7 +66,7 @@ const L = site.meet.labels;
   .qchip:disabled { opacity: .4; cursor: default; }
   .qclear {
     justify-self: start; min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--text-3);
-    font: 400 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+    font: 400 14.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .08em; cursor: pointer;
   }
   .qclear:hover { color: var(--text); }
   @media (prefers-reduced-motion: no-preference) {

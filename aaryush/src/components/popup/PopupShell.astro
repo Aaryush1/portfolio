@@ -42,7 +42,7 @@ dialog.sheet.is-in::backdrop{opacity:1}
 .crumb b{color:var(--text-2);font-weight:400}
 .back,.x{
   display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:8px;flex:none;
-  border:1px solid var(--line-2);color:var(--text-2);font:400 12px/1 var(--mono);letter-spacing:.04em;
+  border:1px solid var(--line-2);color:var(--text-2);font:400 14.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.04em;
   transition:border-color .2s,color .2s,background-color .2s;
 }
 .back:hover,.x:hover{border-color:var(--line-3);color:var(--text);background:rgba(255,255,255,.04)}
@@ -60,7 +60,7 @@ dialog.sheet.is-in::backdrop{opacity:1}
 .v-head{padding:28px 20px 0}
 @media (min-width:640px){.v-head{padding:36px 36px 0}}
 .v-head .crumbs{color:var(--text-3)}
-.v-head h2{margin-top:12px;font-size:clamp(30px, 4.2vw, 44px);font-weight:500;letter-spacing:-.034em;line-height:1.04;outline:none}
+.v-head h2{margin-top:12px;font-size:clamp(34px, 4.6vw, 50px);font-weight:400;letter-spacing:-.02em;line-height:1.04;outline:none}
 .v-role{margin-top:8px;color:var(--text-2);font-size:16px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
 .tags .lv{padding:5px 8px 4px}
@@ -77,7 +77,7 @@ dialog.sheet.is-in::backdrop{opacity:1}
 .owns span{color:var(--text-2);font-size:15px;line-height:1.6}
 .spec{border-top:1px solid var(--line-3);align-self:start}
 .spec > div{display:grid;grid-template-columns:104px 1fr;gap:12px;padding:11px 0 12px;border-bottom:1px solid var(--line)}
-.spec dt{font:400 11.5px/1.5 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);padding-top:2px}
+.spec dt{font:400 14px/1.5 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.06em;color:var(--text-3);padding-top:2px}
 .spec dd{font-size:14.5px;color:var(--text);line-height:1.5}
 .stub-note{margin-top:20px;color:var(--text-3)}
 /* Company view order: header, systems (full width), facts (a strip), then the story. Same on every width. */
@@ -94,18 +94,18 @@ dialog.sheet.is-in::backdrop{opacity:1}
   transition:background-color .2s var(--ease);
 }
 @media (min-width:640px){.sys-row{grid-template-columns:64px minmax(0,1fr) auto auto}}
-.sys-row .id{font:400 12px/1 var(--mono);color:var(--text-3);letter-spacing:.06em}
+.sys-row .id{font:400 14.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;color:var(--text-3);letter-spacing:.06em}
 .sys-row .t{font-size:16px;font-weight:500;letter-spacing:-.01em;display:flex;flex-direction:column;gap:3px}
 .sys-row .t small{font-size:14px;font-weight:400;color:var(--text-2);letter-spacing:0}
 .sys-row .lvs{grid-column:2}
-.sys-row .go{grid-column:2;font:400 12px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--text-2);display:inline-flex;align-items:center;gap:8px}
+.sys-row .go{grid-column:2;font:400 14.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.04em;color:var(--text-2);display:inline-flex;align-items:center;gap:8px}
 @media (min-width:640px){.sys-row .lvs,.sys-row .go{grid-column:auto}}
 .sys-row .go svg{width:14px;height:14px;transition:transform .3s var(--ease)}
 a.sys-row:hover{background:var(--s2)}
 a.sys-row:hover .go{color:var(--text)}
 a.sys-row:hover .go svg{transform:translateX(3px);color:var(--accent)}
 .sys-row.muted .go{color:var(--text-3)}
-.lv{font:400 11.5px/1 var(--mono);letter-spacing:.04em;color:var(--text-2);border:1px solid var(--line-2);border-radius:4px;padding:4px 6px 3px}
+.lv{font:400 14px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.04em;color:var(--text-2);border:1px solid var(--line-2);border-radius:4px;padding:4px 6px 3px}
 
 /* Without JS the dialog is an open, non-modal element: make it a full overlay. */
 html:not(.js) dialog.sheet[open]{position:fixed;inset:0;margin:auto;z-index:50;opacity:1;transform:none;box-shadow:0 0 0 100vmax rgba(4,5,7,.74)}

@@ -1,10 +1,5 @@
 ---
-import '@fontsource/instrument-sans/400.css';
-import '@fontsource/instrument-sans/500.css';
-import '@fontsource/instrument-sans/600.css';
-import '@fontsource/instrument-serif/400-italic.css';
-import '@fontsource/jetbrains-mono/400.css';
-import '@fontsource/jetbrains-mono/500.css';
+import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/print.css';
@@ -38,6 +33,8 @@ const reveal = "try { if ('onpagereveal' in window && matchMedia('(max-width: 55
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/spectral-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/karla-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     <Seo title={title} description={description} ogImage={ogImage} path={path} noindex={bare} />
     <script is:inline set:html={bootAll}></script>
     {!bare && <script is:inline set:html={reveal}></script>}

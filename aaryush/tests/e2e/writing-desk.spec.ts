@@ -139,7 +139,7 @@ test('the page head is the only h1 and the link hit area matches the object, not
   await page.goto('/writing');
   await expect(page.locator('h1')).toHaveCount(1);
   await expect(page.locator('h1')).toHaveText('Writing');
-  expect(await page.locator('h1').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(14); // small and quiet
+  expect(await page.locator('h1').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(16); // small and quiet (small caps run larger than the old mono)
   if (isMobile) return;
   const p = piece(page, 'bigger-than-electricity');
   const extra = await p.evaluate((el) => {

@@ -81,7 +81,7 @@ test('forget is a quiet word, with no explanation text', async ({ page }) => {
   await page.goto('/writing');
   const b = page.locator('[data-forget]');
   await expect(b).toHaveText('forget');
-  expect(await b.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(12);
+  expect(await b.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeLessThanOrEqual(15); // small caps run larger than the old mono
 });
 
 test('the forget control is absent when there is nothing to forget', async ({ page }) => {

@@ -1,0 +1,11 @@
+/* Self-hosted, latin subset, woff2 (public/fonts). Spectral is the voice, Spectral SC the drawing labels, Karla the body.
+   Metric-matched fallbacks keep the swap from shifting layout. */
+@font-face{font-family:"Spectral";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/spectral-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Spectral";font-style:italic;font-weight:400;font-display:swap;src:url(/fonts/spectral-latin-400-italic.woff2) format("woff2")}
+@font-face{font-family:"Spectral SC";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/spectral-sc-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Karla";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/karla-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Karla";font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/karla-latin-500-normal.woff2) format("woff2")}
+/* fallbacks (adjusted to the metrics of the webfonts) */
+@font-face{font-family:"Spectral Fallback";src:local("Georgia");size-adjust:95%;ascent-override:107%;descent-override:42%;line-gap-override:0%}
+@font-face{font-family:"Spectral SC Fallback";src:local("Georgia");size-adjust:92%;ascent-override:110%;descent-override:43%;line-gap-override:0%}
+@font-face{font-family:"Karla Fallback";src:local("Arial");size-adjust:98%;ascent-override:94%;descent-override:26%;line-gap-override:0%}

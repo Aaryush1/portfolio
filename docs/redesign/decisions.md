@@ -50,3 +50,12 @@ The key decisions behind the October 2026 redesign, and why. Every entry is date
 - **Release gate.** `npm run test:release` fails while any copy is a draft. Vercel production builds run it (preview builds do not, so branches still deploy with drafts).
 - **Windows quirk.** `~/.npmrc` sets `os=linux`, so installs use `npm_config_os=win32 npm install`. Never edit `~/.npmrc`.
 - **Push only with the Aaryush1 account,** and only after asking.
+
+## Type (2026-10-15, branch `type-spectral`, preview only)
+
+- **Pairing:** Spectral (voice), Karla (body and UI), Spectral SC (drawing labels). Round-2 pairing 4 from `portfolio-explorations/fonts.html`. Replaces Instrument Sans, Instrument Serif and JetBrains Mono. JetBrains is removed; mono survives only for the commit hash.
+- **Labels are real small caps** (`--label`), sentence case in the source, tracking .06 to .12em, sizes about 20% above the old mono. Lining and tabular figures everywhere, so "AG-001" and "2026.10" never go old-style. Spectral's 1 looks like a small-cap I, which is the face's own design.
+- **Headings are upright Spectral 400** with looser tracking than the old sans (-.01 to -.03em). The hero name stays the big headline. The hero's shared-letter morph measures real glyph boxes, so it needed no change.
+- **Essay body stays Karla** after trying Spectral at 21px on one essay: Spectral reads well on paper but its thin strokes lose weight on the dark ground and on phones, and Karla matches the rest of the site.
+- **Weight:** 98,436 B of woff2 on every page (Spectral 400 and italic, Spectral SC 400, Karla 400 and 500), against 116,628 B on the home page and 137,660 B on /writing before. Preload Spectral 400 and Karla 400 only. `font-display: swap` with size-adjusted Georgia/Arial fallbacks.
+- **OG cards** use the same faces from woff copies in `src/assets/og-fonts/`.

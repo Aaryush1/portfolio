@@ -1,23 +1,24 @@
-.essay{--essay-font:var(--font);--essay-size:18px;--essay-measure:66ch;--essay-head:var(--font);--essay-head-weight:500}
+.essay{--essay-font:var(--font);--essay-size:19px;--essay-measure:66ch;--essay-head:var(--serif);--essay-head-weight:400}
 /* Variant B (if chosen in Step 1): --essay-font:"Newsreader Variable",Georgia,serif; --essay-size:20px; --essay-measure:62ch; --essay-head:var(--serif); --essay-head-weight:400 */
 .essay{padding-block:clamp(48px,8vw,104px) clamp(72px,10vw,136px)}
 .essay-head,.essay-body{max-width:var(--essay-measure);margin:0 auto}
+.essay-head{font-size:var(--essay-size)} /* same ch as the body, so the title column lines up with the text */
 .essay-head .kicker{color:var(--text-3)}
-.essay-head h1{margin-top:18px;font-family:var(--essay-head);font-weight:var(--essay-head-weight);font-size:clamp(36px,5.4vw,60px);line-height:1.04;letter-spacing:-.035em}
+.essay-head h1{margin-top:18px;font-family:var(--essay-head);font-weight:var(--essay-head-weight);font-size:clamp(38px,5.6vw,64px);line-height:1.04;letter-spacing:-.02em}
 .essay-head .sub{margin-top:14px;color:var(--text-2);font-size:clamp(18px,2vw,22px);line-height:1.4}
 .essay-head .meta{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--text-3)}
 .essay-body{margin-top:clamp(40px,6vw,64px);font-family:var(--essay-font);font-size:var(--essay-size);line-height:1.75;color:var(--text)}
 .essay-body p{margin:0 0 1.15em;color:color-mix(in srgb,var(--text) 88%,transparent)}
-.essay-body h2{margin:2.4em 0 .8em;font-family:var(--essay-head);font-weight:var(--essay-head-weight);font-size:1.45em;letter-spacing:-.02em;line-height:1.2}
-.essay-body h3{margin:1.8em 0 .6em;font-size:1.1em;font-weight:500}
+.essay-body h2{margin:2.4em 0 .8em;font-family:var(--essay-head);font-weight:var(--essay-head-weight);font-size:1.6em;letter-spacing:-.012em;line-height:1.2}
+.essay-body h3{margin:1.8em 0 .6em;font-size:1.25em;font-weight:400}
 .essay-body .pullquote,.essay-body .callout{margin:1.8em 0;padding-left:20px;border-left:1px solid var(--accent);font-family:var(--serif);font-style:italic;font-size:1.35em;line-height:1.4;color:var(--text)}
 .essay-body .divider{margin:2.4em 0;text-align:center;color:var(--text-3);letter-spacing:.4em}
 .essay-body .closing{margin-top:2em;font-family:var(--serif);font-style:italic;font-size:1.5em;line-height:1.35;color:var(--text)}
-.essay-body sup{font-family:var(--mono);font-size:.62em;color:var(--accent)}
+.essay-body sup{font-family:var(--label);font-size:.62em;color:var(--accent)}
 .essay-body .data-table{width:100%;border-collapse:collapse;margin:1.6em 0;font-family:var(--font);font-size:15px}
 .essay-body .data-table th,.essay-body .data-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
-.essay-body .data-table th{font:400 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--text-3)}
-.essay-body .table-note{font:400 12.5px/1.5 var(--mono);color:var(--text-3)}
+.essay-body .data-table th{font:400 14.5px/1.4 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.06em;color:var(--text-3)}
+.essay-body .table-note{font:400 15px/1.5 var(--label);font-variant-numeric:lining-nums tabular-nums;color:var(--text-3)}
 .essay-body .references{margin-top:3em;font-family:var(--font);font-size:14px;color:var(--text-2)}
 .essay-body .references ol{list-style:decimal;padding-left:1.4em;display:grid;gap:6px}
 .essay-foot{max-width:var(--essay-measure);margin:clamp(48px,7vw,80px) auto 0;display:flex;flex-wrap:wrap;gap:12px 24px}
@@ -75,13 +76,13 @@ html.js .essay--paper{padding-bottom:max(clamp(72px,10vw,136px),150px)}
 
 /* pick-up offer: sits in the gap between the header and the body, so showing it moves nothing */
 .pickup-slot{max-width:var(--essay-measure);margin:0 auto;height:0;position:relative}
-.pickup{position:absolute;left:0;top:10px;font:400 13px/1.35 var(--mono);letter-spacing:.02em;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
+.pickup{position:absolute;left:0;top:10px;font:400 15.5px/1.35 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.02em;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
 .pickup:hover{color:var(--text)}
 
 /* A note reads as a plain page; each card opens with a quiet mark: the top edge of an index card, a little wider every time. */
 .essay-body[data-kind="note"]{counter-reset:card}
 .essay-body[data-kind="note"] h2{counter-increment:card;position:relative;width:100%;height:26px;margin:38px auto 16px;padding-top:13px;box-sizing:border-box;
-  font:500 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;text-align:center;white-space:nowrap;color:var(--text-3)}
+  font:500 12px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.12em;text-align:center;white-space:nowrap;color:var(--text-3)}
 .essay-body[data-kind="note"] h2:first-child{margin-top:0}
 .essay-body[data-kind="note"] h2::before{content:counter(card,decimal-leading-zero);margin-right:8px;color:var(--accent);opacity:.8}
 .essay-body[data-kind="note"] h2::after{content:"";position:absolute;inset:0 0 auto 0;height:9px;border:1px solid rgba(255,235,200,.11);border-bottom:none;border-radius:2px 2px 0 0}

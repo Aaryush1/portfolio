@@ -16,9 +16,10 @@
   --ease:cubic-bezier(.22,.61,.36,1);
   --ease-out:cubic-bezier(.16,1,.3,1);
   --ease-d:cubic-bezier(.45,.05,.2,1);
-  --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --serif: "Instrument Serif", Georgia, serif;
-  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font: "Karla", "Karla Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "Spectral", "Spectral Fallback", Georgia, serif;
+  --label: "Spectral SC", "Spectral SC Fallback", Georgia, serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; /* literal code only: the commit hash */
   --gutter:16px;
   --maxw:1120px;
   --header:60px;

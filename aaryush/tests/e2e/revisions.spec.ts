@@ -24,7 +24,7 @@ test('closed by default; a click opens it with every row, in order, styled as a 
     ['A', '2025.08', 'Rebuilt in Astro. Works on phones.'],
   ]);
   const font = await block(page).locator('td').first().evaluate((e) => getComputedStyle(e).fontFamily);
-  expect(font).toMatch(/mono/i);
+  expect(font).toMatch(/spectral/i);
   const r = await block(page).evaluate((e) => e.getBoundingClientRect().toJSON());
   expect(r.left).toBeGreaterThanOrEqual(0);
   expect(r.right).toBeLessThanOrEqual(1280);
