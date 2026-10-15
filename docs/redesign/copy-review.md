@@ -29,27 +29,16 @@ Current:
 
 ### 1b. Rotating subjects (the `subjects` list)
 
-Current (four phrases, each completes "I build the systems behind ___."):
+Current (four phrases, each completes "I build the systems behind ___."; matches `site.hero.subjects`, the approved sequence above):
 
 ```
-how decisions get made
-how work moves
-how teams build
-how products get made
+how a problem gets solved
+how problems get solved
+how problems solve themselves
+how teams solve problems
 ```
 
-Options:
-
-- [ ] **Keep current** (as above)
-- [ ] **A:** `how decisions get made / how work moves / how teams build / how products get made`
-- [ ] **B:** `how companies decide / how work flows / how software gets built / how teams scale`
-- [ ] **C: own wording** (write one phrase per line):
-
-```
-(your four subjects here)
-```
-
-Note: option A is identical to the current list. Say so if you want it kept. The first subject is what the page shows before the rotator starts, and an e2e test (`hero.spec.ts`) checks it, so I will update that test to match whatever you pick.
+The earlier option lists (A, B, C) are superseded by the approved sequence. The first subject is what the page shows before the rotator starts, and an e2e test (`hero.spec.ts`) checks it.
 
 ### 1c. Settled line (where the rotator comes to rest)
 
@@ -77,17 +66,15 @@ Current:
 
 ### 1e. Eyebrow, site title and meta description (also in `site.ts`)
 
-Current eyebrow (small line above the name):
+There is no eyebrow any more (the line "AI Strategy & Organizational Design" was cut on 2026-10-14).
 
-> AI Strategy & Organizational Design
+Current page title (`site.title`):
 
-Current page title:
+> Aaryush Gupta
 
-> Aaryush Gupta — AI Strategy & Organizational Design
+Current meta description (`site.description`; search results and link previews):
 
-Current meta description (search results and link previews):
-
-> I build the systems behind how anyone solves problems: operating models, decision architectures and AI systems across healthcare, finance and tech.
+> I build the systems behind how anyone solves problems: operating models, decision architectures and AI systems for organizations in healthcare, finance, tech and beyond.
 
 ---
 
@@ -227,7 +214,7 @@ Lead:
 
 ## 6. Content files with `draft: true`
 
-Nine files are drafts. Each shows the frontmatter text fields (everything that renders as copy) and the body in full. Fields like `name`, `role`, `start`, `end`, `order`, `company`, `diagram`, `legend` kinds and `ogDescription` are listed where they affect what a visitor reads. Edit the quoted text in place.
+Ten files were drafts (five companies, five systems). **All ten were flipped to `draft: false` on 2026-10-14, after Aaryush approved all copy**, so `draft: true` now appears nowhere in `src/content/`. Each block below shows the frontmatter text fields (everything that renders as copy) and the body in full. Fields like `name`, `role`, `start`, `end`, `order`, `company`, `diagram`, `legend` kinds and `ogDescription` are listed where they affect what a visitor reads. Edit the quoted text in place.
 
 Not drafts (already approved, no action): `systems/smartbenai.md`, `systems/univise.md`, `writing/bigger-than-electricity.md`, `writing/quiet-singularity.md`.
 
@@ -691,7 +678,7 @@ The small header strip on each section (a "§" number, a name and a "Sheet" note
 | Writing | § 04 · Writing · Sheet 04 / 05 | Notes on where this is going. | none | `components/home/WritingTeaser.astro` |
 | Contact | § 05 · Contact · Sheet 05 / 05 | see section 10 | see section 10 | `components/SiteFooter.astro` |
 
-Also: the levels diagram caption in the How AI fits section reads "**Fig. 2.1** — Four levels, outside in", and the Writing section has a link reading "All writing".
+Also: the levels diagram caption in the How AI fits section reads "**Fig. 2.1** — Zoom in or out." (**approved by Aaryush on 2026-10-14**; the earlier "Four levels, outside in" is superseded), and the Writing section has a link reading "All writing".
 
 Edited headings (leave blank to keep):
 
@@ -971,6 +958,7 @@ Current:
 - Pick up where you left off (on an essay page, and on the home writing teaser)
 - forget (a quiet control on /writing that clears what the room remembers)
 - " — section N" (appended to the pick-up link on a paper, e.g. "Pick up where you left off — section III"; letters have no suffix)
+- " — card N" (the same link on a note, with an Arabic numeral, e.g. "Pick up where you left off — card 2"). **Approved by Aaryush on 2026-10-14.**
 - writing I'm working on (the drawer's label)
 
 Edits:
@@ -1018,7 +1006,7 @@ Column headers (Rev, Date, Description) come from the spec.
 
 ### 17b. The writing room's 404 (E16)
 
-Source: `aaryush/src/pages/404.astro` (the room shows only for /writing/<unknown>). Draft, written by Claude, not yet approved.
+Source: `aaryush/src/pages/404.astro` (the room shows only for /writing/<unknown>). **"Not on the desk." approved by Aaryush on 2026-10-14.**
 
 - Heading (the page's only h1, small and quiet like the desk's kicker): Not on the desk.
 - Link: Back to the desk (from the spec)

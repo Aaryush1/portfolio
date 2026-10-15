@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { afternoon, pinAfternoon } from './afternoon';
+
+pinAfternoon();
 
 // site.drawer is empty (controller ruling, 2026-10-14): the drawer holds only the contextOS folder.
 // The redacted-paper rendering is covered by the fixture test in tests/unit/writing-drawer.test.ts.
@@ -96,6 +99,7 @@ test('no-JS: the contextOS folder is a readable list and there is no front to pr
 test('reduced motion: opens instantly with no running transitions', async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await ctx.newPage();
+  await afternoon(page);
   await page.goto('/writing');
   await front(page).click();
   await expect(front(page)).toHaveAttribute('aria-expanded', 'true');

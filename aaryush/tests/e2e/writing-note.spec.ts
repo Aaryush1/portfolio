@@ -61,7 +61,8 @@ test('memory marks: the note pulls the card reached, the paper gets a flag at it
   await expect(note(page).locator('.card.pulled')).toHaveCount(1);
   await expect(note(page).locator('.card.n3')).toHaveClass(/pulled/);
   await expect(note(page).locator('.breakdown li.pulled')).toHaveCount(1);
-  expect(await note(page).locator('.card.n3').evaluate((e) => getComputedStyle(e).boxShadow)).toContain('242, 181, 68');
+  // the amber edge fades in with the card's box-shadow transition, so poll for it
+  await expect.poll(() => note(page).locator('.card.n3').evaluate((e) => getComputedStyle(e).boxShadow)).toContain('242, 181, 68');
   const paper = page.locator('[data-slug="quiet-singularity"]');
   await expect(paper.locator('.flag')).toHaveCount(1);
   // flag height follows the section: section 4 of 6 sits lower than section 1 would
@@ -98,4 +99,6 @@ test('a note read to card 3 is offered pick up there', async ({ page }) => {
   await seed(page, { 'once-for-good': 2 });
   await page.goto('/writing/once-for-good');
   await expect(page.getByRole('link', { name: /Pick up where you left off/ })).toBeVisible();
+  // notes count cards with an Arabic numeral; papers keep "section II" (approved copy)
+  await expect(page.getByRole('link', { name: /Pick up where you left off/ })).toHaveText('Pick up where you left off — card 3');
 });

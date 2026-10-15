@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { settled } from './settle';
 
 // E16: an unknown /writing/<slug> gets the writing room's own not-found page. Static output has no per-folder 404, so the
 // host serves dist/404.html with status 404 (Vercel and astro preview both do) and that page switches to the room by path.
@@ -108,9 +109,9 @@ test('screenshots', async ({ page }) => {
   const dir = 'C:/Users/aaryu/code/personal/portfolio-explorations/shots';
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/writing/nope');
-  await page.waitForTimeout(3500);
+  await settled(page);
   await page.screenshot({ path: `${dir}/t37-writing-404-1280.png` });
   await page.setViewportSize({ width: 430, height: 900 });
-  await page.waitForTimeout(1500);
+  await settled(page);
   await page.screenshot({ path: `${dir}/t37-writing-404-430.png` });
 });

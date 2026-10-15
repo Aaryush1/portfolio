@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:vercel": "node scripts/vercel-build.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
@@ -28,6 +29,7 @@
     "@playwright/test": "^1.64.0",
     "@resvg/resvg-js": "^2.6.2",
     "@types/js-yaml": "^4.0.9",
+    "js-yaml": "^4.3.2",
     "jsqr": "^1.4.0",
     "satori": "^0.56.1",
     "typescript": "^5.9.3",

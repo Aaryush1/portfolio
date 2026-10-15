@@ -28,7 +28,7 @@ if (links.length) {
   const phone = matchMedia('(max-width: 719px)');
 
   const place = (btn: HTMLElement) => {
-    if (phone.matches) { sheet.style.left = sheet.style.top = ''; return; }
+    if (phone.matches) { sheet.style.left = sheet.style.top = sheet.style.width = ''; return; }
     const r = btn.getBoundingClientRect();
     const w = Math.min(340, innerWidth - 32);
     sheet.style.width = `${w}px`;

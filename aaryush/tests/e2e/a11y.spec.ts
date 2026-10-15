@@ -1,6 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { settled } from './settle';
+import { pinAfternoon } from './afternoon';
+
+pinAfternoon();
 
 for (const path of ['/', '/writing', '/writing/quiet-singularity', '/work/cylerity-intake', '/qr', '/nope']) {
   test(`${path} has no serious accessibility violations`, async ({ page }) => {

@@ -23,7 +23,7 @@ const ordered = layout.placements.map((place) => ({ piece: views.find((v) => v.s
       <h1 class="room-kicker mono">Writing</h1>
     </header>
     <div class="desk-wrap">
-      <ul class="pieces desk" data-writing-list data-cols={layout.cols} style={`--cols:${layout.cols}`}>
+      <ul class="pieces desk" role="list" data-writing-list data-cols={layout.cols} style={`--cols:${layout.cols}`}>
         {ordered.map(({ piece, place }) => <Piece piece={piece} place={place} />)}
       </ul>
     </div>

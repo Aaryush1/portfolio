@@ -52,11 +52,12 @@ test('diagram draws, closes the loop, and pulses nodes as the dot passes', async
 test('reduced motion shows the finished diagram with no movement', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
+  await freezeClock(page);
   await page.goto('/work/ready-rebound-loop');
   await expect(svg(page)).toHaveClass(/instant/);
   await expect(svg(page)).toHaveClass(/closed/);
   const before = await page.locator('dialog#popup .pulse').evaluate((c) => `${c.getAttribute('cx')},${c.getAttribute('cy')}`);
-  await page.waitForTimeout(1200);
+  await step(page, 1200);
   const after = await page.locator('dialog#popup .pulse').evaluate((c) => `${c.getAttribute('cx')},${c.getAttribute('cy')}`);
   expect(after).toBe(before);
   await expect(page.locator('dialog#popup g.node.hit')).toHaveCount(0);
@@ -69,6 +70,7 @@ test('reopening does not stack loops', async ({ page }) => {
   // (Firefox ranged 16-160 fps for one loop), but each mounted diagram loop re-registers its own single callback.
   await page.evaluate(() => {
     const raf = window.requestAnimationFrame.bind(window);
+    (window as any).__rafNative = raf;
     (window as any).__rafFns = new Set();
     window.requestAnimationFrame = (cb) => { (window as any).__rafFns.add(cb); return raf(cb); };
   });
@@ -80,7 +82,8 @@ test('reopening does not stack loops', async ({ page }) => {
   await page.locator('#sys-cylerity-intake').click();
   await expect(svg(page)).toHaveClass(/\brun\b/);
   await page.evaluate(() => { (window as any).__rafFns = new Set(); });
-  await page.waitForTimeout(1000);
+  // about a second of frames, counted with the browser's own rAF so the wait itself isn't one of the loops being counted
+  await page.evaluate(() => new Promise<void>((done) => { const raf = (window as any).__rafNative as typeof requestAnimationFrame; let i = 0; const tick = () => { if (++i >= 60) done(); else raf(tick); }; raf(tick); }));
   // Only the one live diagram loop schedules frames while a pop-up is open (the hero canvas pauses, Task 8); stacked loops would show 2+.
   expect(await page.evaluate(() => (window as any).__rafFns.size as number)).toBe(1);
 });

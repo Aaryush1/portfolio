@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { afternoon, pinAfternoon } from './afternoon';
+
+pinAfternoon();
 
 // E15: arrow keys walk the desk
 const piece = (page: Page, slug: string) => page.locator(`[data-piece][data-slug="${slug}"]`);
@@ -42,7 +45,7 @@ test('Enter opens the lit piece', async ({ page }) => {
   await expect(page).toHaveURL(new RegExp(`/writing/${order[0]}`));
 });
 
-test('Enter with the page focused and a piece lit by the pointer opens it', async ({ page }) => {
+test('with focus on the page itself only the arrows act: Enter, Home and End are left to the browser', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/writing');
   const first = page.locator('[data-piece]').first();
@@ -50,8 +53,16 @@ test('Enter with the page focused and a piece lit by the pointer opens it', asyn
   await first.hover();
   await expect(first).toHaveClass(/is-open/);
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-  await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(new RegExp(`/writing/${slug}`));
+  expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
+  for (const key of ['Enter', 'End', 'Home']) {
+    await page.keyboard.press(key);
+    await expect(page).toHaveURL(/\/writing$/);
+    expect(await focusedSlug(page)).toBeNull();
+  }
+  expect(slug).toBeTruthy();
+  // the arrows still do
+  await page.keyboard.press('ArrowRight');
+  expect(await focusedSlug(page)).not.toBeNull();
 });
 
 test('arrows carry on from where Tab left focus', async ({ page }) => {
@@ -79,10 +90,13 @@ test('ignored while typing in a field, with a modifier, or with the keyboard map
 test('reduced motion: the light jumps', async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await ctx.newPage();
+  await afternoon(page);
   await page.goto('/writing');
-  await page.keyboard.press('End');
+  await page.keyboard.press('ArrowRight');
   await expect(page.locator('[data-piece].is-open')).toHaveCount(1);
-  await page.keyboard.press('Home');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('[data-piece].is-open')).toHaveCount(1);
+  await page.keyboard.press('ArrowLeft');
   await expect(page.locator('[data-piece].is-open')).toHaveCount(1);
   await ctx.close();
 });

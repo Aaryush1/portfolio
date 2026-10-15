@@ -41,7 +41,10 @@ if (drawer && room) {
     if (!returning && (e.target as HTMLElement).matches(':focus-visible')) set(true);
   });
   panel.addEventListener('focusout', (e) => {
-    if (!panel.contains((e as FocusEvent).relatedTarget as Node | null)) set(false);
+    const to = (e as FocusEvent).relatedTarget as Node | null;
+    // a null target while the window itself lost focus (alt-tab, another app) is not the visitor leaving the drawer
+    if (!to && !document.hasFocus()) return;
+    if (!panel.contains(to)) set(false);
   });
   document.addEventListener('pointerdown', (e) => {
     if (open && !panel.contains(e.target as Node)) set(false);

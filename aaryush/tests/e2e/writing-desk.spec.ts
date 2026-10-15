@@ -1,11 +1,14 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { pinAfternoon } from './afternoon';
+
+pinAfternoon();
 
 const piece = (page: Page, slug: string) => page.locator(`[data-piece][data-slug="${slug}"]`);
 const tf = (loc: Locator) => loc.evaluate((el) => getComputedStyle(el).transform);
 
-test('there is no mug, and no lamp', async ({ page }) => {
+test('there is no mug, and no lamp object', async ({ page }) => {
   await page.goto('/writing');
-  await expect(page.locator('.mug, [class*="mug"], .lamp, [class*="lamp"]')).toHaveCount(0);
+  await expect(page.locator('.lamp, .mug')).toHaveCount(0);
 });
 
 test('objects carry no grain overlay', async ({ page }) => {

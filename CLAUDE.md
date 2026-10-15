@@ -130,3 +130,5 @@ Run these from `aaryush/`:
 ## Release
 
 Push only with the Aaryush1 account: `GH_TOKEN=$(gh auth token --user Aaryush1)`. Set per-repo credentials first, and never run `gh auth switch`. Ask before pushing, opening a PR or merging. Vercel builds previews from branches.
+
+**Release gate on Vercel:** `aaryush/vercel.json` sets the build command to `npm run build:vercel` (`scripts/vercel-build.mjs`). When `VERCEL_ENV=production` it runs `npm run test:release` first, so a production deploy fails while any copy is still a draft, then builds. Preview builds skip the gate, so branches still deploy with draft flags on.

@@ -115,11 +115,12 @@ test('modifier keys and an open keyboard map block the word', async ({ page }) =
 });
 
 test('a 1.5s pause between keys breaks the word', async ({ page }) => {
+  await page.clock.install(); // the pause is moved on the page's own clock, not slept through
   await page.goto('/');
   await settled(page);
   await focusBody(page);
   await page.keyboard.type('contex', { delay: 40 });
-  await page.waitForTimeout(1700);
+  await page.clock.fastForward(1700);
   await page.keyboard.type('os', { delay: 40 });
   await page.waitForTimeout(200);
   await expect(word(page)).not.toHaveAttribute('data-retype', /.+/);

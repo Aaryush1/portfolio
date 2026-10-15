@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { pinAfternoon } from './afternoon';
+
+pinAfternoon();
 
 const widths = [320, 375, 768, 1280];
 const paths = ['/', '/writing', '/writing/bigger-than-electricity', '/writing/quiet-singularity'];
