@@ -303,7 +303,7 @@ With the labels on (E18), the `Live · ...` readout becomes a button: clickable 
 
 ## E22. A click on the sky sets off a few meteors
 
-Any click or tap on the hero background, meaning not on a link, button, field or the readout and not the end of a text selection, sets off a small burst of 2 to 4 thin, faint meteors radiating from roughly the click point, like a little shower radiant. It works on desktop and phones. A 0.7 s cooldown and a cap on active meteors stop rapid clicking from flooding the sky. Under reduced motion it does nothing. Shown, never explained.
+Any click or tap on the hero background, meaning not on a link, button, field or the readout and not the end of a text selection, sets off a small burst of 1 to 4 thin, faint meteors from roughly the click point. The count is weighted linearly (37%, 29%, 21%, 13%, so four is about one click in eight) and each meteor takes its own random direction, kept at least about 28° from the others, so a burst never looks like an evenly spaced star. It works on desktop and phones. A 0.7 s cooldown and a cap on active meteors stop rapid clicking from flooding the sky. Under reduced motion it does nothing. Shown, never explained.
 
 ## Out of scope here (planned separately)
 
