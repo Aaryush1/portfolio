@@ -84,8 +84,8 @@ The site should feel premium and leave a visitor with a clear sense of who Aaryu
      2. How work moves
      3. How things get built
      4. What gets built
-   - **Each level** has a short explanation and links to the systems in the timeline that show it.
-   - **Hover:** the level's 1–4 meter fills step by step.
+   - **Each level** has a short explanation and an "Explore more" list of the work that sits at it. Each item opens that system's pop-up (or its company's, if the system has no diagram).
+   - **Fig. 2.1, a section through an organization (replaced the Lens, 2026-10-15):** four floors stack. "Decisions" flow down a left spine and land on every floor. "Volume & feedback" flows up a right spine back to L.01, carrying one calm pulse and then a rest. The active floor opens to hold its number, a morphing title (the hero's shared-letter morph) and its body; the other three are one compact row each. On desktop the diagram is sticky on the left with the "Explore more" list beside it. On a phone it sits under the header at about 55% of the viewport height with the list below. The page scrolls natively through a short track (about half a viewport per level on desktop, a little more on phones) and the scroll position alone picks the active level: no pinning, wheel or touch capture, or snapping. Clicking or tapping a floor scrolls to that level. Without JavaScript, and under reduced motion, all four levels are shown expanded and stacked, each with its own list.
 4. **Work timeline**
    - **Layout:** newest roles first. Dates sit on one continuous line along the left.
    - **Top of the timeline:** one subtle line, "Next: contextOS. Coming soon." It is not a card.
@@ -184,7 +184,7 @@ Copy marked *existing* comes from the live site. Everything else is drafted from
    - The same is true for every job and system slug.
 3. **Pop-up coverage:** every company entry and every system card on the homepage opens a pop-up. None are stubs.
 4. **Diagram motion:** each diagram draws in order when its pop-up opens, then loops. When the moving dot reaches a node, that node visibly highlights and pulses.
-5. **"How AI fits" links:** each level's link scrolls to the right systems in the timeline. Hovering or focusing a level fills its meter one segment at a time.
+5. **"How AI fits" links:** each level's "Explore more" items open the right pop-up (the system's, or its company's when the system has no diagram). Clicking a floor of Fig. 2.1 scrolls to that level, and the page never gets stuck in the section: a fast flick passes straight through.
 6. **Writing index:** `/writing` lists both essays, newest first. Adding a third essay as one content file makes it appear on the index and on the homepage, with no layout change.
 7. **Share previews:** every page and pop-up URL has an Open Graph image in PNG or JPG and a title and description specific to that page. Paste-preview checkers for LinkedIn and Slack show the correct preview.
 8. **QR page:** `/qr` still works at the same URL.

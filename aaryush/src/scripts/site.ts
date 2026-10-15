@@ -96,31 +96,3 @@ document.querySelectorAll<HTMLAnchorElement>('a[data-to-top]').forEach((a) => {
     document.querySelector<HTMLElement>('#top a, #top button')?.focus({ preventScroll: true });
   });
 });
-
-document.querySelectorAll<HTMLAnchorElement>('a.chip[href^="#"]').forEach((a) => {
-  a.addEventListener('click', (e) => {
-    const href = a.getAttribute('href') ?? '';
-    const t = document.querySelector<HTMLElement>(href);
-    if (!t) return;
-    e.preventDefault();
-    t.closest('.rv')?.classList.add('in');
-    t.classList.add('in');
-    t.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
-    history.replaceState(null, '', href);
-    t.classList.remove('is-target');
-    // flash once the scroll lands, so a long phone scroll doesn't use up the flash on the way
-    let done = false;
-    const flash = () => {
-      if (done) return;
-      done = true;
-      void t.offsetWidth;
-      t.classList.add('is-target');
-      window.setTimeout(() => t.classList.remove('is-target'), 2200);
-    };
-    if (reduced) flash();
-    else {
-      window.addEventListener('scrollend', flash, { once: true });
-      window.setTimeout(flash, 1200);
-    }
-  });
-});
