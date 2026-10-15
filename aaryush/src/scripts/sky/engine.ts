@@ -11,6 +11,7 @@
 //
 // Everything is precomputed once (star vectors, colours, line points). Each frame only rotates the vectors by the local
 // sidereal time and projects them: one rAF loop, one canvas, capped at 30 fps.
+import { burstCount, burstAngles } from '../../lib/sky/burst';
 import raw from '../../data/sky/sky-data.json';
 import { PHONE_QUERY, type Daypart } from '../../lib/daypart';
 import { bandsFor, decodeTile, DRAW_MAG, nextTile, shellsFor, tileUrl, type Tile } from '../../lib/sky/tiles';
@@ -426,14 +427,14 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     rushUntil = now + ms;
     nextMeteor = Math.min(nextMeteor || Infinity, now + 120); // do not wait out a long ambient gap
   }
-  /** A click on the hero background: 2 to 4 meteors that radiate from the click, like a little shower. */
+  /** A click on the hero background: 1 to 4 meteors from the click (1 most often, 4 about one click in eight), in free directions. */
   function burst(now: number, x: number, y: number) {
     if (reduced() || now - lastBurst < 700 || meteors.length > 9) return;
     lastBurst = now;
     cv.dataset.bursts = String(Number(cv.dataset.bursts ?? 0) + 1);
-    const n = 2 + Math.floor(Math.random() * 3), a0 = Math.random() * Math.PI * 2;
+    const n = burstCount(Math.random()), angles = burstAngles(n);
     for (let i = 0; i < n; i++) {
-      const a = a0 + (i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.9;
+      const a = angles[i];
       const dx = Math.cos(a), dy = Math.sin(a), off = 6 + Math.random() * 16;
       meteors.push({ x: x + dx * off, y: y + dy * off, dx, dy, t0: now + i * 60, dur: 700 + Math.random() * 500, len: (phone ? 45 : 60) + Math.random() * 60, a: 0.3 + Math.random() * 0.25 });
       spawned++;
