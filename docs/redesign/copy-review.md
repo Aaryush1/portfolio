@@ -1057,7 +1057,7 @@ Approved 2026-10-14. It replaces "1. It's past nine. 2. So are you.", which didn
 
 Source: `aaryush/src/lib/console-note.ts` (`buildSkyNote`). Logged once when the sky's full star catalogue lands, in the same two-style format as the DevTools note. **Draft, proposed in the controller's brief, not yet approved by Aaryush.** The line gets the count and the guessed place filled in:
 
-`✦ 5,044 stars · Hipparcos via d3-celestial · your sky over 43.1°N 89.4°W`
+`✦ 23,795 stars · Hipparcos via d3-celestial · your sky over 41.9°N 87.6°W · from your time zone` (the count is the real number of stars loaded for that visitor, and the ending is `from your connection` or `from your device` when the position came from there)
 
 Edits:
 

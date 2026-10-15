@@ -79,7 +79,7 @@ They're **shown, never explained**. Nothing on the site hints at them, labels th
 - **Homepage language: engineering drawings.**
   - **Section strips:** "§ NN … Sheet NN / 05".
   - **The hero title block:** Dwg. no., Sheet, Region us-central, Last deploy (stamped at build), Scale NTS.
-  - **Background:** the live star chart of the visitor's own sky (E17): real stars, planets, Moon, Sun and Milky Way, running fast and following the visitor's local time. Easter eggs `L` and `[` `]`. The ~360 brightest stars are baked in `src/data/sky/` for an instant first paint; the rest of the catalogue is fetched from jsDelivr in the background and twinkles in (the one outside request).
+  - **Background:** the live star chart of the visitor's own sky (E17): real stars, planets, Moon, Sun and Milky Way, running fast and following the visitor's local time. Easter eggs `L` and `[` `]`. The ~360 brightest stars are baked in `src/data/sky/` for an instant first paint; the rest of the catalogue is fetched from our own site as binary tiles, only for the bands the latitude can show, and twinkles in (no outside request at all).
   - **Hero:** a shared-letter morph.
 - **Writing language: a warm, dim room.** The /writing page and essay pages do **not** use the drawing language. They have objects on a desk, a pool of light, dust, and the visitor's clock (9pm–7am is night).
 - **Motion:** warm, slow and never bouncy. Resting objects are 2D, so text stays crisp, and 3D only appears during interaction. With `prefers-reduced-motion`, everything shows its final frame. Nothing animates when it isn't on screen.

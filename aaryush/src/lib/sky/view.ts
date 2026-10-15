@@ -61,10 +61,10 @@ export interface Look {
   glow: number;
 }
 export const LOOKS: Readonly<Record<Daypart, Look>> = {
-  night: { top: [4, 7, 19], bot: [10, 17, 38], star: 1, mag: 6.9, mw: 1, line: 1, glow: 0.55 },
-  evening: { top: [9, 11, 26], bot: [44, 26, 22], star: 0.8, mag: 6.2, mw: 0.55, line: 1.05, glow: 0.85 },
-  morning: { top: [10, 19, 40], bot: [34, 50, 76], star: 0.55, mag: 5.3, mw: 0.28, line: 1.1, glow: 1 },
-  afternoon: { top: [12, 18, 32], bot: [30, 40, 58], star: 0.45, mag: 4.8, mw: 0.12, line: 1.2, glow: 1 },
+  night: { top: [4, 7, 19], bot: [10, 17, 38], star: 1, mag: 8.2, mw: 1, line: 1, glow: 0.55 },
+  evening: { top: [9, 11, 26], bot: [44, 26, 22], star: 0.8, mag: 7.4, mw: 0.55, line: 1.05, glow: 0.85 },
+  morning: { top: [10, 19, 40], bot: [34, 50, 76], star: 0.55, mag: 6.0, mw: 0.28, line: 1.1, glow: 1 },
+  afternoon: { top: [12, 18, 32], bot: [30, 40, 58], star: 0.45, mag: 5.2, mw: 0.12, line: 1.2, glow: 1 },
 };
 export const lookFor = (d: Daypart): Look => LOOKS[d];
 

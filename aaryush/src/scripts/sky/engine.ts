@@ -3,14 +3,17 @@
 // Data is from d3-celestial 0.7.35 by Olaf Frohn, BSD 3-Clause, https://github.com/ofrohn/d3-celestial. The stars derive
 // from the ESA Hipparcos catalogue. See docs/redesign/decisions.md for the credit.
 //   - Baked in (src/data/sky/sky-data.json, scripts/bake-sky.mjs): the ~360 brightest stars, constellation lines and names,
-//     so the first draw needs nothing from the network. The Milky Way grid is baked too (sky-mw.json), loaded beside the engine.
-//   - Fetched in the background, once the first frame is up: the rest of the catalogue (stars.6.json, magnitude 6). Its stars
-//     twinkle in over a few seconds. If the fetch fails or is blocked, the sky keeps the small set and nothing breaks.
+//     so the first draw needs nothing from the network. The Milky Way grid is baked too (sky-mw.json), loaded after the first frame.
+//   - Fetched in the background, after the page has settled, from our own site: the fainter stars (to magnitude 7.5, 6.5 on phones)
+//     as static binary tiles by 15 degree declination band and magnitude shell (public/sky/, src/lib/sky/tiles.ts). Only the bands
+//     the visitor's latitude can ever show are asked for, and more are fetched if the position moves. Each tile's stars twinkle in.
+//     If a tile fails, the sky keeps what it has and nothing breaks.
 //
 // Everything is precomputed once (star vectors, colours, line points). Each frame only rotates the vectors by the local
 // sidereal time and projects them: one rAF loop, one canvas, capped at 30 fps.
 import raw from '../../data/sky/sky-data.json';
 import { PHONE_QUERY, type Daypart } from '../../lib/daypart';
+import { bandsFor, decodeTile, DRAW_MAG, nextTile, shellsFor, tileUrl, type Tile } from '../../lib/sky/tiles';
 import { logSkyNote } from '../../lib/console-note';
 import { computeSky, D2R, enu, eqVec, hmsSec, MARKS, R2D, SGR_A, showerFactor, starColour, type Enu, type Sky } from '../../lib/sky/astro';
 import { instantForPart, visitorPlace, type Place } from '../../lib/sky/place';
@@ -39,12 +42,10 @@ const LOCATION_TIMEOUT_MS = 1500;
 const GLIDE_MS = 2000;
 /** When the visitor opts in to a precise position, the readout's second decimal fades in over this long. */
 const DIGIT_MS = 800;
-/** The baked set is every star at or brighter than this; the fetched catalogue adds the fainter ones. Keep in step with scripts/bake-sky.mjs. */
-const BRIGHT_LIMIT = 3.7;
-const CATALOGUE_URL = 'https://cdn.jsdelivr.net/npm/d3-celestial@0.7.35/data/stars.6.json';
+
 /** Each fetched star fades in over FADE_MS, after a random delay of up to STAGGER_MS. */
 const FADE_MS = 2600;
-const STAGGER_MS = 4200;
+const STAGGER_MS = 2800;
 /** Quiet time after load and fonts before the catalogue fetch starts. */
 const SETTLE_MS = 1200;
 const FRAME_MS = 1000 / 30;
@@ -56,18 +57,31 @@ const FONT_CONS = '10.5px "Spectral SC", "Spectral SC Fallback", Georgia, serif'
 // ---------- the baked data, turned into vectors once ----------
 const N = data.stars.mag.length;
 interface Stars {
-  n: number; vx: Float32Array; vy: Float32Array; vz: Float32Array; mag: Float32Array; ph: Float32Array;
+  n: number; cap: number;
+  vx: Float32Array; vy: Float32Array; vz: Float32Array; mag: Float32Array; ph: Float32Array;
   col: string[]; rgb: Uint8Array;
   /** Colour class 0 to 4 (blue to orange), for batching the faint stars. */
   bin: Uint8Array;
   /** When each star starts to fade in (performance.now clock); 0 for the baked ones. */
   appear: Float32Array;
+  /** The part of a star's brightness that doesn't change frame to frame (its magnitude, the period's look); see the star loop. */
+  base: Float32Array;
 }
 const S: Stars = {
-  n: N,
+  n: N, cap: N,
   vx: new Float32Array(N), vy: new Float32Array(N), vz: new Float32Array(N),
-  mag: new Float32Array(N), ph: new Float32Array(N), col: new Array<string>(N), rgb: new Uint8Array(N * 3), bin: new Uint8Array(N), appear: new Float32Array(N),
+  mag: new Float32Array(N), ph: new Float32Array(N), col: new Array<string>(N), rgb: new Uint8Array(N * 3), bin: new Uint8Array(N),
+  appear: new Float32Array(N), base: new Float32Array(N),
 };
+/** Room for `extra` more stars, growing by half again so many small tiles never copy the arrays over and over. */
+function reserve(extra: number) {
+  if (S.n + extra <= S.cap) return;
+  const cap = Math.max(S.n + extra, Math.floor(S.cap * 1.5));
+  const grow = <T extends Float32Array | Uint8Array>(a: T, k: number): T => { const b = new (a.constructor as new (n: number) => T)(cap * k); b.set(a); return b; };
+  S.vx = grow(S.vx, 1); S.vy = grow(S.vy, 1); S.vz = grow(S.vz, 1); S.mag = grow(S.mag, 1); S.ph = grow(S.ph, 1);
+  S.rgb = grow(S.rgb, 3); S.bin = grow(S.bin, 1); S.appear = grow(S.appear, 1); S.base = grow(S.base, 1);
+  S.cap = cap;
+}
 function setStar(St: Stars, i: number, ra: number, dec: number, m: number, bv: number) {
   const v = eqVec(ra, dec);
   St.vx[i] = v[0]; St.vy[i] = v[1]; St.vz[i] = v[2];
@@ -175,6 +189,10 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   let mwBorn = 0; // when the Milky Way grid arrived (it fades in)
   let loadStarted = false;
   let catalogue: 'pending' | 'loaded' | 'failed' = 'pending';
+  let baseKey = '', baseDone = 0;
+  const askedTiles = new Set<string>();
+  let tilesOn = false, pumping = false, pumpAgain = false, sweepDone = false;
+  let tilesLanded = 0, tilesFailed = 0, tileBytes = 0;
 
   try {
     if (isReload) sessionStorage.removeItem(RATE_KEY);
@@ -250,10 +268,12 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     if (reduced() || !ready) {
       glide = null; loc.lat = lat; loc.lon = lon;
       if (ready) { layout(); sunAt = 0; mwLst = -999; redraw(); }
+      if (tilesOn) void pumpTiles();
       return;
     }
     glide = { fromLat: loc.lat, fromLon: loc.lon, toLat: lat, toLon: lon, t0: performance.now() };
     redraw();
+    if (tilesOn) void pumpTiles(); // a new latitude may need bands not asked for yet
   }
 
   function stepGlide(now: number) {
@@ -332,7 +352,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
 
   let noteLogged = false;
   function maybeLogNote() {
-    if (noteLogged || catalogue !== 'loaded' || !ipSettled) return;
+    if (noteLogged || catalogue !== 'loaded' || !sweepDone || !ipSettled) return;
     noteLogged = true;
     logSkyNote(console, window as unknown as Record<string, unknown>, S.n, target.lat, target.lon, locSource);
   }
@@ -536,18 +556,36 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     }
 
     // stars
-    const mm = Math.min(look.mag, phone ? 5.6 : 6.9);
-    let last = 0;
-    while (last < S.n && S.mag[last] <= mm) last++;
-    for (let i = 0; i < last; i++) {
-      const m = S.mag[i];
-      if (!map(S.vx[i], S.vy[i], S.vz[i])) continue;
-      let a = look.star * 1.3 * horizonAlpha(o.u) * Math.max(0.22, Math.min(1, 0.3 + (6.2 - m) * 0.13)) * smooth(0, 1.2, mm - m);
+    const mm = Math.min(look.mag, phone ? DRAW_MAG.phone + 0.1 : 8.2);
+    const last = N; // the baked bright block: the trails and the star names use it
+    const bKey = part + (phone ? 'p' : 'd') + mm;
+    if (bKey !== baseKey) { baseKey = bKey; baseDone = 0; }
+    for (; baseDone < S.n; baseDone++) {
+      const m = S.mag[baseDone];
+      S.base[baseDone] = m > mm ? 0 : look.star * 1.3 * Math.max(0.22, Math.min(1, 0.3 + (6.2 - m) * 0.13)) * smooth(0, 1.2, mm - m);
+    }
+    // Each frame only rotates the vectors and projects them. Stars with no brightness, or off the frame, are dropped at once, and the
+    // quiet zone is only worked out for stars near it.
+    const qz = V.quiet, qx0 = qz.x0 - qz.feather, qx1 = qz.x1 + qz.feather, qy0 = qz.y0 - qz.feather, qy1 = qz.y1 + qz.feather;
+    const { cL, sL, cp, sp } = sky, Rh = V.Rh, cxv = V.cx, cyv = V.cy, sgv = V.sg, nStars = S.n;
+    const vxs = S.vx, vys = S.vy, vzs = S.vz, mags = S.mag, bases = S.base, apps = S.appear;
+    for (let i = 0; i < nStars; i++) {
+      const base = bases[i];
+      if (base < 0.02) continue;
+      const vx = vxs[i], vy = vys[i], vz = vzs[i];
+      const xp = vx * cL + vy * sL, yp = vx * sL - vy * cL;
+      const u = xp * cp + vz * sp;
+      if (u < -0.45) continue;
+      const k = Rh / (1 + u);
+      const x = cxv - sgv * -yp * k, y = cyv - sgv * -(xp * sp - vz * cp) * k;
+      if (x < -3 || x > W + 3 || y < -3 || y > H + 3) continue;
+      const m = mags[i];
+      let a = base * (u >= 0 ? 0.45 + 0.55 * smooth(0, 0.25, u) : 0.3 * smooth(-0.6, 0, u));
       if (m < 4.2 && !still) {
-        a *= 1 + (m < 3.2 ? 0.17 : 0.12) * Math.sin(tw * (1.7 + (i % 7) * 0.45) + S.ph[i]) * (1 + 2.2 * Math.pow(Math.max(0, 1 - Math.max(o.u, 0) * 2.2), 2));
+        a *= 1 + (m < 3.2 ? 0.17 : 0.12) * Math.sin(tw * (1.7 + (i % 7) * 0.45) + S.ph[i]) * (1 + 2.2 * Math.pow(Math.max(0, 1 - Math.max(u, 0) * 2.2), 2));
       }
-      a *= quietFactor(V.quiet, o.x, o.y);
-      const ap = S.appear[i];
+      if (x > qx0 && x < qx1 && y > qy0 && y < qy1) a *= quietFactor(qz, x, y);
+      const ap = apps[i];
       if (ap > 0 && !still) {
         // a newly fetched star twinkles in: a fade with a little flicker on the way
         const t = (now - ap) / FADE_MS;
@@ -556,11 +594,11 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
       }
       if (a < 0.02) continue;
       const r = (0.45 + (6.3 - m) * 0.3) * (phone ? 0.9 : 1);
-      if (m < 2.2) { c.globalAlpha = Math.min(0.5, a * 0.45); const hr = r * 5; c.drawImage(halo, o.x - hr, o.y - hr, 2 * hr, 2 * hr); }
+      if (r < 0.95) { batches[S.bin[i] * LEVELS + Math.min(LEVELS - 1, (Math.min(a, 0.99) * 14) | 0)].push(x, y); continue; }
+      if (m < 2.2) { c.globalAlpha = Math.min(0.5, a * 0.45); const hr = r * 5; c.drawImage(halo, x - hr, y - hr, 2 * hr, 2 * hr); }
       c.globalAlpha = Math.min(1, a);
       c.fillStyle = S.col[i];
-      if (r < 0.95) { batches[S.bin[i] * LEVELS + Math.min(LEVELS - 1, (Math.min(a, 0.99) * 14) | 0)].push(o.x, o.y); continue; }
-      c.beginPath(); c.arc(o.x, o.y, r, 0, 7); c.fill();
+      c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
     }
     c.globalAlpha = 1;
     for (let k = 0; k < batches.length; k++) {
@@ -816,50 +854,67 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     fadeRaf = requestAnimationFrame(step);
   }
 
-  // ---------- the rest of the catalogue, in the background ----------
-  function mergeCatalogue(features: unknown[], landed: number) {
-    interface Feat { properties?: { mag?: number; bv?: string }; geometry?: { coordinates?: number[] } }
-    const rows: { ra: number; dec: number; mag: number; bv: number }[] = [];
-    for (const f0 of features) {
-      const f = f0 as Feat, m = f.properties?.mag, co = f.geometry?.coordinates;
-      if (typeof m !== 'number' || !co || co.length < 2 || m <= BRIGHT_LIMIT) continue;
-      const bv = parseFloat(f.properties?.bv ?? '');
-      rows.push({ ra: ((co[0] % 360) + 360) % 360, dec: co[1], mag: m, bv: Number.isNaN(bv) ? 0.6 : bv });
+  // ---------- the rest of the catalogue: tiles, in the background ----------
+  function appendTile(t: Tile, landed: number) {
+    reserve(t.n);
+    const n0 = S.n, still = reduced();
+    for (let i = 0; i < t.n; i++) {
+      setStar(S, n0 + i, t.ra[i], t.dec[i], t.mag[i], t.bv[i]);
+      S.appear[n0 + i] = still ? 0 : landed + 1 + Math.random() * STAGGER_MS;
     }
-    rows.sort((x, y) => x.mag - y.mag);
-    const n0 = S.n, n1 = n0 + rows.length;
-    const grow = <T extends Float32Array | Uint8Array>(a: T, k: number): T => { const b = new (a.constructor as new (n: number) => T)(n1 * k); b.set(a); return b; };
-    const next: Stars = {
-      n: n1, vx: grow(S.vx, 1), vy: grow(S.vy, 1), vz: grow(S.vz, 1), mag: grow(S.mag, 1), ph: grow(S.ph, 1),
-      rgb: grow(S.rgb, 3), bin: grow(S.bin, 1), appear: grow(S.appear, 1), col: S.col.slice(),
-    };
-    const still = reduced();
-    rows.forEach((r, k) => {
-      setStar(next, n0 + k, r.ra, r.dec, r.mag, r.bv);
-      next.appear[n0 + k] = still ? 0 : landed + 1 + Math.random() * STAGGER_MS;
-    });
-    return next;
+    S.n = n0 + t.n;
+    baseDone = Math.min(baseDone, n0); // the new stars get their brightness worked out next frame
   }
 
-  async function loadCatalogue() {
-    const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
-    if (conn?.saveData) { catalogue = 'failed'; cv.dataset.catalogue = catalogue; return; }
+  async function fetchTile(shell: number, band: number) {
     try {
-      const r = await fetch(CATALOGUE_URL, { credentials: 'omit', referrerPolicy: 'no-referrer' });
+      const r = await fetch(tileUrl(shell, band), { credentials: 'same-origin', redirect: 'error', priority: 'low' } as RequestInit);
       if (!r.ok) throw new Error(String(r.status));
-      const j = (await r.json()) as { features?: unknown[] };
-      if (!Array.isArray(j.features) || !j.features.length) throw new Error('empty');
-      await new Promise((res) => setTimeout(res, 0)); // let a frame go between the parse and the merge
-      const next = mergeCatalogue(j.features, performance.now());
-      Object.assign(S, next);
+      const buf = await r.arrayBuffer();
+      const t = decodeTile(buf);
+      if (!t) throw new Error('not a tile');
+      await new Promise((res) => setTimeout(res, 0)); // a frame can go between the download and the merge
+      appendTile(t, performance.now());
+      tilesLanded++; tileBytes += buf.byteLength;
       catalogue = 'loaded';
       cv.dataset.catalogue = catalogue;
       cv.dataset.stars = String(S.n);
-      maybeLogNote();
+      cv.dataset.tiles = String(tilesLanded);
+      cv.dataset.tileBytes = String(tileBytes);
       redraw();
     } catch {
-      catalogue = 'failed';
-      cv.dataset.catalogue = catalogue; // the small set stays, and nothing else changes
+      tilesFailed++; // that tile is skipped; the rest of the sky stands
+    }
+  }
+
+  /** Fetches the tiles the visitor's latitude can show, shell by shell, two at a time. Called again if the position moves. */
+  async function pumpTiles() {
+    if (!tilesOn) return;
+    if (pumping) { pumpAgain = true; return; }
+    pumping = true;
+    try {
+      const conn = (navigator as unknown as { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+      const shells = shellsFor(phone, conn);
+      do {
+        pumpAgain = false;
+        for (;;) {
+          const bands = bandsFor(target.lat, W, H, phone);
+          const batch: [number, number][] = [];
+          for (let k = 0; k < 2; k++) {
+            const nt = nextTile(shells, bands, askedTiles);
+            if (!nt) break;
+            askedTiles.add(tileUrl(nt[0], nt[1]));
+            batch.push(nt);
+          }
+          if (!batch.length) break;
+          await Promise.all(batch.map(([sh, bd]) => fetchTile(sh, bd)));
+        }
+      } while (pumpAgain);
+    } finally {
+      pumping = false;
+      if (catalogue === 'pending') { catalogue = 'failed'; cv.dataset.catalogue = catalogue; } // nothing landed: the small set stays
+      if (!sweepDone) { sweepDone = true; cv.dataset.sweep = 'done'; }
+      maybeLogNote();
     }
   }
 
@@ -886,8 +941,8 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
         // The location, the Milky Way grid and the big fetch waits until the page has loaded, the fonts are in and things have settled (what LCP measures
         // is done by then), then runs in idle time. The first frame above never waits for it.
         const go = () => setTimeout(() => {
-          if ('requestIdleCallback' in window) requestIdleCallback(() => { void fetchConnectionLocation(); void loadMilkyWay(); void loadCatalogue(); }, { timeout: 1500 });
-          else { void fetchConnectionLocation(); void loadMilkyWay(); void loadCatalogue(); }
+          if ('requestIdleCallback' in window) requestIdleCallback(() => { void fetchConnectionLocation(); void loadMilkyWay(); tilesOn = true; void pumpTiles(); }, { timeout: 1500 });
+          else { void fetchConnectionLocation(); void loadMilkyWay(); tilesOn = true; void pumpTiles(); }
         }, SETTLE_MS);
         const afterFonts = () => { const f = document.fonts?.ready; if (f) f.then(go, go); else go(); };
         if (document.readyState === 'complete') afterFonts(); else window.addEventListener('load', afterFonts, { once: true });

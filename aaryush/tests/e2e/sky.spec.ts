@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { encodeTile } from '../../scripts/sky-tile-encode.mjs';
 
 test.use({ timezoneId: 'America/Chicago' }); // the time-zone guess is then Chicago, 41.9N 87.6W
 
@@ -7,17 +8,18 @@ const field = (page: Page) => page.locator('canvas#field');
 const hero = (page: Page) => page.locator('#hero');
 const readout = (page: Page) => page.locator('#hero .sky-readout');
 const opacity = (page: Page) => readout(page).evaluate((e) => Number(getComputedStyle(e).opacity));
-const CATALOGUE = '**/d3-celestial@0.7.35/data/stars.6.json';
-/** A small stand-in for the fetched catalogue: 60 faint stars, plus rows the engine must ignore (bright, or malformed). */
-const fixture = () => ({
-  type: 'FeatureCollection',
-  features: [
-    ...Array.from({ length: 60 }, (_, i) => ({ type: 'Feature', id: 900000 + i, properties: { mag: 4.2 + (i % 18) * 0.1, bv: String(((i % 14) - 2) * 0.12) }, geometry: { type: 'Point', coordinates: [(i * 47.3) % 360 - 180, ((i * 29) % 160) - 80] } })),
-    { type: 'Feature', id: 1, properties: { mag: 1.2, bv: '0.2' }, geometry: { type: 'Point', coordinates: [10, 10] } }, // already in the baked set
-    { type: 'Feature', id: 2, properties: {}, geometry: { type: 'Point', coordinates: [10, 10] } }, // no magnitude
-    { type: 'Feature', id: 3, properties: { mag: 5 }, geometry: {} }, // no position
-  ],
+const CATALOGUE = '**/sky/s*-b*.bin';
+/** A small stand-in for a star tile: 20 faint stars, in the real binary format. */
+const tile = () => ({
+  contentType: 'application/octet-stream',
+  body: Buffer.from(encodeTile(Array.from({ length: 20 }, (_, i) => ({ ra: (i * 17.3) % 360, dec: ((i * 9) % 150) - 70, mag: 5 + (i % 12) * 0.2, bv: ((i % 14) - 2) * 0.12 })))),
 });
+const tileUrls = (page: Page) => {
+  const urls: string[] = [];
+  page.on('request', (r) => { const m = /\/sky\/s(\d)-b(\d+)\.bin$/.exec(new URL(r.url()).pathname); if (m) urls.push(`s${m[1]}-b${m[2]}`); });
+  return urls;
+};
+const swept = (page: Page) => expect(field(page)).toHaveAttribute('data-sweep', 'done', { timeout: 20000 });
 const dataset = (page: Page, key: string) => field(page).evaluate((c: HTMLCanvasElement, k) => c.dataset[k], key);
 const onScreen = async (page: Page, part = 'night') => {
   // a fixed period, so the star count doesn't depend on the clock the test runs at
@@ -41,43 +43,71 @@ test('it draws a populated sky and fades in after load', async ({ page }) => {
   expect(stats.bright).toBeGreaterThan(80);
 });
 
-test('the only outside call is the star catalogue from jsDelivr', async ({ page }) => {
+test('the sky makes no outside call: the star tiles come from our own site', async ({ page }) => {
   const calls: string[] = [];
   page.on('request', (r) => { if (!/localhost/.test(r.url()) && !r.url().startsWith('data:')) calls.push(r.url()); });
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  const urls = tileUrls(page);
   await onScreen(page);
-  await expect(field(page)).toHaveAttribute('data-catalogue', 'loaded', { timeout: 15000 });
-  expect(calls).toEqual(['https://cdn.jsdelivr.net/npm/d3-celestial@0.7.35/data/stars.6.json']);
+  await swept(page);
+  expect(calls).toEqual([]);
+  expect(urls.length).toBeGreaterThan(5);
+  const n = Number(await dataset(page, 'stars'));
+  const phoneRun = test.info().project.name.includes('mobile');
+  expect(n).toBeGreaterThan(phoneRun ? 7000 : 15000); // a real sky: thousands of stars for a phone, many more on desktop
+  expect(n).toBeLessThan(26000);
 });
 
-test('the first draw comes before the catalogue fetch, and the catalogue then merges in', async ({ page }) => {
+test('bands of sky that can never be seen are never fetched (and the visible ones are)', async ({ page }) => {
+  const urls = tileUrls(page);
+  await onScreen(page);
+  await swept(page);
+  // Chicago, 41.9N: the far southern bands 0 and 1 (below -60) can never reach the frame
+  expect(urls.filter((u) => /-b(0|1)$/.test(u))).toEqual([]);
+  for (const b of [2, 5, 11]) expect(urls).toContain(`s0-b${b}`);
+});
+
+test('from the southern hemisphere it is the far northern bands that are skipped', async ({ browser }) => {
+  const ctx = await browser.newContext({ timezoneId: 'Australia/Sydney' });
+  const page = await ctx.newPage();
+  const urls = tileUrls(page);
+  await page.route(API, (route) => route.fulfill({ status: 204 }));
+  await onScreen(page);
+  await swept(page);
+  expect(urls.filter((u) => /-b(10|11)$/.test(u))).toEqual([]);
+  for (const b of [0, 4, 9]) expect(urls).toContain(`s0-b${b}`);
+  await ctx.close();
+});
+
+test('the first draw comes before any tile, and the tiles then merge in', async ({ page }) => {
   let release!: () => void;
   const gate = new Promise<void>((r) => { release = r; });
   let asked = 0;
-  await page.route(CATALOGUE, async (route) => { asked++; await gate; await route.fulfill({ json: fixture() }); });
+  await page.route(CATALOGUE, async (route) => { asked++; await gate; await route.fulfill(tile()); });
   await onScreen(page);
-  // up already, on the small baked set, with the catalogue not yet in
+  // up already, on the small baked set, with no tile in yet
   expect(Number(await dataset(page, 'firstDraw'))).toBeGreaterThan(0);
   expect(Number(await dataset(page, 'stars'))).toBeGreaterThan(200);
   expect(Number(await dataset(page, 'stars'))).toBeLessThan(500);
   expect(await dataset(page, 'catalogue')).toBe('pending');
-  await expect.poll(() => asked, { timeout: 15000 }).toBe(1);
+  await expect.poll(() => asked, { timeout: 15000 }).toBeGreaterThanOrEqual(1);
   expect(await dataset(page, 'catalogue')).toBe('pending');
   const before = Number(await dataset(page, 'stars'));
   release();
   await expect(field(page)).toHaveAttribute('data-catalogue', 'loaded');
-  expect(Number(await dataset(page, 'stars'))).toBe(before + 60);
+  await swept(page);
+  const tiles = Number(await dataset(page, 'tiles'));
+  expect(tiles).toBeGreaterThan(5);
+  expect(Number(await dataset(page, 'stars'))).toBe(before + 20 * tiles);
   await expect(field(page)).toHaveAttribute('data-running', 'true');
 });
 
-test('a blocked or failed catalogue leaves the small sky running, with no errors', async ({ page }) => {
+test('blocked or failed tiles leave the small sky running, with no errors', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.route(CATALOGUE, (route) => route.abort());
   await onScreen(page);
-  await expect(field(page)).toHaveAttribute('data-catalogue', 'failed', { timeout: 15000 });
-  const n = Number(await dataset(page, 'stars'));
-  expect(n).toBeLessThan(500);
+  await expect(field(page)).toHaveAttribute('data-catalogue', 'failed', { timeout: 20000 });
+  expect(Number(await dataset(page, 'stars'))).toBeLessThan(500);
   await expect(field(page)).toHaveAttribute('data-running', 'true');
   const a = await field(page).evaluate((c: HTMLCanvasElement) => c.toDataURL());
   await page.waitForTimeout(800);
@@ -85,20 +115,49 @@ test('a blocked or failed catalogue leaves the small sky running, with no errors
   expect(errors).toEqual([]);
 });
 
-test('a server error or junk from the catalogue is treated as a failure', async ({ page }) => {
-  await page.route(CATALOGUE, (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"nope":true}' }));
+test('junk or a 404 where a tile should be is treated as a failure', async ({ page }) => {
+  await page.route(CATALOGUE, (route) => route.fulfill({ status: 200, contentType: 'application/octet-stream', body: 'not a tile at all' }));
   await onScreen(page);
-  await expect(field(page)).toHaveAttribute('data-catalogue', 'failed', { timeout: 15000 });
+  await expect(field(page)).toHaveAttribute('data-catalogue', 'failed', { timeout: 20000 });
   expect(Number(await dataset(page, 'stars'))).toBeLessThan(500);
 });
 
-test('the console says what landed, once', async ({ page }) => {
+test('Save-Data fetches no tiles at all', async ({ page }) => {
+  await page.addInitScript(() => { Object.defineProperty(navigator, 'connection', { value: { saveData: true }, configurable: true }); });
+  const urls = tileUrls(page);
+  await onScreen(page);
+  await expect(field(page)).toHaveAttribute('data-catalogue', 'failed', { timeout: 20000 });
+  expect(urls).toEqual([]);
+  expect(Number(await dataset(page, 'stars'))).toBeLessThan(500);
+});
+
+test('phones fetch only the first two shells (to magnitude 6.5); desktop all four', async ({ page }) => {
+  const urls = tileUrls(page);
+  await onScreen(page);
+  await swept(page);
+  const shells = new Set(urls.map((u) => u.slice(0, 2)));
+  if (test.info().project.name.includes('mobile')) expect([...shells].sort()).toEqual(['s0', 's1']);
+  else expect([...shells].sort()).toEqual(['s0', 's1', 's2', 's3']);
+});
+
+test('a position that moves the latitude fetches the bands it newly needs', async ({ page }) => {
+  const urls = tileUrls(page);
+  await page.route(API, (route) => route.fulfill({ json: { lat: -60.5, lon: 20 } }));
+  await onScreen(page);
+  await expect.poll(() => urls.includes('s0-b0'), { timeout: 20000 }).toBe(true); // band 0 only shows from the far south
+  await swept(page);
+  expect(await dataset(page, 'loc')).toBe('connection');
+});
+
+test('the console says what landed, once, with the real count', async ({ page }) => {
   const logs: string[] = [];
   page.on('console', (m) => logs.push(m.text()));
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
   await onScreen(page);
-  await expect(field(page)).toHaveAttribute('data-catalogue', 'loaded', { timeout: 15000 });
-  await expect.poll(() => logs.filter((l) => l.includes('stars · Hipparcos via d3-celestial · your sky over')).length).toBe(1);
+  await swept(page);
+  await expect.poll(() => logs.filter((l) => l.includes('stars · Hipparcos via d3-celestial · your sky over')).length, { timeout: 10000 }).toBe(1);
+  const line = logs.find((l) => l.includes('your sky over'))!;
+  const n = Number(/([\d,]+) stars/.exec(line)![1].replace(/,/g, ''));
+  expect(n).toBe(Number(await dataset(page, 'stars')));
 });
 
 test('it pauses when scrolled away and resumes when the hero returns', async ({ page }) => {
@@ -113,11 +172,11 @@ test('it pauses when scrolled away and resumes when the hero returns', async ({ 
 test('under reduced motion it is one still frame', async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await ctx.newPage();
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await onScreen(page);
   await expect(field(page)).toHaveAttribute('data-running', 'false');
   // the late arrivals (Milky Way, catalogue) redraw the one still frame; after that it never changes
-  await expect(field(page)).toHaveAttribute('data-catalogue', 'loaded', { timeout: 15000 });
+  await swept(page);
   await page.waitForTimeout(800);
   const a = await field(page).evaluate((c: HTMLCanvasElement) => c.toDataURL());
   await page.waitForTimeout(1200);
@@ -251,7 +310,7 @@ const geoCalls = (page: Page) => page.evaluate(() => (window as unknown as { __g
 const where = async (page: Page) => ({ loc: await dataset(page, 'loc'), lat: Number(await dataset(page, 'lat')), lon: Number(await dataset(page, 'lon')) });
 
 test('the connection moves the sky: it glides there and the readout follows', async ({ page }) => {
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   let release!: () => void;
   const gate = new Promise<void>((r) => { release = r; });
   await page.route(API, async (route) => { await gate; await route.fulfill({ json: { lat: -33.9, lon: 151.2 } }); });
@@ -292,7 +351,7 @@ test('no coordinates (204), an error, or a slow answer keep the time-zone guess'
     const pg = await ctx.newPage();
     const errors: string[] = [];
     pg.on('pageerror', (e) => errors.push(e.message));
-    await pg.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+    await pg.route(CATALOGUE, (route) => route.fulfill(tile()));
     await pg.route(API, handler);
     await onScreen(pg);
     await pg.waitForTimeout(name === 'slow' ? 3200 : 1800); // past the 1.5 s timeout
@@ -330,7 +389,7 @@ test('clicking the readout asks the browser, and an allowed position moves the s
   const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: ['geolocation'], geolocation: { latitude: 48.8566, longitude: 2.3522 } });
   const page = await ctx.newPage();
   await countGeolocation(page);
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ status: 204 }));
   await onScreen(page);
   await page.keyboard.press('l');
@@ -358,7 +417,7 @@ test('clicking the readout asks the browser, and an allowed position moves the s
 test('under reduced motion the precise position and its second decimal swap in at once', async ({ browser }) => {
   const ctx = await browser.newContext({ timezoneId: 'America/Chicago', reducedMotion: 'reduce', permissions: ['geolocation'], geolocation: { latitude: 48.8566, longitude: 2.3522 } });
   const page = await ctx.newPage();
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ status: 204 }));
   await onScreen(page);
   await page.keyboard.press('l');
@@ -372,7 +431,7 @@ test('under reduced motion the precise position and its second decimal swap in a
 test('the keyboard works too: Tab to the readout and press Enter', async ({ browser }) => {
   const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: ['geolocation'], geolocation: { latitude: -37.8136, longitude: 144.9631 } });
   const page = await ctx.newPage();
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ status: 204 }));
   await onScreen(page);
   await page.keyboard.press('l');
@@ -391,7 +450,7 @@ test('a declined or failed position changes nothing and says nothing', async ({ 
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(m.text()); });
   await countGeolocation(page);
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ status: 204 }));
   await onScreen(page);
   await page.keyboard.press('l');
@@ -411,7 +470,7 @@ test('a declined or failed position changes nothing and says nothing', async ({ 
 test('the console line says where the position came from', async ({ page }) => {
   const logs: string[] = [];
   page.on('console', (m) => logs.push(m.text()));
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ json: { lat: 51.5, lon: -0.1 } }));
   await onScreen(page);
   await expect.poll(() => logs.find((l) => l.includes('your sky over')) ?? '', { timeout: 15000 }).toContain('51.5°N 0.1°W · from your connection');
@@ -442,7 +501,7 @@ test('a redirect to an auth page fails fast: the redirect is never followed, and
   page.on('request', (r) => { if (r.url().includes('/sso-target')) followed.push(r.url()); });
   await page.route(API, (route) => route.fulfill({ status: 302, headers: { location: new URL('/sso-target', page.url() === 'about:blank' ? 'http://localhost:4330' : page.url()).toString() }, body: '' }));
   await onScreen(page);
-  await expect(field(page)).toHaveAttribute('data-catalogue', /loaded|failed/, { timeout: 15000 });
+  await swept(page);
   await page.waitForTimeout(1500);
   expect(followed).toEqual([]);
   expect((await where(page)).loc).toBe('zone');
@@ -474,7 +533,7 @@ test('a stored precise position is dropped when the permission is no longer gran
   const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: [] });
   const page = await ctx.newPage();
   await storePrecise(page);
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ status: 204 }));
   await onScreen(page);
   await expect.poll(async () => (await where(page)).loc, { timeout: 5000 }).not.toBe('device');
@@ -489,7 +548,7 @@ test('a stored precise position is kept while the permission is still granted', 
   const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: ['geolocation'], geolocation: { latitude: 48.8566, longitude: 2.3522 } });
   const page = await ctx.newPage();
   await storePrecise(page);
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ status: 204 }));
   await onScreen(page);
   await page.waitForTimeout(800);
@@ -503,7 +562,7 @@ test('without the Permissions API a stored precise position is kept as before', 
   const page = await ctx.newPage();
   await page.addInitScript(() => { Object.defineProperty(navigator, 'permissions', { value: undefined, configurable: true }); });
   await storePrecise(page);
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ status: 204 }));
   await onScreen(page);
   await page.waitForTimeout(800);
@@ -514,7 +573,7 @@ test('without the Permissions API a stored precise position is kept as before', 
 test('revoking the permission mid-session drops back to one decimal', async ({ browser }) => {
   const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: ['geolocation'], geolocation: { latitude: 48.8566, longitude: 2.3522 } });
   const page = await ctx.newPage();
-  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(CATALOGUE, (route) => route.fulfill(tile()));
   await page.route(API, (route) => route.fulfill({ json: { lat: 51.5, lon: -0.1 } }));
   await onScreen(page);
   await page.keyboard.press('l');

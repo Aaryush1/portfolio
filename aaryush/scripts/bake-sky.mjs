@@ -1,6 +1,7 @@
-// Bakes the trimmed star-chart dataset used by the hero sky (src/data/sky/sky-data.json).
+// Bakes the star-chart data used by the hero sky: the small first-paint set (src/data/sky/sky-data.json), the Milky Way grid
+// (src/data/sky/sky-mw.json) and the deeper star tiles served from our own site (public/sky/*.bin).
 // Run by hand, only when the data should change:   node scripts/bake-sky.mjs [dir-with-d3-celestial-json]
-// With no argument it downloads four files from d3-celestial 0.7.35 on jsDelivr. The app itself never does.
+// With no argument it downloads five files from d3-celestial 0.7.35 on jsDelivr. The app itself never does.
 //
 // Source and licence: d3-celestial by Olaf Frohn, BSD 3-Clause (https://github.com/ofrohn/d3-celestial).
 // Its star positions, magnitudes and B-V colours derive from the ESA Hipparcos catalogue. The constellation
@@ -9,19 +10,24 @@
 //
 // What it keeps:
 //   stars          magnitude <= 3.7 (the first-paint set, ~380 stars), as four integer columns, brightest first.
-//                  The rest of the catalogue (d3-celestial stars.6.json) is fetched in the background by the engine.
+//                  The rest (d3-celestial stars.8.json, to magnitude 7.5: about 25,700 stars) is cut into tiles by declination band
+//                  (15 degrees, 12 bands) and magnitude shell (3.7-6, 6-6.5, 6.5-7, 7-7.5), in the compact binary format of
+//                  scripts/sky-tile-encode.mjs, and fetched in the background, only for the bands a visitor's latitude can show.
 //   names          index -> name for ~26 well-known bright stars (labels view only)
 //   lines          constellation lines, 0.1 degree integers
 //   cons           constellation names with a label position
 //   mw             (own file, sky-mw.json) the five nested Milky Way outlines, filled and blurred into a 1 degree brightness grid (base64 bytes)
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { rm } from 'node:fs/promises';
+import { BANDS, SHELLS, bandOf, encodeTile } from './sky-tile-encode.mjs';
 
 const CDN = 'https://cdn.jsdelivr.net/npm/d3-celestial@0.7.35/data/';
-const FILES = ['stars.6', 'constellations.lines', 'constellations', 'mw'];
+const FILES = ['stars.8', 'constellations.lines', 'constellations', 'mw'];
 const here = dirname(fileURLToPath(import.meta.url));
 const out = join(here, '..', 'src', 'data', 'sky', 'sky-data.json');
 const dir = process.argv[2];
@@ -40,8 +46,8 @@ const MAG_LIMIT = 3.7; // keep in step with BRIGHT_LIMIT in src/scripts/sky/engi
 const [st, ln, cn, mw] = await Promise.all(FILES.map(load));
 
 // ---- stars
-const F = st.features
-  .map((f) => ({ id: f.id, ra: rev(f.geometry.coordinates[0]), dec: f.geometry.coordinates[1], mag: f.properties.mag, bv: parseFloat(f.properties.bv) }))
+const ALL = st.features.map((f) => ({ id: f.id, ra: rev(f.geometry.coordinates[0]), dec: f.geometry.coordinates[1], mag: f.properties.mag, bv: parseFloat(f.properties.bv) }));
+const F = ALL
   .filter((s) => s.mag <= MAG_LIMIT)
   .sort((a, b) => a.mag - b.mag || a.id - b.id);
 const stars = { ra: [], dec: [], mag: [], bv: [] };
@@ -116,3 +122,21 @@ await mkdir(dirname(out), { recursive: true });
 await writeFile(out, json);
 await writeFile(join(dirname(out), 'sky-mw.json'), mwJson);
 console.log(`stars ${F.length}, lines ${lines.length}, cons ${cons.length}, sky-data ${(json.length / 1024).toFixed(1)} KB (gzip ${(gzipSync(json).length / 1024).toFixed(1)}), sky-mw ${(mwJson.length / 1024).toFixed(1)} KB (gzip ${(gzipSync(mwJson).length / 1024).toFixed(1)})`);
+
+// ---- star tiles: stars fainter than the first-paint set, by declination band and magnitude shell
+const tileDir = join(here, '..', 'public', 'sky');
+await rm(tileDir, { recursive: true, force: true });
+await mkdir(tileDir, { recursive: true });
+let tileStars = 0, tileBytes = 0, tileGz = 0, tileFiles = 0;
+const perShell = SHELLS.map(() => 0);
+SHELLS.forEach(([lo, hi], si) => {
+  for (let band = 0; band < BANDS; band++) {
+    const rows = ALL.filter((s) => s.mag > lo && s.mag <= hi && bandOf(s.dec) === band);
+    if (!rows.length) continue;
+    const bytes = encodeTile(rows);
+    tileStars += rows.length; perShell[si] += rows.length;
+    tileBytes += bytes.length; tileGz += gzipSync(bytes).length; tileFiles++;
+    writeFileSync(join(tileDir, `s${si}-b${band}.bin`), bytes);
+  }
+});
+console.log(`tiles: ${tileFiles} files, ${tileStars} stars (${perShell.join(' / ')} by shell), ${(tileBytes / 1024).toFixed(0)} KB raw, ${(tileGz / 1024).toFixed(0)} KB gzip`);
