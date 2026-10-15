@@ -84,7 +84,12 @@ There are three kinds, and each has its own shape and character:
 | **Memory** | A visual fragment with no words, e.g. Cylerity. It's partial and slightly out of focus, like recollection. Ignored, it's a flashback in the story. | That job on `/work`. |
 | **Transmission** | A signal with a direction and a source in space. | The wormhole into the writing room, to that piece. |
 
-Their look is decided by mockups (build step 2), not by this spec. Under the hood they are real text and links.
+Their look is decided by mockups (build step 2), not by this spec. Approved looks (2026-10-15, `portfolio-explorations/probe-thoughts.html`):
+- **Log line:** take 1, a leader line from a real star to a short readout.
+- **Memory:** a small floating box with a feathered fade and a faint warm bloom close around it, pulled out of the mind. It sits on the side, in tandem with the main stage, and never takes the screen.
+- **Transmission:** packets of light travel a faint beam from a source in space, a carrier waveform locks, and the essay title decodes out of noise as the packets land. It keeps flowing until the next beat and is never still. There's no progress readout.
+
+ Under the hood they are real text and links.
 
 **Memories have strength** (Aaryush, 2026-10-15). A strong memory is right there: larger, in focus, detailed. A vague one is lighter: smaller, softer, with less detail. Each memory in the story data carries a strength, and it sets the memory's size, focus and detail. Gupta Advisory stays in the story as a minor (vague) memory, which keeps CLAUDE.md's "quiet single line" in spirit.
 
