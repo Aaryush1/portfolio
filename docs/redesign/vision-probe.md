@@ -73,6 +73,30 @@ After the landing choice, the visitor gets two doors, framed as the conversation
 - **Democratisation** of the capability is the counter to that.
 - **Bio-risk** (from his stance) sits beside these as a seed that ripples.
 
+## The close of the loop (Aaryush, 2026-10-15)
+
+- **The conviction stays unspoken.** "It shouldn't be a few companies and a few people" is the conviction, and that wording is never shown on screen.
+- **The loop never breaks.** The two doors (talk to me, read) sit quietly on the sides while everything closes to blank and starts over.
+- **Visitors write what their probe carries.** They type it, it rises, and it becomes the dot. It's client-only and kept nowhere. Sharing everyone's answers is parked.
+
+## Questions for Aaryush to sit with (2026-10-15, overnight)
+
+**The arc**
+1. Is the visitor one mind becoming many, or many people from the start? When does "you" stop being singular?
+2. Is your own amber, the self, possibly the concentration? Does that twist feel true, or like a trick?
+3. What is the first moment of awe? Where does someone feel pride in what we became before anything goes wrong?
+
+**What you believe**
+4. What does "democratising the capability" look like 100,000 years out? What does it look like in the next 10?
+5. What does a healthy divergence look like next to an unhealthy one? Is the line the people, or power, or something else?
+6. You said "everyone wants a few things." What are the few things nearly everyone wants, that should survive any distance?
+7. Where does bio-risk sit in this story: a seed that ripples, a beat of its own, or out of frame?
+
+**How it should feel**
+8. When someone finishes, what's the one feeling you'd most hate them to have? What's the one you'd most want?
+9. What should they type when asked what their probe carries? What would make you smile to imagine someone writing?
+10. Is there a moment in the story that's yours alone, something only you would put there?
+
 ## Guardrails (Aaryush, 2026-10-15)
 
 - **Pace.** It may feel too fast. Beat-to-beat transitions need care, and intermediary passages or beats may be needed so each move lands cleanly.
