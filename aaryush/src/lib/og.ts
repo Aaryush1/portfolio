@@ -1,19 +1,19 @@
 import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
+import { join } from 'node:path';
 import { deflateSync, crc32 } from 'node:zlib';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import { boxPath, pathD, pointAt, polylineLength, type DiagramSpec, type Pt } from './diagram';
 
-const require = createRequire(import.meta.url);
-const font = (pkg: string, file: string) => readFile(require.resolve(`${pkg}/files/${file}`));
+// Satori reads ttf/otf/woff, not woff2, so the card fonts live as woff next to the source (the site itself serves woff2 from public/fonts).
+const font = (file: string) => readFile(join(process.cwd(), 'src/assets/og-fonts', file));
 type F = { name: string; data: Buffer; weight: 400 | 500; style: 'normal' | 'italic' };
 let fonts: Promise<F[]> | null = null;
 const loadFonts = () => (fonts ??= Promise.all([
-  font('@fontsource/instrument-sans', 'instrument-sans-latin-500-normal.woff').then((data): F => ({ name: 'Instrument Sans', data, weight: 500, style: 'normal' })),
-  font('@fontsource/instrument-sans', 'instrument-sans-latin-400-normal.woff').then((data): F => ({ name: 'Instrument Sans', data, weight: 400, style: 'normal' })),
-  font('@fontsource/jetbrains-mono', 'jetbrains-mono-latin-400-normal.woff').then((data): F => ({ name: 'JetBrains Mono', data, weight: 400, style: 'normal' })),
-  font('@fontsource/instrument-serif', 'instrument-serif-latin-400-normal.woff').then((data): F => ({ name: 'Instrument Serif', data, weight: 400, style: 'normal' })),
+  font('karla-latin-400-normal.woff').then((data): F => ({ name: 'Karla', data, weight: 400, style: 'normal' })),
+  font('karla-latin-500-normal.woff').then((data): F => ({ name: 'Karla', data, weight: 500, style: 'normal' })),
+  font('spectral-sc-latin-400-normal.woff').then((data): F => ({ name: 'Spectral SC', data, weight: 400, style: 'normal' })),
+  font('spectral-latin-400-normal.woff').then((data): F => ({ name: 'Spectral', data, weight: 400, style: 'normal' })),
 ]));
 
 export type OgCard =
@@ -173,11 +173,11 @@ const markSvg = (color: string) => `<svg xmlns="http://www.w3.org/2000/svg" widt
 const mark = (w: number, color = '#E6E7EA', style: Record<string, unknown> = {}) => img(b64(markSvg(color)), w, Math.round((w * 32) / 34), style);
 
 const kicker = (text: string, size = 22) =>
-  h({ alignItems: 'center', gap: 18, fontFamily: 'JetBrains Mono', fontSize: size, letterSpacing: size * 0.14, color: AMBER, textTransform: 'uppercase' }, [
+  h({ alignItems: 'center', gap: 18, fontFamily: 'Spectral SC', fontSize: size * 1.2, letterSpacing: size * 0.12, color: AMBER }, [
     h({ width: 30, height: 2, background: AMBER }),
     text,
   ]);
-const footer = () => abs({ left: 72, bottom: 54, alignItems: 'center', gap: 22 }, [mark(54), h({ fontFamily: 'JetBrains Mono', fontSize: 20, letterSpacing: 1.6, color: '#8B909C' }, 'aaryush.com')]);
+const footer = () => abs({ left: 72, bottom: 54, alignItems: 'center', gap: 22 }, [mark(54), h({ fontFamily: 'Spectral SC', fontSize: 24, letterSpacing: 2, color: '#8B909C' }, 'aaryush.com')]);
 
 /* ---------- system diagram, labels omitted (satori would not use the loaded fonts inside SVG) ---------- */
 function diagramSvg(spec: DiagramSpec, scale: number, frac = 0.3, sw = 1.4): { svg: string; w: number; h: number } {
@@ -252,7 +252,7 @@ function noteObj(x: number, y: number, w: number, hh: number, rot: number): El {
 
 /* ---------- cards ---------- */
 const fit = (text: string, sizes: [number, number][]) => (sizes.find(([max]) => text.length <= max) ?? sizes[sizes.length - 1])[1];
-const root = (children: unknown[]) => h({ width: W, height: H, position: 'relative', background: '#0A0B0E', fontFamily: 'Instrument Sans', color: '#E6E7EA' }, children);
+const root = (children: unknown[]) => h({ width: W, height: H, position: 'relative', background: '#0A0B0E', fontFamily: 'Karla', color: '#E6E7EA' }, children);
 
 function home(c: Extract<OgCard, { type: 'home' }>): El {
   return root([
@@ -260,10 +260,10 @@ function home(c: Extract<OgCard, { type: 'home' }>): El {
     glow(600, 305, 780, 300, scrim(0.95), 2),
     abs({ left: 0, top: 0, width: W, height: H, alignItems: 'center', justifyContent: 'center', flexDirection: 'column', paddingBottom: 30 }, [
       mark(96, '#E6E7EA', { marginBottom: 28 }),
-      h({ fontSize: 124, lineHeight: 1, fontWeight: 500, letterSpacing: -5, color: '#E6E7EA' }, c.name),
+      h({ fontFamily: 'Spectral', fontSize: 128, lineHeight: 1, fontWeight: 400, letterSpacing: -3.5, color: '#E6E7EA' }, c.name),
       h({ marginTop: 28, fontSize: 36, lineHeight: 1.22, color: "#C8CBD2", letterSpacing: -0.3, textAlign: "center", justifyContent: "center", width: 1040 }, c.line),
     ]),
-    abs({ right: 48, bottom: 44, alignItems: 'center', gap: 16, padding: '9px 16px', border: '1px solid rgba(255,255,255,.26)', background: 'rgba(10,11,14,.88)', fontFamily: 'JetBrains Mono', fontSize: 17, letterSpacing: 1.1, textTransform: 'uppercase' }, [
+    abs({ right: 48, bottom: 44, alignItems: 'center', gap: 16, padding: '9px 16px', border: '1px solid rgba(255,255,255,.26)', background: 'rgba(10,11,14,.88)', fontFamily: 'Spectral SC', fontSize: 20, letterSpacing: 1.6 }, [
       h({ color: AMBER }, 'Last deploy'),
       h({ color: '#E6E7EA' }, c.deploy),
     ]),
@@ -284,7 +284,7 @@ function place(c: Extract<OgCard, { type: 'place' }>): El {
     ...bg,
     abs({ left: 72, top: 64 }, kicker(c.kicker)),
     abs({ left: 72, top: 150, width: 800, flexDirection: 'column' }, [
-      h({ fontSize: fit(c.title, [[10, 128], [15, 104], [20, 92], [30, 80]]), lineHeight: 1, fontWeight: 500, letterSpacing: -4, color: '#E6E7EA' }, c.title),
+      h({ fontSize: fit(c.title, [[10, 128], [15, 104], [20, 92], [30, 80]]), lineHeight: 1, fontWeight: 400, letterSpacing: -2.5, fontFamily: 'Spectral', color: '#E6E7EA' }, c.title),
       c.sub ? h({ marginTop: 34, fontSize: 52, lineHeight: 1.1, letterSpacing: -0.8, color: '#C8CBD2' }, c.sub) : null,
     ].filter(Boolean)),
     footer(),
@@ -304,7 +304,7 @@ function company(c: Extract<OgCard, { type: 'company' }>): El {
     }
     return h({ flexDirection: 'column', width: fw }, [
       h({ position: 'relative', width: fw, height: fh, border: '1px solid rgba(255,255,255,.3)', background: '#0E1015' }, [
-        abs({ left: 12, top: 10, fontFamily: 'JetBrains Mono', fontSize: 16, letterSpacing: 1.6, color: AMBER }, num),
+        abs({ left: 12, top: 10, fontFamily: 'Spectral SC', fontSize: 19, letterSpacing: 1.8, color: AMBER }, num),
         fig,
       ].filter(Boolean)),
       h({ marginTop: 16, fontSize: 28, lineHeight: 1.15, letterSpacing: -0.3, color: '#C8CBD2' }, s.title),
@@ -314,7 +314,7 @@ function company(c: Extract<OgCard, { type: 'company' }>): El {
     topoImg(c.seed, 0.13, 1.8, { opacity: 0.9 }),
     abs({ left: 0, top: 0, width: W, height: H, background: 'linear-gradient(90deg, rgba(10,11,14,.9) 0%, rgba(10,11,14,.8) 60%, rgba(10,11,14,.55) 100%)' }),
     abs({ left: 72, top: 64 }, kicker(c.kicker)),
-    abs({ left: 72, top: frames.length ? 112 : 216, width: 1056 }, h({ fontSize: fit(c.title, [[10, 124], [15, 108], [22, 88], [40, 72]]), lineHeight: 1, fontWeight: 500, letterSpacing: -4, color: '#E6E7EA' }, c.title)),
+    abs({ left: 72, top: frames.length ? 112 : 216, width: 1056 }, h({ fontSize: fit(c.title, [[10, 124], [15, 108], [22, 88], [40, 72]]), lineHeight: 1, fontWeight: 400, letterSpacing: -2.5, fontFamily: 'Spectral', color: '#E6E7EA' }, c.title)),
     frames.length ? abs({ left: 72, top: 296, gap }, frames) : null,
     abs({ right: 72, bottom: 54 }, mark(54)),
   ].filter(Boolean));
@@ -327,7 +327,7 @@ function essay(c: Extract<OgCard, { type: 'essay' }>): El {
     obj,
     abs({ left: 590, top: 0, width: 540, height: H, flexDirection: 'column', justifyContent: 'center' }, [
       kicker(c.kicker, 20),
-      h({ marginTop: 34, fontFamily: 'Instrument Serif', fontSize: fit(c.title, [[24, 92], [40, 78], [64, 62]]), lineHeight: 1.02, letterSpacing: -1, color: '#F4ECDD' }, c.title),
+      h({ marginTop: 34, fontFamily: 'Spectral', fontSize: fit(c.title, [[24, 92], [40, 78], [64, 62]]), lineHeight: 1.02, letterSpacing: -1, color: '#F4ECDD' }, c.title),
     ]),
     abs({ left: 72, bottom: 46 }, mark(50)),
   ]);
@@ -339,7 +339,7 @@ function writing(): El {
     glow(600, 300, 760, 440, warm(0.34), 6),
     abs({ left: 0, top: 0, width: W, height: H, alignItems: 'center', justifyContent: 'center', flexDirection: 'column', paddingBottom: 14 }, [
       mark(230, '#F4ECDD'),
-      h({ marginTop: 34, fontFamily: 'Instrument Serif', fontSize: 132, lineHeight: 1, letterSpacing: -2, color: '#F4ECDD' }, 'Writing'),
+      h({ marginTop: 34, fontFamily: 'Spectral', fontSize: 132, lineHeight: 1, letterSpacing: -2, color: '#F4ECDD' }, 'Writing'),
     ]),
   ]);
 }

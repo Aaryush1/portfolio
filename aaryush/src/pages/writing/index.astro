@@ -5,7 +5,6 @@ import Piece from '../../components/writing/Piece.astro';
 import Drawer from '../../components/writing/Drawer.astro';
 import { toPieceView } from '../../lib/writing';
 import { layoutDesk } from '../../lib/writing-layout';
-import '@fontsource/instrument-serif/400.css'; // upright titles on this page only
 import '../../styles/writing-room.css';
 import '../../styles/writing-transitions.css';
 const views = (await getCollection('writing', ({ data }) => !data.draft))

@@ -12,11 +12,11 @@
 .pieces { margin-top: 44px; display: grid; gap: 0; }
 .piece { padding: 26px 0; border-top: 1px solid var(--line); }
 .piece:last-child { border-bottom: 1px solid var(--line); }
-.piece-link { font-size: 20px; font-weight: 500; letter-spacing: -.018em; line-height: 1.35; color: var(--text); text-decoration: none; }
+.piece-link { font-family: var(--serif); font-size: 23px; font-weight: 400; letter-spacing: -.008em; line-height: 1.28; color: var(--text); text-decoration: none; }
 .piece-link:hover, .piece-link:focus-visible { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
-.piece-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 14px; font: 400 12.5px/1.4 var(--mono); color: var(--text-3); }
+.piece-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 14px; font: 400 15px/1.4 var(--label);font-variant-numeric:lining-nums tabular-nums; color: var(--text-3); }
 .piece-why { margin-top: 12px; font: italic 400 17px/1.5 var(--serif); color: var(--text-2); }
-.breakdown { margin-top: 14px; padding-left: 0; list-style: none; display: grid; gap: 4px; font: 400 13px/1.5 var(--mono); color: var(--text-3); }
+.breakdown { margin-top: 14px; padding-left: 0; list-style: none; display: grid; gap: 4px; font: 400 15.5px/1.5 var(--label);font-variant-numeric:lining-nums tabular-nums; color: var(--text-3); }
 .breakdown .gist { color: var(--text-2); }
 .breakdown .gist::before { content: attr(data-sep); }
 .cast, .skin { display: none; }
@@ -150,7 +150,7 @@ html.js .piece-link:hover, html.js .piece-link:focus-visible { text-decoration: 
 html.js .piece-link::after { content: ""; position: absolute; left: calc(-1 * var(--lx) - 14px); top: calc(-1 * var(--ly) - 14px); width: calc(var(--pw) + 28px); height: calc(var(--ph) + 28px); }
 html.js .piece-link:focus-visible { outline: none; }
 html.js .piece:has(.piece-link:focus-visible) .skin { outline: 2px solid var(--accent); outline-offset: 8px; border-radius: 4px; }
-html.js .piece-meta { position: absolute; z-index: 2; margin: 0; gap: 2px 12px; font: 500 10.5px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+html.js .piece-meta { position: absolute; z-index: 2; margin: 0; gap: 2px 12px; font: 500 12.5px/1.3 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .1em; color: var(--text-3); }
 html.js .piece-meta time { display: none; }
 html.js .piece-why {
   position: absolute; z-index: 2; margin: 0; font: italic 400 16px/1.28 var(--serif); color: var(--text-2); opacity: .85;
@@ -205,7 +205,7 @@ html.js .fold-6, html.js .breakdown li:nth-child(6) { --h: var(--h6); --t: var(-
 html.js .piece[data-shape="letter"] .breakdown li { height: var(--h); transform: var(--t); transition: opacity .35s ease, transform 1.4s var(--slow); }
 html.js .piece[data-shape="letter"].is-open .breakdown li, html.js .piece[data-shape="letter"]:has(:focus-visible) .breakdown li { transition: opacity .9s ease .5s, transform 1.4s var(--slow); }
 @media (hover: hover) and (pointer: fine) { html.js .piece[data-shape="letter"]:hover .breakdown li { transition: opacity .9s ease .5s, transform 1.4s var(--slow); } }
-html.js .piece[data-shape="letter"] .breakdown li::before { content: counter(ph, decimal-leading-zero); font: 500 10.5px/1 var(--mono); letter-spacing: .1em; color: var(--text-3); margin-bottom: 6px; }
+html.js .piece[data-shape="letter"] .breakdown li::before { content: counter(ph, decimal-leading-zero); font: 500 12.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .1em; color: var(--text-3); margin-bottom: 6px; }
 /* the first phrase is faintly there at rest (readable, but clearly quieter than the opened state) */
 html.js .piece[data-shape="letter"] .breakdown li:nth-child(1) { justify-content: flex-end; padding-bottom: 14px; opacity: 1; }
 html.js .piece[data-shape="letter"] .breakdown li:nth-child(1) .ph-label { opacity: .62; transition: opacity .9s ease; }
@@ -293,7 +293,7 @@ html.js .piece[data-shape="sheet"] .breakdown { position: absolute; width: 1px; 
 
 /* ---------- the head ---------- */
 .room-head { text-align: center; margin-top: 8px; }
-.room-kicker { margin: 0; font: 500 12px/1.4 var(--mono); text-transform: uppercase; color: var(--text-3); letter-spacing: .14em; }
+.room-kicker { margin: 0; font: 500 14.5px/1.4 var(--label);font-variant-numeric:lining-nums tabular-nums; color: var(--text-3); letter-spacing: .14em; }
 
 /* reduced motion: static and lit, so a lit-but-closed piece stays flat 2D (no perspective) */
 @media (prefers-reduced-motion: reduce) {
@@ -310,7 +310,7 @@ html.js .desk-wrap { position: relative; }
   color: color-mix(in srgb, var(--text-2), var(--ink) calc(var(--near, 0) * 100%));
   text-shadow: 0 0 calc(var(--near, 0) * 8px) rgba(244, 236, 221, .35);
 }
-.room .room-tag { position: absolute; top: 14px; right: 16px; z-index: 3; pointer-events: none; font: 400 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+.room .room-tag { position: absolute; top: 14px; right: 16px; z-index: 3; pointer-events: none; font: 400 13px/1 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .1em; color: var(--text-3); }
 @media (max-width: 700px), (hover: none) {
   .night-note { position: static; display: block; width: fit-content; margin: 34px 0 0 10px; transform: rotate(-3deg); }
 }
@@ -323,16 +323,16 @@ html.js .drawer { width: min(360px, 78vw); }
 .drawer-list { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-end; justify-content: center; padding: 26px 28px 0; }
 .drawer-head { margin: 0 0 14px; text-align: center; font: italic 400 17px/1.2 var(--serif); color: var(--text-2); }
 .folder { position: relative; width: 112px; height: 62px; margin-bottom: -4px; }
-.folder .tab { position: absolute; left: 0; top: 0; height: 18px; padding: 5px 9px 0; border-radius: 4px 4px 0 0; background: #262320; font: 500 10px/1 var(--mono); letter-spacing: .06em; color: var(--text); }
+.folder .tab { position: absolute; left: 0; top: 0; height: 18px; padding: 5px 9px 0; border-radius: 4px 4px 0 0; background: #262320; font: 500 12px/1 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .06em; color: var(--text); }
 .folder .fb { position: absolute; left: 0; right: 0; top: 17px; bottom: 0; background: linear-gradient(180deg, #2b2723, #201d1a); border-radius: 0 4px 0 0; }
 /* a redacted paper: kind and rough length only, with black bars standing in for text */
 .redacted { position: relative; width: 150px; height: 150px; margin-bottom: -4px; padding: 14px; border-radius: 2px 2px 0 0; background: linear-gradient(180deg, #191b21, #14161a); display: flex; flex-direction: column; gap: 7px; }
-.redacted .k { font: 500 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+.redacted .k { font: 500 13px/1.2 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .08em; color: var(--text-2); }
 .redacted .bars { display: flex; flex-direction: column; gap: 7px; margin-top: 6px; }
 .redacted .bars i { display: block; height: 9px; width: 100%; border-radius: 1px; background: #050608; }
 .redacted .bars i.m { width: 82%; }
 .redacted .bars i.s { width: 60%; }
-.redacted .t { margin-top: auto; font: 400 12px/1.3 var(--mono); color: var(--text-3); }
+.redacted .t { margin-top: auto; font: 400 14.5px/1.3 var(--label);font-variant-numeric:lining-nums tabular-nums; color: var(--text-3); }
 
 /* with JS: the contents slide up out of the front, closed until focus, click or Enter opens them */
 /* with JS the contents rise above the front, as the drawer slides out of it (DOM order stays front first) */
@@ -373,8 +373,8 @@ html.js .room.drawer-open .desk-wrap { opacity: .3; }
   html.js .piece[data-shape="letter"], html.js .piece[data-shape="paper"] { width: min(300px, calc(100vw - 56px)); --pw: min(300px, calc(100vw - 56px)); }
   html.js .piece[data-shape="sheet"] { width: min(260px, calc(100vw - 56px)); --pw: min(260px, calc(100vw - 56px)); }
   html.js .piece[data-shape="note"] { width: min(300px, calc(100vw - 56px)); --pw: min(300px, calc(100vw - 56px)); --ns: .85; }
-  html.js .piece[data-shape="letter"] .piece-link { font-size: 24px; top: 34px; }
-  html.js .piece[data-shape="letter"] .piece-meta { top: 14px; }
+  html.js .piece[data-shape="letter"] .piece-link { font-size: 20px; top: 26px; }
+  html.js .piece[data-shape="letter"] .piece-meta { top: 9px; }
   html.js .piece[data-shape="letter"] .piece-why { padding: 10px 24px 0; font-size: 14px; }
   html.js .piece[data-shape="letter"][data-folds] .piece-why { padding-top: 10px; }
   html.js .piece[data-shape="paper"] .piece-link { font-size: 24px; top: 46px; }
@@ -382,7 +382,8 @@ html.js .room.drawer-open .desk-wrap { opacity: .3; }
   html.js .piece[data-shape="paper"] .piece-why { bottom: 12px; font-size: 14px; }
   /* only the first phrase shows at rest, as on desktop; the counters stay out of the short panels */
   html.js .piece[data-shape="letter"] .breakdown li::before { display: none; }
-  html.js .piece[data-shape="letter"] .breakdown li:nth-child(1) { padding-bottom: 12px; }
+  html.js .piece[data-shape="letter"] .breakdown li:nth-child(1) { padding-bottom: 6px; }
+  html.js .piece[data-shape="letter"] .breakdown li:nth-child(1) .ph-label { font-size: 14px; line-height: 1.1; }
   /* opened, the folds need the room: the "why" fades out and returns when the letter closes */
   html.js .piece[data-shape="letter"].is-open .piece-why, html.js .piece[data-shape="letter"]:has(:focus-visible) .piece-why { opacity: 0; }
 }
@@ -411,7 +412,7 @@ html.js .piece.seen { translate: 12px 16px; }
 /* the quietest thing in the room: a small mono word at the very bottom */
 .forget {
   display: block; margin: 0 auto; padding: 12px 18px 28px; background: none; border: 0; cursor: pointer;
-  font: 400 11px/1.4 var(--mono); letter-spacing: .14em; text-transform: lowercase; color: var(--text-3);
+  font: 400 13px/1.4 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .14em; text-transform: lowercase; color: var(--text-3);
 }
 .forget[hidden] { display: none; }
 .forget:hover { color: var(--text-2); }
@@ -475,7 +476,7 @@ html.js .piece[data-shape="note"] .breakdown li {
   font: 500 14px/1.2 var(--font); color: var(--text);
   transition: opacity .25s ease, transform 1.3s var(--slow), width 1.3s var(--slow), left 1.3s var(--slow);
 }
-html.js .piece[data-shape="note"] .breakdown li .ph-label::before { content: counter(ph, decimal-leading-zero); font: 500 10px/1 var(--mono); letter-spacing: .08em; color: var(--text-3); margin-right: 10px; }
+html.js .piece[data-shape="note"] .breakdown li .ph-label::before { content: counter(ph, decimal-leading-zero); font: 500 12px/1 var(--label);font-variant-numeric:lining-nums tabular-nums; letter-spacing: .08em; color: var(--text-3); margin-right: 10px; }
 html.js .piece[data-shape="note"] .breakdown li .gist { display: block; padding-left: 28px; font: italic 400 14px/1.15 var(--serif); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 html.js .piece[data-shape="note"].is-open .breakdown li, html.js .piece[data-shape="note"]:has(:focus-visible) .breakdown li { transition: opacity .9s ease .6s, transform 1.3s var(--slow), width 1.3s var(--slow), left 1.3s var(--slow); }
 @media (hover: hover) and (pointer: fine) { html.js .piece[data-shape="note"]:hover .breakdown li { transition: opacity .9s ease .6s, transform 1.3s var(--slow), width 1.3s var(--slow), left 1.3s var(--slow); } }

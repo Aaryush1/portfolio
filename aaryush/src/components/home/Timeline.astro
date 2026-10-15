@@ -75,7 +75,7 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 .tl-wrap{position:relative;margin-top:44px;padding-left:30px}
 @media (min-width:860px){.tl-wrap{margin-top:64px;padding-left:44px}}
 .tl-wrap::before{content:"";position:absolute;left:4px;top:30px;bottom:12px;width:1px;background:linear-gradient(to bottom, var(--line-3), var(--line-2) 85%, transparent)}
-.next{position:relative;padding:0 0 28px;color:var(--text-2);font:400 13px/1.4 var(--mono);letter-spacing:.01em}
+.next{position:relative;padding:0 0 28px;color:var(--text-2);font:400 15.5px/1.4 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.01em}
 .next b{font-weight:500;color:var(--text)}
 .next::before{content:"";position:absolute;left:-30px;top:4px;width:9px;height:9px;border:1px solid rgba(242,181,68,.8);background:var(--bg)}
 .next::after{content:"";position:absolute;left:-26px;top:14px;height:calc(100% - 4px);border-left:1px dashed var(--line-3)}
@@ -98,9 +98,9 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 @keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(242,181,68,0)}50%{box-shadow:0 0 0 4px rgba(242,181,68,.12)}}
 .adv{position:relative;padding:0 0 26px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:15.5px;line-height:1.5;color:var(--text-2);scroll-margin-top:calc(var(--header) + 24px)}
 .adv b{font-weight:500;color:var(--text);letter-spacing:-.01em}
-.adv .role{font:400 12px/1 var(--mono);letter-spacing:.04em;color:var(--text-3);text-transform:uppercase}
+.adv .role{font:400 14.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.04em;color:var(--text-3);}
 .adv .desc{flex:1 1 18rem;min-width:0}
-.adv .more{display:inline-flex;align-items:center;gap:8px;font:400 12px/1 var(--mono);letter-spacing:.04em;color:var(--text-2);min-height:44px}
+.adv .more{display:inline-flex;align-items:center;gap:8px;font:400 14.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.04em;color:var(--text-2);min-height:44px}
 .adv .more :global(svg){width:14px;height:14px;transition:transform .3s var(--ease),color .2s}
 .adv .more:hover{color:var(--text)}
 .adv .more:hover :global(svg){transform:translateX(3px);color:var(--accent)}
@@ -119,11 +119,11 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 .entry:hover::before,.entry.is-near::before{border-color:var(--accent)}
 .entry.is-target::before{animation:nodeFlash 1.8s var(--ease)}
 @keyframes nodeFlash{0%,40%{border-color:var(--accent);box-shadow:0 0 0 6px rgba(242,181,68,.14)}100%{box-shadow:0 0 0 14px transparent}}
-.meta{display:flex;flex-wrap:wrap;gap:4px 14px;font:400 12.5px/1.5 var(--mono);letter-spacing:.01em}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;font:400 15px/1.5 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.01em}
 .meta .date{color:var(--text-2)}
 .meta .role{color:var(--text-3)}
 @media (min-width:860px){.meta{flex-direction:column;gap:6px;padding-top:6px}}
-.co h3{font-size:clamp(24px, 2.6vw, 30px);font-weight:500;letter-spacing:-.028em;line-height:1.15}
+.co h3{font-size:clamp(28px, 3vw, 36px);font-weight:400;letter-spacing:-.015em;line-height:1.1}
 .co .desc{margin-top:10px;color:var(--text-2);font-size:16.5px;line-height:1.7;max-width:40rem}
 .cards{margin-top:22px;display:grid;gap:12px}
 @media (min-width:640px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -137,14 +137,14 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 .card:focus-visible{outline-offset:2px}
 .card:hover{border-color:var(--line-2);background:var(--s2)}
 .card.wide{grid-column:1/-1}
-.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font:400 11.5px/1 var(--mono);color:var(--text-3);letter-spacing:.06em}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font:400 14px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;color:var(--text-3);letter-spacing:.06em}
 .lvs{display:flex;gap:4px}
-.lv{font:400 11.5px/1 var(--mono);letter-spacing:.04em;color:var(--text-2);border:1px solid var(--line-2);border-radius:4px;padding:4px 6px 3px}
-.card h4{font-size:16.5px;font-weight:500;letter-spacing:-.012em;line-height:1.35;margin-top:4px}
+.lv{font:400 14px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.04em;color:var(--text-2);border:1px solid var(--line-2);border-radius:4px;padding:4px 6px 3px}
+.card h4{font-size:19px;font-weight:400;letter-spacing:0;line-height:1.28;margin-top:4px}
 .card p{color:var(--text-2);font-size:14.5px;line-height:1.62}
-.card .out{margin-top:auto;font:400 12px/1.5 var(--mono);letter-spacing:.01em;color:var(--text)}
+.card .out{margin-top:auto;font:400 14.5px/1.5 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.01em;color:var(--text)}
 .card .out::before{content:"→ ";color:var(--accent)}
-.card-open{display:flex;align-items:center;justify-content:space-between;font:400 12px/1 var(--mono);color:var(--text-2);letter-spacing:.04em;text-transform:uppercase;padding-top:6px}
+.card-open{display:flex;align-items:center;justify-content:space-between;font:400 14.5px/1 var(--label);font-variant-numeric:lining-nums tabular-nums;color:var(--text-2);letter-spacing:.04em;padding-top:6px}
 .card-open :global(svg){width:14px;height:14px;transition:transform .3s var(--ease),color .2s}
 .card:hover .card-open{color:var(--text)}
 .card:hover .card-open :global(svg){transform:translateX(3px);color:var(--accent)}

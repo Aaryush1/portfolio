@@ -80,7 +80,7 @@ if (rot && slot) {
     };
     // the serif only appears in the final phrase; load it first so its letters are measured at their real width
     if (document.fonts?.load) {
-      Promise.all([document.fonts.ready, document.fonts.load('italic 40px "Instrument Serif"')]).then(go, go);
+      Promise.all([document.fonts.ready, document.fonts.load('italic 40px "Spectral"'), document.fonts.load('40px "Spectral"')]).then(go, go);
       window.setTimeout(go, 2200);
     } else go();
   }

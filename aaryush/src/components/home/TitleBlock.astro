@@ -25,10 +25,10 @@ const sha = lastCommit();
 .tblock{display:grid;grid-template-columns:repeat(5,auto);border:1px solid var(--line-2);background:rgba(10,11,14,.85)}
 .tblock > div{padding:7px 12px 8px;border-left:1px solid var(--line-2)}
 .tblock > div:first-child{border-left:0}
-.tblock dt{font:400 10.5px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
-.tblock dd{font:400 12px/1.3 var(--mono);color:var(--text);letter-spacing:.02em;margin-top:3px}
+.tblock dt{font:400 12.5px/1.3 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.1em;color:var(--text-3)}
+.tblock dd{font:400 14.5px/1.3 var(--label);font-variant-numeric:lining-nums tabular-nums;color:var(--text);letter-spacing:.02em;margin-top:3px}
 .dep :global(.dep-btn){display:block;font:inherit;letter-spacing:inherit;color:inherit;text-align:left;cursor:pointer}
 .dep :global(.dep-btn:focus-visible){outline:1px solid var(--accent);outline-offset:3px;border-radius:0}
-.sha{opacity:0;transition:opacity .35s var(--ease)}
+.sha{font-family:var(--mono);font-size:.82em;letter-spacing:0;opacity:0;transition:opacity .35s var(--ease)}
 .dep:hover .sha,.dep:has(:focus-visible) .sha{opacity:1}
 </style>

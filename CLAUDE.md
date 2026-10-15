@@ -75,7 +75,7 @@ They're **shown, never explained**. Nothing on the site hints at them, labels th
 
 - **Dark only.**
   - **Palette:** `--bg #0A0B0E`; text `#E6E7EA`, `#A0A4AE` and `#8B909C`; one amber accent `#F2B544`, used sparingly. All tokens live in `src/styles/tokens.css`.
-  - **Fonts** (self-hosted): Instrument Sans, JetBrains Mono for labels, and Instrument Serif. Serif italic is for one emphasized word at a time. Upright serif is only for writing titles.
+  - **Fonts** (self-hosted woff2 in `public/fonts/`, `src/styles/fonts.css`, latin subset, about 98 KB in total): **Spectral** (`--serif`) for headings, the hero lines, writing titles and the italic emphasis words; **Karla** (`--font`) for body text, UI and buttons; **Spectral SC** (`--label`, small caps) for every drawing label, readout and meta line, always with lining and tabular figures. Mono (`--mono`) is only for literal code, the commit hash. Use real small caps: write labels in sentence case and do not add `text-transform:uppercase`. Only Karla 400/500 and Spectral 400 exist, so never ask for weight 600+ (it would be faux bold). OG cards read woff copies from `src/assets/og-fonts/` (Satori cannot read woff2). Essay body is Karla.
 - **Homepage language: engineering drawings.**
   - **Section strips:** "§ NN … Sheet NN / 05".
   - **The hero title block:** Dwg. no., Sheet, Region us-central, Last deploy (stamped at build), Scale NTS.
