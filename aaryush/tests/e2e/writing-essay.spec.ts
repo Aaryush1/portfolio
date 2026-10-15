@@ -65,15 +65,15 @@ for (const size of [{ width: 1100, height: 760 }, { width: 375, height: 700 }]) 
     await page.setViewportSize(size);
     await page.goto('/writing/quiet-singularity');
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    await page.waitForTimeout(500);
     const dock = page.locator('.pile-dock');
-    if (await dock.isVisible()) {
-      const d = (await dock.boundingBox())!;
-      for (const box of await page.locator('footer a').evaluateAll((as) => as.map((a) => { const r = a.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }))) {
-        const hit = box.x < d.x + d.width && box.x + box.width > d.x && box.y < d.y + d.height && box.y + box.height > d.y;
-        expect(hit).toBe(false);
-      }
-    }
+    // the dock steps aside (an IntersectionObserver, then a .25s fade) once the footer is on screen; that takes longer in Firefox and WebKit,
+    // so poll until it is gone or clear of every footer link, instead of sampling at a fixed 500ms
+    await expect.poll(() => page.evaluate(() => {
+      const dk = document.querySelector('.pile-dock') as HTMLElement;
+      if (getComputedStyle(dk).visibility === 'hidden') return false;
+      const d = dk.getBoundingClientRect();
+      return [...document.querySelectorAll('footer a')].some((a) => { const r = a.getBoundingClientRect(); return r.x < d.x + d.width && r.x + r.width > d.x && r.y < d.y + d.height && r.y + r.height > d.y; });
+    }), { timeout: 10000 }).toBe(false);
     await expect(dock).toBeHidden();
   });
 }

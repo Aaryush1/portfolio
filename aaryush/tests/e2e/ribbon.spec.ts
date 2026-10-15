@@ -14,7 +14,8 @@ type R = { l: number; t: number; r: number; b: number };
 const hits = (a: R, b: R) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
 
 for (const width of [320, 375, 430, 620, 720, 899, 900, 1100, 1280]) {
-  test(`home teaser, hover device, ${width}px: ribbon is hidden at rest, appears on hover or focus, and never meets the title`, async ({ page }) => {
+  test(`home teaser, hover device, ${width}px: ribbon is hidden at rest, appears on hover or focus, and never meets the title`, async ({ page, isMobile }) => {
+    test.skip(isMobile, 'hover and keyboard focus only; the touch device tests below cover phones');
     await seed(page);
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');

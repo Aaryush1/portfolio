@@ -66,7 +66,8 @@ test.describe('E1 console note', () => {
 });
 
 test.describe('E2 keyboard map', () => {
-  test('? opens a labelled dialog and Esc closes it, returning focus', async ({ page }) => {
+  test('? opens a labelled dialog and Esc closes it, returning focus', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'the keyboard map needs a physical keyboard; phones have none');
     await page.goto('/');
     const link = page.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Work' });
     await link.focus();

@@ -4,7 +4,7 @@ import { settled } from './settle';
 
 // E9 to E13, plus the approved console note (copy-review section 14).
 
-const gitShort = () => execSync('git rev-parse --short HEAD', { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+const git = (args: string) => execSync(`git ${args}`, { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
 const heroSave = (page: Page) => page.locator('[data-contact="hero"] a[data-vcard]');
 const footSave = (page: Page) => page.locator('[data-contact="footer"] a[data-vcard]');
 const label = (a: ReturnType<Page['locator']>) => a.locator('.save-label');
@@ -84,10 +84,16 @@ test.describe('E10 the deploy hash', () => {
     // located by place, not role. The cell has no role (a role on a dl row fails axe); its text carries the date and commit.
     const cell = page.locator('#hero .dep');
     // the date is the build's, not today's (a build from last month must still pass at month-end), so only its format is checked
-    await expect(cell).toContainText(new RegExp(`\\d{4}\\.\\d{2} · ${gitShort()}`));
+    await expect(cell).toContainText(/\d{4}\.\d{2} · [0-9a-f]{7,}/);
+    // The build bakes in the SHA it was made from, and that stops being HEAD as soon as HEAD moves. So compare against the page's own SHA:
+    // it must be a real commit in this repo and an ancestor of (or equal to) HEAD, never a made-up string.
+    const sha = (await cell.innerText()).match(/ · ([0-9a-f]{7,})/)![1];
+    expect(git(`cat-file -t ${sha}`)).toBe('commit');
+    expect(() => git(`merge-base --is-ancestor ${sha} HEAD`)).not.toThrow();
   });
 
-  test('focus and hover reveal the hash, and nothing around it moves', async ({ page }) => {
+  test('focus and hover reveal the hash, and nothing around it moves', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'a reveal on hover and keyboard focus; a phone tap opens the revision block instead');
     await page.goto('/');
     await settled(page);
     const cell = page.locator('#hero .dep');
