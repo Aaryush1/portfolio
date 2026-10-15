@@ -63,6 +63,16 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
   });
 }
 
+// back to top: the header is sticky, so jumping to it barely moves; go to the real top instead
+document.querySelectorAll<HTMLAnchorElement>('a[data-to-top]').forEach((a) => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    history.replaceState(null, '', location.pathname + location.search);
+    document.querySelector<HTMLElement>('#top a, #top button')?.focus({ preventScroll: true });
+  });
+});
+
 document.querySelectorAll<HTMLAnchorElement>('a.chip[href^="#"]').forEach((a) => {
   a.addEventListener('click', (e) => {
     const href = a.getAttribute('href') ?? '';
