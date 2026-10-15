@@ -47,6 +47,14 @@ Asked whether we should go faster or slower, given that what's set in the next 1
 - **Bustle shows what unexamined building does at scale.** It shouldn't argue for stopping.
 - **Open: where his two concrete needs appear.** Concentration of power could be one of the ways copies diverge (one copy absorbing others), and bio-risk could be a seed that ripples. To discuss.
 
+## The ending's invitation (Aaryush, 2026-10-15)
+
+After the landing choice, the visitor gets two doors, framed as the conversation:
+- **Talk to me (the primary door):** "I want to hear what you think." Reaching out to Aaryush directly, through the contact card.
+- **Read:** "an invitation to see what I think." His writing.
+
+**Parked:** showing every visitor's answer as a point of light in a shared sky. He loves it, but it needs a backend, so it's parked alongside the writing room's string board.
+
 ## Guardrails (Aaryush, 2026-10-15)
 
 - **Pace.** It may feel too fast. Beat-to-beat transitions need care, and intermediary passages or beats may be needed so each move lands cleanly.
