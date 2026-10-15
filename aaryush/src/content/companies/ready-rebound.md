@@ -13,6 +13,6 @@ facts:
   - { label: Role, value: AI & Engineering Lead }
   - { label: Since, value: Dec 2025 }
 ogDescription: Aaryush Gupta's work as AI & Engineering Lead at Ready Rebound.
-draft: true
+draft: false
 ---
 The goal isn't to add AI to the workflow. It's to redesign the workflow around AI, in every department, not just engineering.

@@ -15,7 +15,7 @@ facts:
   - { label: A person, value: "Decisions, specs, architecture" }
   - { label: Output, value: "A reviewed PR, QA-tested in a real browser" }
   - { label: Result, value: Two people ship what four did }
-draft: true
+draft: false
 ---
 An engineer hands the loop a ticket. From there it runs the full engineering process: implementation and review passes, a documentation tree it keeps current and builds from, the pull request, and QA in a real browser.
 

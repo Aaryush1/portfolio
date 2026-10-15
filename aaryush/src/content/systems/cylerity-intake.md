@@ -15,7 +15,7 @@ facts:
   - { label: Interface, value: A shared Claude project }
   - { label: Output, value: "Idea (tracked) · Scope (ready to build)" }
   - { label: Replaced, value: A sprawling spreadsheet }
-draft: true
+draft: false
 ---
 Engineering requests used to live in a sprawling spreadsheet. Half-formed ideas sat next to work that was ready to build, and scoping an idea depended on someone already knowing what it needed.
 

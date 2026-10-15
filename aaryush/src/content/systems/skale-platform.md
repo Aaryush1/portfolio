@@ -14,7 +14,7 @@ facts:
   - { label: Voice loop, value: "Speech to text → OpenRouter → text to speech, under 500ms a turn" }
   - { label: Profile, value: "Skills and preference embeddings" }
   - { label: Model, value: White-label & enterprise hiring }
-draft: true
+draft: false
 ---
 Hiring runs on resumes: a flat, low-resolution signal of what someone can actually do.
 

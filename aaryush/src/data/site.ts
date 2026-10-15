@@ -43,7 +43,7 @@ export const site = {
   },
   companyLinkLabel: (name: string) => `Inside ${name}`,
   /** Flip to false in Task 13 once Aaryush approves each block. */
-  drafts: { hero: true, about: true, levels: true, companyLinkLabel: true, footer: false, consoleNote: true, keyboardMap: true, notFound: true, qrCard: true, writingRoom: true },
+  drafts: { hero: false, about: false, levels: false, companyLinkLabel: false, footer: false, consoleNote: false, keyboardMap: false, notFound: false, qrCard: false, writingRoom: false },
 } as const;
 
 /** Build-time stamp (YYYY.MM), so it always matches the deploy that's live. */

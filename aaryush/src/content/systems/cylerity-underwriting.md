@@ -8,7 +8,7 @@ facts:
   - { label: Input, value: Healthcare claims data }
   - { label: Output, value: A same-day funding decision }
   - { label: Result, value: Eight-figure lending facility }
-draft: true
+draft: false
 ---
 Insurance claims took weeks to pay out, forcing healthcare providers into cash crunches that stalled operations and growth. No underwriting process existed to fix it.
 

@@ -16,7 +16,7 @@ facts:
   - { label: Since, value: Jan 2024 }
   - { label: Arc, value: MVP → eight-figure lending facility }
 ogDescription: Aaryush Gupta's work as AI Lead at Cylerity, from MVP to an eight-figure lending facility.
-draft: true
+draft: false
 ---
 When I joined, Cylerity had a standard roadmap and a traditional way of building. I redesigned the operating model. Today everyone in the company uses Claude Code and produces output independently, and everything flows from business-level features down to technical implementation, step by step.
 

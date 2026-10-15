@@ -9,7 +9,7 @@ legend:
   - { kind: flow, label: Flow }
   - { kind: human, label: The Launchpad team }
   - { kind: feedback, label: Progress updates the profile }
-draft: true
+draft: false
 ---
 Founders and mentors were drowning in scattered information with no way to identify gaps or prioritize. Mentorship was ad-hoc, and the most useful help often arrived too late.
 

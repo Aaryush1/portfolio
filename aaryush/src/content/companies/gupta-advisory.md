@@ -9,7 +9,7 @@ facts:
   - { label: Role, value: Founder }
   - { label: Since, value: Dec 2024 }
 ogDescription: How Aaryush Gupta works with organizations on what AI means for how they operate.
-draft: true
+draft: false
 ---
 The model is simple. Someone reaches out with a problem. I spend real time understanding their business: not just the symptom, but what the organization actually looks like today and where the friction is.
 
