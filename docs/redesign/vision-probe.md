@@ -55,6 +55,14 @@ After the landing choice, the visitor gets two doors, framed as the conversation
 
 **Parked:** showing every visitor's answer as a point of light in a shared sky. He loves it, but it needs a backend, so it's parked alongside the writing room's string board.
 
+## What the first probe carries: Aaryush's own answer (2026-10-15)
+
+"I would put people in the first probe, and I wouldn't just have it be 1 probe. But that being said, I don't really know. Everything here is just an opinion."
+- **People:** the amber could mean "still carrying people, still for people".
+- **Not one probe, many:** plurality rather than copies of one mind.
+- **Humility:** the story is offered as opinion and questions, never as answers.
+- **Open tension:** the premise is copies of one mind, while his answer is many probes carrying many people. That changes what drift and bustle mean.
+
 ## Guardrails (Aaryush, 2026-10-15)
 
 - **Pace.** It may feel too fast. Beat-to-beat transitions need care, and intermediary passages or beats may be needed so each move lands cleanly.
