@@ -84,6 +84,8 @@ Each feature works without JavaScript, or degrades to nothing. Each respects `pr
 
 ## E5. Hero topography follows the visitor's clock
 
+*Superseded in part by E17: the topography is gone and the live star chart reuses the same period logic.*
+
 - **What it is:** the hero field reads the visitor's local hour once on load, and again every 10 minutes while visible. It uses the same periods as the writing room:
 
   | Period | Hours | Field |
@@ -236,6 +238,49 @@ Unknown `/writing/<slug>` URLs render a writing-room-specific not-found page ins
 - one quiet link, "Back to the desk".
 
 The page returns a 404 status, and the requested slug is never rendered as HTML. In Astro, this means a catch-all route or redirect so that `/writing/*` misses land here; choose the cleanest approach that still returns a 404 from Vercel and explain it.
+
+## E17. The hero is the live star chart
+
+The hero's topography is replaced by the visitor's own sky, drawn live. Approved as variant E1 of the throwaway prototype (`portfolio-explorations/star-chart.html`, tuning in `task-44-report.md`). Code: `src/scripts/hero-sky.ts` (small, ships with the page), `src/scripts/sky/engine.ts` (the sky, loaded after first paint), `src/lib/sky/` (astronomy, place, geometry and rules, all pure and unit-tested), `src/data/sky/sky-data.json` (baked by `scripts/bake-sky.mjs`).
+
+**Whose sky.** The visitor's real sky. The location comes from their time zone name through a built-in table of 55 zones (fallback: longitude from the UTC offset at latitude 38). There is no geolocation prompt and no network call. The southern hemisphere mirrors, with south at the top.
+
+**Framing.** Full-bleed, looking straight up, north at the top, with the celestial pole 16px above the top edge, so the whole sky wheels around the pole on arcs. The horizon is just below the bottom edge. There is no disc, grid or ground.
+
+**What is in it.**
+- Stars to magnitude 5 (about 1,600; phones draw to 4.5), in their real B-V colours, saturation rising with brightness.
+- Subtle constellation lines.
+- The Milky Way: cool blue with warm dust toward the galactic centre.
+- The planets in their own colours, and the Moon in its real phase and orientation.
+- **Sgr A\***, the galactic centre, as the single amber accent, with a faint amber tick on the rim while it is below the horizon.
+- Faint marks for Cygnus X-1, the Crab pulsar and the Vela pulsar.
+- **The Sun:** a soft glow at its real position, pinned to real time (it does not run fast), whenever it is above the horizon. In daytime it reads clearly but stays quiet behind the text (its glow is also eased by the quiet zone). Below the horizon it is simply not there.
+
+**Quiet zone.** A feathered area behind the name, line and lede (measured from the live text boxes, 110px feather, 70px on phones) takes stars, lines and planets to about 30% and hides labels there. The hero's old scrim stays.
+
+**Motion.**
+- The sky runs at an accelerated rate: **225x on desktop, 150x on phones**.
+- **Trails** are true arcs that follow each star's past positions, only for the brightest 50 stars (30 on phones), the planets and the Moon, fading along their length. Length grows with the rate: 10 + 4 ln(rate/50) degrees of sky rotation, capped at 26.
+- **Twinkle** on stars brighter than magnitude 4.2, stronger near the horizon.
+- **Meteors:** about one every 3.5 seconds (4.5 on phones), thin and faint, up to about five times as often on real shower peaks (Quadrantids, Lyrids, Eta Aquariids, Perseids, Orionids, Leonids, Geminids, Ursids). Hovering the hero (desktop) or tapping it (phones) adds a rush that eases off over 4.5 s (2.8 s on phones).
+- **Time of day:** the existing daypart behaviour stays (`daypart.ts`, the `t` preview, `data-daypart`). Sky colour, star depth and the Milky Way follow the real clock; daytime stays populated, just quieter. A previewed period moves the sky to that period's representative time today (09:30, 14:30, 19:00, 23:00), so the Sun and Moon are where they would really be.
+- **Reduced motion:** one still frame, with no trails and no meteors.
+- **Pausing:** the loop pauses when the tab is hidden, the hero is offscreen, or a pop-up is open.
+
+**Production requirements.**
+- **Data:** a trimmed, baked dataset, 28 KB gzipped in total (stars to magnitude 5, constellation lines and names, and the Milky Way as a 1 degree brightness grid). Source and licence in `decisions.md`. No CDN calls.
+- **LCP:** the engine and data load as one lazy chunk after the page load, after the web fonts, plus a settle delay of about 1.2 s, then in idle time. The canvas fades in. The sky never delays LCP. Precomputed vectors; each frame only rotates and projects them. One rAF loop, 30 fps cap, DPR capped at 2. The first frame runs in its own task.
+- **Failure:** if the chunk can't load, the hero is simply calm. Storage is wrapped in try/catch.
+
+**Known limitations.** The time-zone location is a city guess, up to a few degrees off, so alt/az is approximate (the sky itself is true for that guess). No atmospheric refraction or twilight model. The Moon is drawn larger than life. Stars stop at magnitude 5, so the faintest naked-eye stars are missing compared with the prototype's magnitude 6. A phone shows the top of the sky only, since the hero is short there.
+
+## E18. `L` toggles labels and a readout
+
+Pressing `L` (not `g` then `l`, which still goes to the levels section) fades in very subtle labels: the planets, the Moon, the Sun, 26 bright stars, constellation names (small caps, in the label face), Sgr A\*, and the Cyg X-1, Crab and Vela marks. A readout appears top right: `Live · lat/long · HH:MM local · T+XXhYYm · LST · Moon % · ×rate`. `T+` counts the time the sky has run since page load, `LST` is the simulated local sidereal time, and `Moon` is the illuminated fraction. Ignored in text fields and while the keyboard map or a pop-up is open. Not in the `?` map.
+
+## E19. `[` and `]` change the sky's speed
+
+`[` slows and `]` speeds up the sky through 50, 100, 150, 200, 250, 300, 400 and 500x (from 225x, the first step is 200 or 250). Capped at 50x to 500x for visitors. The rate is remembered for the session (sessionStorage in a try/catch), the readout shows it, and the trails lengthen or shorten with it. Same guards as `L`. Not in the `?` map. Neither key conflicts with `t`, `g`, `?` or the typed words `contextos` and `ag.`.
 
 ## Out of scope here (planned separately)
 

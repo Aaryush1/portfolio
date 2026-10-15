@@ -8,7 +8,10 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | --- | --- | --- | --- |
 | **The logo draws itself** | Header, every page | The "ag." writes on once per visit, and hovering replays it. | ✅ |
 | **The drawing title block** | Home hero, desktop | Dwg. no. AG-001 · Sheet 01 / 05 · Region us-central · Last deploy (stamped at build) · Scale NTS. These are drafting jokes for anyone who's read drawings. | ✅ |
-| **The hero keeps your clock** | Home hero | The topography changes with your local time: cool in the morning, warm in the evening, sparse and slow at night. | ✅ |
+| **The hero keeps your clock** | Home hero | The sky changes with your local time: blue-grey in the morning, warm in the evening, deep and full of stars at night, with the Sun glowing in daylight. | ✅ |
+| **The hero is your sky** | Home hero | A live star chart of the sky over you, wheeling slowly around the pole: real star colours, the planets, the Moon in its real phase, the Milky Way, the Sun when it's up, and one amber dot for the centre of the galaxy. Meteors cross it now and then, and more of them on real shower nights. | ✅ |
+| **Sky labels and a readout** | Home hero | Press `L`. Very faint labels and a one-line live readout fade in. Press it again to hide them. | ✅ |
+| **The sky's speed** | Home hero | Press `[` or `]` to slow down or speed up the turning sky (50x to 500x). It's remembered for the session. | ✅ |
 | **The writing room keeps your clock** | /writing | Morning window light, a softer afternoon, warm evening light, and only the lamp-light pool at night. | ✅ |
 | **Time preview** | Home and /writing | Press `t` to step through morning, afternoon, evening, night and back to auto. The override carries across pages for the session. | ✅ |
 | **Keyboard map** | Every page | Press `?`. | ✅ |
