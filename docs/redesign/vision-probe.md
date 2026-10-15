@@ -33,6 +33,13 @@ Each beat has a question, Aaryush's take, what he wants to do, a picture, and an
   4. **The seed and its ripples.** A small thing set a specific way now ripples out in unexpected ways (the paperclip problem).
 - **Landing.** Back to reality, then you choose what the first probe carries. That choice ties back to the beginning: it rises, becomes the amber dot, and closes out with "ag." (the seam), then the loop.
 
+## Guardrails (Aaryush, 2026-10-15)
+
+- **Pace.** It may feel too fast. Beat-to-beat transitions need care, and intermediary passages or beats may be needed so each move lands cleanly.
+- **Not AI doom.** Awe and pride must come before bustle. The overwhelm is about scale and the limits of control, not catastrophe, and the ending is agency, not warning.
+- **Depth is where the time goes.** Claude should push Aaryush on his actual positions; that's the content that makes it profound.
+- **Not too playable.** Each interaction lasts just long enough to make its point, then hands back to the story.
+
 ## Open
 
 - **Controls** must work on phone and desktop, and be discoverable without instructions. Proposed grammar: drag to look and steer, tap to act, hold to sustain, scroll or swipe to move to the next beat. A beat advances once its interaction has played out.
