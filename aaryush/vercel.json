@@ -1,3 +1,8 @@
 {
-  "buildCommand": "npm run build:vercel"
+  "buildCommand": "npm run build:vercel",
+  "redirects": [
+    { "source": "/", "has": [{ "type": "query", "key": "met" }], "destination": "/card", "permanent": false },
+    { "source": "/", "has": [{ "type": "query", "key": "about" }], "destination": "/card", "permanent": false },
+    { "source": "/", "has": [{ "type": "query", "key": "note" }], "destination": "/card", "permanent": false }
+  ]
 }

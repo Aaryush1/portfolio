@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactActions from '../components/ContactActions.astro';
+import { site } from '../data/site';
+// The contact page the QR code opens (spec §6). Not `bare`: scripts/contact-card.ts (loaded by BaseLayout) captures the
+// "where we met" details from the URL, so Save contact carries them. Draft copy (site.drafts.card): the title and "Continue to website".
+---
+<BaseLayout title={site.title} description={site.description} ogImage="/og/home.png" path="/card" skipTo="main">
+  <main id="main" tabindex="-1" class="wrap card">
+    <div class="card-body">
+      <h1 class="card-name">{site.name}</h1>
+      <ContactActions variant="card" />
+      <a class="card-go" href="/">{site.card.continue}</a>
+    </div>
+  </main>
+</BaseLayout>
+<style>
+  .card { min-height: 70svh; display: grid; align-items: center; padding-block: 48px; }
+  .card-body { display: grid; justify-items: start; gap: 4px; }
+  .card-name { margin: 0; font: 400 clamp(34px, 9vw, 52px)/1.1 var(--serif); letter-spacing: -.01em; }
+  .card-go {
+    margin-top: 28px; display: inline-flex; align-items: center; min-height: 44px; color: var(--text-2);
+    font: 500 15px/1 var(--font); border-bottom: 1px solid var(--accent); padding-bottom: 2px;
+    transition: color .2s var(--ease);
+  }
+  .card-go:hover { color: var(--text); }
+</style>

@@ -107,14 +107,14 @@ export function stripMeetParams(u: URL): string {
   return u.pathname + (q ? '?' + q : '') + u.hash;
 }
 
-/** The URL the QR encodes: base + "/?met=…&about=a,b&note=…", omitting what is empty. */
+/** The URL the QR encodes: the contact page, base + "/card?met=…&about=a,b&note=…", omitting what is empty. */
 export function buildMeetUrl(base: string, input: Meet, known: Known): string {
   const m = cleanMeet(input, known);
   const q: string[] = [];
   if (m.met) q.push('met=' + encodeURIComponent(m.met));
   if (m.about.length) q.push('about=' + m.about.map(encodeURIComponent).join(','));
   if (m.note) q.push('note=' + encodeURIComponent(m.note));
-  return base.replace(/\/+$/, '') + '/' + (q.length ? '?' + q.join('&') : '');
+  return base.replace(/\/+$/, '') + '/card' + (q.length ? '?' + q.join('&') : '');
 }
 
 /** Quiet caption under the QR: what will be saved on the other side. */

@@ -40,9 +40,11 @@ export const site = {
     heading: 'Let’s talk.',
     lead: 'The best conversations start half-formed.',
   },
+  /** /card, the contact page the QR code opens (spec §6). Draft copy: the page title (site.title) and this link label. */
+  card: { continue: 'Continue to website' },
   companyLinkLabel: (name: string) => `Inside ${name}`,
   /** Flip to false in Task 13 once Aaryush approves each block. */
-  drafts: { hero: false, about: false, levels: false, companyLinkLabel: false, footer: false, consoleNote: false, keyboardMap: false, notFound: false, qrCard: false, writingRoom: false },
+  drafts: { hero: false, about: false, levels: false, companyLinkLabel: false, footer: false, consoleNote: false, keyboardMap: false, notFound: false, qrCard: false, writingRoom: false, card: true },
 } as const;
 
 /** Build-time stamp (YYYY.MM), so it always matches the deploy that's live. */

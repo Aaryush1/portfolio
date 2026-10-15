@@ -1067,3 +1067,20 @@ Edits:
 ```
 (any changes)
 ```
+
+## 20. The contact page `/card`
+
+Source: `aaryush/src/data/site.ts` (`site.title`, `site.card.continue`; draft flag `site.drafts.card`) and `aaryush/src/pages/card.astro`. **Drafted by Claude, pending Aaryush.** Added in Task B5 of the Probe home plan. While `site.drafts.card` is true, the release gate blocks production. Flip it only when he approves.
+
+The page is where the QR code lands (spec §6): the name, Save contact with the icon links, and one link on to the site. Save contact is the existing one, including the "where we met" note.
+
+Current (draft):
+
+- Page title: Aaryush Gupta
+- Link to the site: Continue to website
+
+Edits:
+
+```
+(any changes)
+```

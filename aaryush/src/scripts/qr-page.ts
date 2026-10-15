@@ -1,4 +1,4 @@
-// /qr: build the QR for "https://aaryush.com/?met=…&about=…&note=…" as the fields change.
+// /qr: build the QR for "https://aaryush.com/card?met=…&about=…&note=…" as the fields change.
 // This is the only module that imports the QR library, so it never ships in the home bundle.
 // No storage of any kind: every visit starts blank.
 import qrcode from 'qrcode-generator';

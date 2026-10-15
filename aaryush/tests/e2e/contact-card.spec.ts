@@ -56,11 +56,11 @@ async function saveContact(page: Page, where: 'hero' | 'footer' = 'hero') {
 }
 
 test.describe('E6 /qr: the tool', () => {
-  test('starts blank: a QR for the plain site URL, nothing selected, caption idle', async ({ page }) => {
+  test('starts blank: a QR for the contact page URL, nothing selected, caption idle', async ({ page }) => {
     await page.goto('/qr');
     await expect(page.locator('[data-qr-box] svg')).toBeVisible();
-    expect(await qrUrl(page)).toBe(`${BASE}/`);
-    expect(await decodeQr(page)).toBe(`${BASE}/`);
+    expect(await qrUrl(page)).toBe(`${BASE}/card`);
+    expect(await decodeQr(page)).toBe(`${BASE}/card`);
     await expect(where(page)).toHaveValue('');
     await expect(note(page)).toHaveValue('');
     await expect(page.locator('[aria-pressed="true"]')).toHaveCount(0);
@@ -73,7 +73,7 @@ test.describe('E6 /qr: the tool', () => {
     await topic(page, 'Engineering loop').click();
     await topic(page, 'Writing').click();
     await note(page).fill('pricing AI agents');
-    const want = `${BASE}/?met=Madison%20AI%20Week&about=ready-rebound-loop,writing&note=pricing%20AI%20agents`;
+    const want = `${BASE}/card?met=Madison%20AI%20Week&about=ready-rebound-loop,writing&note=pricing%20AI%20agents`;
     await expect.poll(() => qrUrl(page)).toBe(want);
     expect(await decodeQr(page)).toBe(want);
     await expect(page.locator('[data-qr-cap]')).toHaveText('Met at Madison AI Week · talked about Engineering loop, Writing, pricing AI agents');
@@ -86,13 +86,13 @@ test.describe('E6 /qr: the tool', () => {
     await coffee.click();
     await expect(where(page)).toHaveValue('Coffee');
     await expect(coffee).toHaveAttribute('aria-pressed', 'true');
-    await expect.poll(() => qrUrl(page)).toBe(`${BASE}/?met=Coffee`);
+    await expect.poll(() => qrUrl(page)).toBe(`${BASE}/card?met=Coffee`);
     await page.locator('[data-preset="Dinner"]').click();
     await expect(where(page)).toHaveValue('Dinner');
     await expect(coffee).toHaveAttribute('aria-pressed', 'false');
     await page.locator('[data-preset="Dinner"]').click();
     await expect(where(page)).toHaveValue('');
-    await expect.poll(() => qrUrl(page)).toBe(`${BASE}/`);
+    await expect.poll(() => qrUrl(page)).toBe(`${BASE}/card`);
   });
 
   test('at most two topics: the rest are disabled until one is released', async ({ page }) => {
@@ -103,7 +103,7 @@ test.describe('E6 /qr: the tool', () => {
     await topic(page, 'Writing').click();
     await expect(topic(page, 'Engineering loop')).toBeEnabled();
     await topic(page, 'Engineering loop').click();
-    await expect.poll(() => qrUrl(page)).toBe(`${BASE}/?about=advisory,ready-rebound-loop`);
+    await expect.poll(() => qrUrl(page)).toBe(`${BASE}/card?about=advisory,ready-rebound-loop`);
   });
 
   test('topic chips come from the site: every system plus Advisory and Writing', async ({ page }) => {
@@ -151,7 +151,7 @@ test.describe('E6 /qr: the tool', () => {
     await expect(note(page)).toHaveValue('');
     await expect(page.locator('[aria-pressed="true"]')).toHaveCount(0);
     await expect(page.locator('[data-qr-cap]')).toHaveText('aaryush.com');
-    expect(await qrUrl(page)).toBe(`${BASE}/`);
+    expect(await qrUrl(page)).toBe(`${BASE}/card`);
   });
 
   test('nothing persists: no storage is written, and a reload starts blank', async ({ page }) => {
@@ -166,7 +166,7 @@ test.describe('E6 /qr: the tool', () => {
     await expect(where(page)).toHaveValue('');
     await expect(note(page)).toHaveValue('');
     await expect(page.locator('[aria-pressed="true"]')).toHaveCount(0);
-    expect(await qrUrl(page)).toBe(`${BASE}/`);
+    expect(await qrUrl(page)).toBe(`${BASE}/card`);
   });
 
   test('no network call leaves the origin', async ({ page }) => {

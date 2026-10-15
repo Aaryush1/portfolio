@@ -95,13 +95,13 @@ describe('stripMeetParams', () => {
 describe('buildMeetUrl', () => {
   const base = 'https://aaryush.com';
   it('is the plain site URL when nothing is set', () => {
-    expect(buildMeetUrl(base, { met: '', about: [], note: '' }, known)).toBe('https://aaryush.com/');
+    expect(buildMeetUrl(base, { met: '', about: [], note: '' }, known)).toBe('https://aaryush.com/card');
   });
   it('encodes met, about and note, in that order, omitting empty ones', () => {
     expect(buildMeetUrl(base, { met: 'Madison AI Week', about: ['ready-rebound-loop', 'writing'], note: 'pricing AI agents' }, known)).toBe(
-      'https://aaryush.com/?met=Madison%20AI%20Week&about=ready-rebound-loop,writing&note=pricing%20AI%20agents',
+      'https://aaryush.com/card?met=Madison%20AI%20Week&about=ready-rebound-loop,writing&note=pricing%20AI%20agents',
     );
-    expect(buildMeetUrl(base, { met: '', about: ['writing'], note: '' }, known)).toBe('https://aaryush.com/?about=writing');
+    expect(buildMeetUrl(base, { met: '', about: ['writing'], note: '' }, known)).toBe('https://aaryush.com/card?about=writing');
   });
   it('encodes reserved characters so the values cannot add params', () => {
     const url = buildMeetUrl(base, { met: 'a&b=c#d', about: [], note: '' }, known);
