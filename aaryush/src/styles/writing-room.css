@@ -526,15 +526,15 @@ html.js .piece[data-shape="note"] .card.pulled { box-shadow: 0 1px 0 rgba(255, 2
   html.js .scroll-cue.is-on { opacity: 1; }
   html.js .scroll-cue.is-off { opacity: 0; transition-duration: .5s; }
   .scroll-cue i {
-    position: absolute; left: 50%; top: 0; width: 3px; height: 3px; margin-left: -1.5px; border-radius: 50%;
+    position: absolute; left: 50%; top: 0; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%;
     background: var(--accent); opacity: 0; animation: cue-drift 4.2s ease-in-out infinite;
   }
   .scroll-cue i:nth-child(2) { margin-left: -9px; animation-delay: 1.4s; animation-duration: 4.6s; }
   .scroll-cue i:nth-child(3) { margin-left: 5px; animation-delay: 2.8s; animation-duration: 4s; }
   @keyframes cue-drift {
     0% { opacity: 0; transform: translateY(0); }
-    25% { opacity: .55; }
-    70% { opacity: .3; }
+    25% { opacity: .75; }
+    70% { opacity: .4; }
     100% { opacity: 0; transform: translateY(40px); }
   }
   .scroll-cue.is-off i { animation-play-state: paused; }

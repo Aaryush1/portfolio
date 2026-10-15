@@ -46,8 +46,9 @@ for (const [w, h] of [[375, 812], [430, 932], [360, 740]]) {
     // every piece, scrolled to, is centred in its own screen
     for (let i = 1; i < n; i++) {
       await pieces.nth(i).evaluate((e) => e.scrollIntoView({ block: 'center' }));
+      // the scroll may still be easing in; wait for it to land
+      await expect.poll(async () => { const c = await box(i); return Math.abs(c.y + c.height / 2 - (h + 60) / 2); }).toBeLessThan(h * 0.14);
       const b = await box(i);
-      expect(Math.abs(b.y + b.height / 2 - (h + 60) / 2)).toBeLessThan(h * 0.14);
       expect(b.y).toBeGreaterThan(40);
       expect(b.y + b.height).toBeLessThan(h);
     }
@@ -103,7 +104,8 @@ test('reduced motion: the scroll cue is a still hint, no animation', async ({ br
   await ctx.close();
 });
 
-test('desktop: no scroll cue, and the desk is unchanged (pieces side by side)', async ({ page }) => {
+test('desktop: no scroll cue, and the desk is unchanged (pieces side by side)', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'a touch device gets the phone desk by design');
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/writing');
   await expect(page.locator('[data-scroll-cue]')).toBeHidden();

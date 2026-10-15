@@ -123,11 +123,11 @@ test('the current section is the lit stretch of the line, and follows the reader
   await page.goto('/writing/quiet-singularity');
   const seg = () => bar(page).evaluate((e) => [e.style.getPropertyValue('--seg-a'), e.style.getPropertyValue('--seg-b')].map(parseFloat));
   await page.locator('.essay-body h2').nth(2).evaluate((e) => e.scrollIntoView({ block: 'start' }));
-  await expect.poll(async () => (await seg())[0]).toBeGreaterThan(0);
   const ticks = await tickFractions(page);
-  const [a, b] = await seg();
-  const third = ticks.length === 6 ? 2 : 1; // index into the ticks of section III's start
-  expect(Math.abs(a / 100 - ticks[third])).toBeLessThan(0.002);
+  // a paper may open with a short preface (one more break before section I); section III starts at tick index 2 then, else 1
+  const third = ticks.length === 6 ? 2 : 1;
+  await expect.poll(async () => Math.abs((await seg())[0] / 100 - ticks[third])).toBeLessThan(0.002);
+  const [, b] = await seg();
   expect(Math.abs(b / 100 - ticks[third + 1])).toBeLessThan(0.002);
   await page.locator('.essay-body h2:not(.references h2)').last().evaluate((e) => e.scrollIntoView({ block: 'start' }));
   await expect.poll(async () => Math.round((await seg())[1])).toBe(100);
