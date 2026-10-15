@@ -11,7 +11,7 @@ const { Content } = await render(company);
 const advisory = company.id === 'gupta-advisory';
 const found = new Set([...levelsFor(company.id, levels), ...systems.flatMap((s) => levelsFor(s.id, levels))].map((l) => l.n));
 const tagLevels = levels.filter((l) => found.has(l.n));
-const levelLabel = (l: (typeof levels)[number]) => `L${l.n} — ${l.title}${l.em}`;
+const levelLabel = (l: (typeof levels)[number]) => `L.${String(l.n).padStart(2, '0')} — ${l.title}${l.em}`;
 ---
 <article class="view" data-title={c.name} data-crumb={`Work · ${formatRange(c.start, c.end)}`}>
   <header class="v-head">
@@ -29,7 +29,7 @@ const levelLabel = (l: (typeof levels)[number]) => `L${l.n} — ${l.title}${l.em
             <a class="sys-row" href={`/work/${s.id}`} data-popup-link>
               <span class="id">{numbers.get(s.id)}</span>
               <span class="t">{s.data.title}<small>{s.data.summary}</small></span>
-              <span class="lvs">{levelsFor(s.id, levels).map((l) => <span class="lv">L{l.n}</span>)}</span>
+              <span class="lvs">{levelsFor(s.id, levels).map((l) => <span class="lv">L.{String(l.n).padStart(2, '0')}</span>)}</span>
               <span class="go">{s.data.diagram ? 'Open schematic' : 'Read'}<Icon name="arrow-right" /></span>
             </a>
           </li>

@@ -16,7 +16,7 @@ const crumb = `${company.data.name} · ${number}`;
   <header class="v-head">
     <p class="mono crumbs">{company.data.name}{isCompany && company.data.role ? ` · ${company.data.role}` : ''} · {number}</p>
     <h2 id="popup-title" tabindex="-1">{s.title}</h2>
-    {tagLevels.length > 0 && <ul class="tags">{tagLevels.map((l) => <li class="lv">{`L${l.n} — ${l.title}${l.em}`}</li>)}</ul>}
+    {tagLevels.length > 0 && <ul class="tags">{tagLevels.map((l) => <li class="lv">{`L.${String(l.n).padStart(2, '0')} — ${l.title}${l.em}`}</li>)}</ul>}
   </header>
   {s.diagram ? (
     <div class="sys-body">

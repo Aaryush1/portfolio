@@ -24,7 +24,7 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | **Every piece signs itself** | Essay pages (letters, papers) | At the end of every piece, the "ag." signature draws itself. | ✅ |
 | **Two piles of paper** | Paper essay pages | Reading progress shown as sheets moving from one pile to the other. | ✅ |
 | **The room remembers you** | /writing and the home teaser | Pieces you've opened sit slightly pulled out, with a mark at the part you reached: an amber sticky flag on a paper, a faint amber thumbprint on a letter's fold, and the card you reached pulled out of a note's stack. "Pick up where you left off" on the page. It's stored only in your own browser. | ✅ |
-| **General notes** | Home hero, 9pm–7am (footer on phones) | Pencilled "GENERAL NOTES 1. It's past nine. 2. You're still here. 3. Good." | ✅ |
+| **General notes** | Home hero, 9pm–7am (under the contact buttons on phones) | Pencilled "GENERAL NOTES 1. It's past nine. 2. You're still here. 3. Good." | ✅ |
 | **contextOS caret** | Home timeline, "Next" line | An amber caret blinks where the period was, as if the name is still being typed. | ✅ |
 | **Type `contextos`** | Home, anywhere outside text fields | The contextOS word re-types itself once with the hero's morph. | ✅ |
 | **"Save contact" becomes "Saved."** | Home hero and footer | After the vCard downloads, the label morphs to "Saved." with an amber hairline and a check. Back to normal on the next page load. | ✅ |

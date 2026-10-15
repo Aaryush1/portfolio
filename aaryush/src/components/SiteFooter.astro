@@ -27,4 +27,6 @@ import { site } from '../data/site';
 .foot :global(.cta){margin-top:36px}
 .foot-bar{margin-top:clamp(56px, 8vw, 96px);padding-top:20px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 24px;font:400 12px/1.4 var(--mono);color:var(--text-3)}
 .foot-bar a:hover{color:var(--text)}
+/* phones: Back to top always gets its own line, on the left */
+@media (max-width:640px){.foot-bar a[data-to-top]{flex-basis:100%}}
 </style>

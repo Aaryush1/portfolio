@@ -78,6 +78,10 @@ html.locked .bg i{animation-play-state:paused} /* a pop-up covers the page: stop
 .sec-head .n{color:var(--accent)}
 .sec-head .f{color:var(--text-3);text-align:right}
 @media (max-width:559px){.sec-head .f{display:none}.sec-head{grid-template-columns:auto 1fr}}
+/* the hero's ruler already closes the hero, so the first section doesn't draw a second line right under it */
+#levels{padding-top:clamp(28px, 4vw, 52px)}
+#levels .sec-head{border-top:0;padding-top:0}
+#levels .sec-head::before,#levels .sec-head::after{display:none}
 .h2{font-weight:500;font-size:clamp(32px, 4.4vw, 52px);line-height:1.05;letter-spacing:-.035em;max-width:16ch}
 .lead{margin-top:20px;max-width:34rem;font-size:17px;line-height:1.7;color:var(--text-2)}
 .sec-intro{display:grid;gap:18px;margin-top:44px}

@@ -1,6 +1,6 @@
 /**
  * The homepage night note (E7). Between 21:00 and 07:00 local time (or while the `t` preview is on night) a pencilled
- * "General notes" block appears: beside the title block on desktop, in the footer bar on phones. It is built here,
+ * "General notes" block appears: beside the title block on desktop, under the hero's contact buttons on phones. It is built here,
  * never in the served HTML, so it is absent from the DOM by day. It is decorative: aria-hidden, unlabelled, unexplained.
  * The copy is its own chunk (src/lib/night-note.ts), loaded only when the night period is actually on.
  */
@@ -8,7 +8,7 @@ import { currentDaypart } from './daypart-override';
 
 const root = document.documentElement;
 const heroFoot = document.querySelector<HTMLElement>('#hero .hero-foot');
-const footMeta = document.querySelector<HTMLElement>('[data-footer-meta]');
+const heroCta = document.querySelector<HTMLElement>('#hero .cta');
 const desktop = matchMedia('(min-width: 960px)');
 const CHECK_MS = 60_000;
 
@@ -16,11 +16,11 @@ let el: HTMLElement | null = null;
 let loading = false;
 let timer = 0;
 
-/** Desktop: first in the hero's title row, so it sits beside the title block. Phones: after the location line in the footer bar. */
+/** Desktop: first in the hero's title row, so it sits beside the title block. Phones: right under the hero's contact buttons. */
 function place() {
   if (!el) return;
   if (desktop.matches && heroFoot) heroFoot.prepend(el);
-  else if (footMeta && footMeta.children[1]) footMeta.children[1].after(el);
+  else if (heroCta) heroCta.after(el);
 }
 
 function build(label: string, lines: readonly string[]): HTMLElement {
@@ -59,7 +59,7 @@ function apply() {
   }, () => { loading = false; });
 }
 
-if (heroFoot || footMeta) {
+if (heroFoot || heroCta) {
   apply();
   document.addEventListener('daypart:change', apply);
   // Re-check the hour while the tab is open, so a tab left across 21:00 gets the note without a reload.
