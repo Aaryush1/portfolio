@@ -58,6 +58,18 @@ The homepage stops being a website you scroll and becomes one continuous experie
 - energy, scale and deep time live only here and in easter eggs, never as their own beats;
 - **naming the copies** after things Aaryush loves is optional, and may never happen.
 
+### The main story (center stage)
+
+Added 2026-10-15, after Aaryush asked that the piece never feel like "empty space that we're floating through". Each beat has two primary layers, and the thoughts below sit on the side of them.
+
+- **A set piece that carries the idea with no words:**
+  - liftoff: the ground and figure fall away and the sky opens;
+  - replication: a second probe built in front of you;
+  - drift: paths splitting apart;
+  - bustle: the galaxy lit with us;
+  - landing: Earth's night side.
+- **The voice:** a few lines per beat, centred, one at a time. It's internal thought, so it **bubbles up** rather than appearing. The first line of a beat surfaces out of depth, from blur to focus, word by word. Each later line grows out of the previous one with the hero's shared-letter morph (`morph.ts`), so the mind is one continuous stream and there's never a blank between thoughts (Aaryush picked this, 2026-10-15). The lines come from the talk-throughs (§4).
+
 ### Thoughts: what surfaces on screen
 
 The probe is in a cockpit or interface exploring the universe. Words and fragments surface **the way thoughts pop into your head**:
