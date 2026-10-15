@@ -14,6 +14,7 @@ import { PHONE_QUERY, type Daypart } from '../../lib/daypart';
 import { logSkyNote } from '../../lib/console-note';
 import { computeSky, D2R, enu, eqVec, hmsSec, MARKS, R2D, SGR_A, showerFactor, starColour, type Enu, type Sky } from '../../lib/sky/astro';
 import { instantForPart, visitorPlace, type Place } from '../../lib/sky/place';
+import type { LocationSource } from '../../lib/console-note';
 import {
   clampRate, DEFAULT_RATE, decodeGrid, horizonAlpha, lookFor, makeView, meteorInterval, parseStoredRate, project, quietFactor, readoutText,
   sampleGrid, smooth, stepRate, trailArc, trailSamples, TRAIL_STARS, type Look, type Pt, type Quiet, type View,
@@ -31,6 +32,13 @@ const data = raw as unknown as SkyData;
 
 type Scratch = Enu & Pt;
 const RATE_KEY = 'sky:rate';
+/** A precise position the visitor chose, for this session only (sessionStorage). */
+const LOC_KEY = 'sky:loc';
+const LOCATION_URL = '/api/sky';
+const LOCATION_TIMEOUT_MS = 1500;
+const GLIDE_MS = 2000;
+/** When the visitor opts in to a precise position, the readout's second decimal fades in over this long. */
+const DIGIT_MS = 800;
 /** The baked set is every star at or brighter than this; the fetched catalogue adds the fainter ones. Keep in step with scripts/bake-sky.mjs. */
 const BRIGHT_LIMIT = 3.7;
 const CATALOGUE_URL = 'https://cdn.jsdelivr.net/npm/d3-celestial@0.7.35/data/stars.6.json';
@@ -128,20 +136,35 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
   const phoneMQ = matchMedia(PHONE_QUERY);
   const readout = hero.querySelector<HTMLElement>('.sky-readout');
-  const place: Place = visitorPlace();
+  const place: Place = visitorPlace(); // the time-zone guess; also where the real clock's zone comes from
   const reduced = () => reduceMQ.matches;
   const locked = () => root.classList.contains('locked');
 
   // ---------- state ----------
   let W = 1, H = 1, dpr = 1, phone = false;
-  let view: View = makeView(1, 1, false, place.lat, { x0: 0, y0: 0, x1: 0, y1: 0, feather: 1 });
+  // Where the sky is looking from. Starts at the time-zone guess; the connection (about 11 km) or the visitor (exact) moves it,
+  // and a move glides over about 2 s.
+  const loc = { lat: place.lat, lon: place.lon };
+  const target = { lat: place.lat, lon: place.lon };
+  let locSource: LocationSource = 'zone';
+  let glide: { fromLat: number; fromLon: number; toLat: number; toLon: number; t0: number } | null = null;
+  let ipSettled = false;
+  let digitStart = -1; // when the second decimal began to fade in (-1: not started, or already shown)
+  let quiet: Quiet = { x0: 0, y0: 0, x1: 0, y1: 0, feather: 1 };
+  try {
+    const st = JSON.parse(sessionStorage.getItem(LOC_KEY) ?? 'null') as { lat?: number; lon?: number } | null;
+    if (st && Number.isFinite(st.lat) && Number.isFinite(st.lon) && Math.abs(st.lat!) <= 90 && Math.abs(st.lon!) <= 180) {
+      loc.lat = target.lat = st.lat!; loc.lon = target.lon = st.lon!; locSource = 'device'; ipSettled = true;
+    }
+  } catch { /* storage blocked: fine, the guess stands */ }
+  let view: View = makeView(1, 1, false, loc.lat, quiet);
   let part: Daypart = resolvePart();
   let look: Look = lookFor(part);
   let raf = 0, last = 0, lastDraw = 0, lastReadout = 0;
   let visible = true, ready = false;
   let rate: number = DEFAULT_RATE.desktop;
   let baseMs = Date.now(), elapsed = 0; // simulated instant = baseMs + elapsed (ms of simulated time since the base)
-  let sunSky: Sky = computeSky(baseMs, place.lat, place.lon);
+  let sunSky: Sky = computeSky(baseMs, loc.lat, loc.lon);
   let sunAt = 0;
   let labels = false, labelA = 0;
   let mwBorn = 0; // when the Milky Way grid arrived (it fades in)
@@ -184,15 +207,23 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     phone = phoneMQ.matches;
     cv.width = Math.round(W * dpr);
     cv.height = Math.round(H * dpr);
-    view = makeView(W, H, phone, place.lat, measureQuiet(r));
+    quiet = measureQuiet(r);
     cs = phone ? 7 : 8;
     const mw = Math.ceil(W / cs), mh = Math.ceil(H / cs);
     mwCv = document.createElement('canvas');
     mwCv.width = mw; mwCv.height = mh;
     mwCtx = mwCv.getContext('2d');
     mwImg = mwCtx ? mwCtx.createImageData(mw, mh) : null;
-    // The directions each Milky Way cell looks at depend only on the view, so they are worked out once here.
     cellE = new Float32Array(mw * mh); cellN = new Float32Array(mw * mh); cellU = new Float32Array(mw * mh);
+    layout();
+    bgKey = '';
+  }
+
+  /** The view for the current latitude, and the directions each Milky Way cell looks at (they depend only on the view). */
+  function layout() {
+    view = makeView(W, H, phone, loc.lat, quiet);
+    if (!mwCv) return;
+    const mw = mwCv.width, mh = mwCv.height;
     for (let j = 0; j < mh; j++) {
       for (let i = 0; i < mw; i++) {
         const k = j * mw + i;
@@ -202,7 +233,73 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
       }
     }
     mwLst = -999;
-    bgKey = '';
+  }
+
+  // ---------- where: the guess, the connection, the visitor ----------
+  function moveTo(lat: number, lon: number, source: LocationSource) {
+    if (source === 'device' && locSource !== 'device') digitStart = performance.now();
+    locSource = source;
+    target.lat = lat; target.lon = lon;
+    cv.dataset.loc = source; cv.dataset.lat = String(lat); cv.dataset.lon = String(lon);
+    if (reduced() || !ready) {
+      glide = null; loc.lat = lat; loc.lon = lon;
+      if (ready) { layout(); sunAt = 0; mwLst = -999; redraw(); }
+      return;
+    }
+    glide = { fromLat: loc.lat, fromLon: loc.lon, toLat: lat, toLon: lon, t0: performance.now() };
+    redraw();
+  }
+
+  function stepGlide(now: number) {
+    if (!glide) return;
+    const t = (now - glide.t0) / GLIDE_MS;
+    if (t >= 1) { loc.lat = glide.toLat; loc.lon = glide.toLon; glide = null; }
+    else {
+      const u = smooth(0, 1, t);
+      const dlon = ((glide.toLon - glide.fromLon + 540) % 360) - 180; // the short way round
+      loc.lat = glide.fromLat + (glide.toLat - glide.fromLat) * u;
+      loc.lon = ((glide.fromLon + dlon * u + 540) % 360) - 180;
+    }
+    layout(); sunAt = 0; mwLst = -999;
+  }
+
+  async function fetchConnectionLocation() {
+    if (locSource === 'device') return;
+    const ctl = new AbortController();
+    const to = setTimeout(() => ctl.abort(), LOCATION_TIMEOUT_MS);
+    try {
+      const r = await fetch(LOCATION_URL, { signal: ctl.signal, credentials: 'omit', cache: 'no-store', priority: 'low' } as RequestInit);
+      if (r.status !== 200) return; // 204 (no headers), 404 (not on Vercel), anything else: keep the guess
+      const j = (await r.json()) as { lat?: unknown; lon?: unknown };
+      const lat = Number(j.lat), lon = Number(j.lon);
+      if (typeof j.lat !== 'number' || typeof j.lon !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
+      if ((locSource as LocationSource) === 'device') return; // the visitor chose a precise position while we waited
+      moveTo(Math.round(lat * 10) / 10, Math.round(lon * 10) / 10, 'connection');
+    } catch { /* timeout, offline or blocked: keep the time-zone guess */ } finally {
+      clearTimeout(to);
+      ipSettled = true;
+      maybeLogNote();
+    }
+  }
+
+  /** The easter egg: ask the browser for the exact position. Prompts only here, never on load. Declined or failed: nothing changes. */
+  function requestPrecise() {
+    try {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition((p) => {
+        const lat = Math.round(p.coords.latitude * 100) / 100, lon = Math.round(p.coords.longitude * 100) / 100;
+        if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
+        moveTo(lat, lon, 'device');
+        try { sessionStorage.setItem(LOC_KEY, JSON.stringify({ lat, lon })); } catch { /* the move still applies on this page */ }
+      }, () => { /* declined or unavailable: no message, no change */ }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 });
+    } catch { /* no geolocation here */ }
+  }
+
+  let noteLogged = false;
+  function maybeLogNote() {
+    if (noteLogged || catalogue !== 'loaded' || !ipSettled) return;
+    noteLogged = true;
+    logSkyNote(console, window as unknown as Record<string, unknown>, S.n, target.lat, target.lon, locSource);
   }
 
   // ---------- the clock ----------
@@ -222,7 +319,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   }
 
   function currentSky(): Sky {
-    return computeSky(reduced() ? baseMs : baseMs + elapsed, place.lat, place.lon);
+    return computeSky(reduced() ? baseMs : baseMs + elapsed, loc.lat, loc.lon);
   }
 
   // ---------- Milky Way: cached, refreshed when the sidereal time has moved a little ----------
@@ -574,14 +671,29 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   function updateReadout(sky: Sky) {
     if (!readout) return;
     const d = new Date();
-    const t = readoutText({ lat: place.lat, lon: place.lon, hour: d.getHours(), minute: d.getMinutes(), elapsedMs: elapsed, lstText: hmsSec(sky.lst), moonPct: sky.moon.k * 100, rate });
-    if (readout.textContent !== t) readout.textContent = t;
+    const t = readoutText({ lat: loc.lat, lon: loc.lon, digits: locSource === 'device' ? 2 : 1, hour: d.getHours(), minute: d.getMinutes(), elapsedMs: elapsed, lstText: hmsSec(sky.lst), moonPct: sky.moon.k * 100, rate });
+    // Opting in to a precise position: the second decimal of each coordinate fades in (calm, ~0.8 s). Reduced motion: at once.
+    let p = 1;
+    if (locSource === 'device' && digitStart >= 0) {
+      p = reduced() ? 1 : smooth(0, 1, (performance.now() - digitStart) / DIGIT_MS);
+      if (p >= 1) digitStart = -1;
+    }
+    if (p >= 1) {
+      if (readout.dataset.fade === '1') { readout.dataset.fade = '0'; readout.textContent = t; }
+      else if (readout.textContent !== t) readout.textContent = t;
+      return;
+    }
+    let n = 0;
+    const html = t.replace(/(\d+\.\d)(\d)(°)/g, (m, a, b, deg) => (n++ < 2 ? `${a}<span class="dx" style="opacity:${p.toFixed(2)}">${b}</span>${deg}` : m));
+    readout.dataset.fade = '1';
+    if (readout.dataset.html !== html) { readout.dataset.html = html; readout.innerHTML = html; }
   }
 
   function frame(now: number, force = false) {
     const still = reduced();
+    stepGlide(now);
     if (sunAt === 0 || now - sunAt > 5000) {
-      sunSky = computeSky(instantForPart(Date.now(), place.tz, part, realPart()), place.lat, place.lon);
+      sunSky = computeSky(instantForPart(Date.now(), place.tz, part, realPart()), loc.lat, loc.lon);
       sunAt = now || 1;
     }
     const sky = currentSky();
@@ -589,7 +701,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     draw(now, sky, still, showerFactor(dm.getMonth() + 1, dm.getDate()));
     // The readout rolls smoothly (about 20 updates a second) while it is on show; once a second under reduced motion.
     if (labels || labelA > 0.02) {
-      if (force || now - lastReadout >= (still ? 1000 : 50)) { lastReadout = now; updateReadout(sky); }
+      if (force || digitStart >= 0 || now - lastReadout >= (still ? 1000 : 50)) { lastReadout = now; updateReadout(sky); }
     }
     if (!cv.classList.contains('on')) {
       cv.classList.add('on');
@@ -636,7 +748,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     if (fadeRaf) return;
     const step = (now: number) => {
       fadeRaf = 0;
-      const more = stepLabelFade();
+      const more = stepLabelFade() || glide !== null;
       frame(now, true);
       if (more) fadeRaf = requestAnimationFrame(step);
     };
@@ -682,7 +794,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
       catalogue = 'loaded';
       cv.dataset.catalogue = catalogue;
       cv.dataset.stars = String(S.n);
-      logSkyNote(console, window as unknown as Record<string, unknown>, S.n, place.lat, place.lon);
+      maybeLogNote();
       redraw();
     } catch {
       catalogue = 'failed';
@@ -710,11 +822,11 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
       if (reduced()) { stop(); frame(performance.now(), true); } else { frame(performance.now(), true); start(); }
       if (!loadStarted) {
         loadStarted = true;
-        // The Milky Way grid and the big fetch waits until the page has loaded, the fonts are in and things have settled (what LCP measures
+        // The location, the Milky Way grid and the big fetch waits until the page has loaded, the fonts are in and things have settled (what LCP measures
         // is done by then), then runs in idle time. The first frame above never waits for it.
         const go = () => setTimeout(() => {
-          if ('requestIdleCallback' in window) requestIdleCallback(() => { void loadMilkyWay(); void loadCatalogue(); }, { timeout: 1500 });
-          else { void loadMilkyWay(); void loadCatalogue(); }
+          if ('requestIdleCallback' in window) requestIdleCallback(() => { void fetchConnectionLocation(); void loadMilkyWay(); void loadCatalogue(); }, { timeout: 1500 });
+          else { void fetchConnectionLocation(); void loadMilkyWay(); void loadCatalogue(); }
         }, SETTLE_MS);
         const afterFonts = () => { const f = document.fonts?.ready; if (f) f.then(go, go); else go(); };
         if (document.readyState === 'complete') afterFonts(); else window.addEventListener('load', afterFonts, { once: true });
@@ -729,7 +841,12 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
       if (labels) void document.fonts?.load(FONT).then(() => { if (labels) redraw(); }).catch(() => {});
       hero.classList.toggle('sky-labels', labels);
       cv.dataset.labels = String(labels);
-      if (readout) readout.dataset.on = String(labels);
+      if (readout) {
+        // On show, the readout is a button (the easter egg); off, it is hidden from everything, as before.
+        readout.dataset.on = String(labels);
+        if (labels) { readout.removeAttribute('aria-hidden'); readout.tabIndex = 0; updateReadout(currentSky()); }
+        else { readout.setAttribute('aria-hidden', 'true'); readout.tabIndex = -1; if (document.activeElement === readout) readout.blur(); }
+      }
       redraw();
     },
     stepRate(dir: number) {
@@ -745,6 +862,9 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
 
   cv.dataset.rate = String(rate);
   cv.dataset.catalogue = catalogue;
+  cv.dataset.loc = locSource;
+  cv.dataset.lat = String(loc.lat);
+  cv.dataset.lon = String(loc.lon);
   cv.dataset.labels = 'false';
   cv.dataset.running = 'false';
 
@@ -775,6 +895,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   phoneMQ.addEventListener('change', () => { stop(); refresh(); });
   // Pause while a pop-up is open (html.locked): saves CPU and keeps the frame count low behind the dialog.
   new MutationObserver(() => { if (locked()) stop(); else start(); }).observe(root, { attributes: true, attributeFilter: ['class'] });
+  readout?.addEventListener('click', () => { if (labels) requestPrecise(); });
   // Meteors rush on hover (desktop) and on a tap (phones).
   hero.addEventListener('mouseenter', () => { rushUntil = performance.now() + 4500; });
   hero.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') rushUntil = performance.now() + 2800; });

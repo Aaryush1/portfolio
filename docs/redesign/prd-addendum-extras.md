@@ -284,6 +284,22 @@ Pressing `L` (not `g` then `l`, which still goes to the levels section) fades in
 
 `[` slows and `]` speeds up the sky through 50, 100, 150, 200, 250, 300, 400, 500, 700 and 1000x (from 225x, the first step is 200 or 250). Capped at 50x to 1000x for visitors. Trails keep their cap of 26 degrees of sky rotation. The rate is remembered for the session (sessionStorage in a try/catch), the readout shows it, and the trails lengthen or shorten with it. Same guards as `L`. Not in the `?` map. Neither key conflicts with `t`, `g`, `?` or the typed words `contextos` and `ag.`.
 
+## E20. The sky starts over where you are
+
+By default the sky looks from the time-zone guess (E17). After first paint the page asks the site's one server function, `GET /api/sky` (`aaryush/api/sky.ts`), where the connection seems to be. Vercel puts an approximate position on every request (`x-vercel-ip-latitude`, `x-vercel-ip-longitude`); the function returns just `{lat, lon}` rounded to 0.1 degree (about 11 km), with `Cache-Control: private, no-store`. It logs nothing, stores nothing and calls nothing else; it has no keys. With the headers missing (local dev, a static preview), or out of range, it answers 204 with no body.
+- **Client:** the fetch has a 1.5 s timeout and sends no credentials. On a good answer the sky glides to the new position over about 2 s (latitude and longitude eased together, the short way round the globe, the horizon and the Milky Way following), and the readout follows. On a 204, an error, junk, a timeout or a block, it keeps the time-zone guess and nothing else happens. Under reduced motion it moves at once.
+- **Time of day** and the visitor's clock do not change: the zone still decides the local hour.
+- **Console:** the line that follows the catalogue says where the position came from: `… your sky over 43.1°N 89.4°W · from your connection`, or `from your time zone` when the guess stands, or `from your device` after E21.
+- **Privacy:** the position stays in the browser, and the readout shows 0.1 degree unless the visitor opted in (E21).
+
+## E21. `L`, then click the readout: your exact position
+
+With the labels on (E18), the `Live · ...` readout becomes a button: clickable and reachable by keyboard (Tab, Enter or Space). Nothing says so; the pointer cursor is the only cue. Activating it calls `navigator.geolocation.getCurrentPosition` with low accuracy, which makes the browser ask.
+- **Allowed:** the sky glides to the exact position, shown to 0.01 degree in the readout. The second decimal of each coordinate fades in over about 0.8 s (in tabular lining figures, so nothing shifts) while the digits already there roll with the glide, so `43.1°N` becomes `43.07°N` calmly. Under reduced motion it swaps in at once. Everyone else sees one decimal (0.1 degree) throughout. It is remembered for this session only (sessionStorage in a try/catch), so a reload starts there and does not ask again. It never leaves the browser.
+- **Declined, unavailable or failed:** nothing changes, and there are no messages.
+- **Never on load:** the browser is only asked from this click.
+- The readout is not focusable and stays hidden from assistive technology while the labels are off.
+
 ## Out of scope here (planned separately)
 
 - **The dynamic vCard:** waiting on Aaryush's depth decision.

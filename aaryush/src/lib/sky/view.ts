@@ -33,11 +33,12 @@ export function parseStoredRate(raw: string | null | undefined): number | null {
 
 // ---------- the readout under L ----------
 const pad2 = (n: number) => String(n).padStart(2, '0');
-export interface ReadoutInput { lat: number; lon: number; hour: number; minute: number; elapsedMs: number; lstText: string; moonPct: number; rate: number }
+export interface ReadoutInput { lat: number; lon: number; /** Decimals shown: 1 (about 11 km) unless the visitor opted in to a precise position (2). */ digits?: number; hour: number; minute: number; elapsedMs: number; lstText: string; moonPct: number; rate: number }
 /** `Live · 43.1°N 89.4°W · 23:00 local · T+00h18m42s · LST 23h56m12s · Moon 19% · ×225`. T+ is simulated sky time since load; local is the real clock. */
 export function readoutText(r: ReadoutInput): string {
-  const lat = Math.abs(r.lat).toFixed(1) + '°' + (r.lat >= 0 ? 'N' : 'S');
-  const lon = Math.abs(r.lon).toFixed(1) + '°' + (r.lon >= 0 ? 'E' : 'W');
+  const d = r.digits ?? 1;
+  const lat = Math.abs(r.lat).toFixed(d) + '°' + (r.lat >= 0 ? 'N' : 'S');
+  const lon = Math.abs(r.lon).toFixed(d) + '°' + (r.lon >= 0 ? 'E' : 'W');
   const el = Math.max(0, Math.floor(r.elapsedMs / 1000));
   const t = `${pad2(Math.floor(el / 3600))}h${pad2(Math.floor((el % 3600) / 60))}m${pad2(el % 60)}s`;
   return `Live · ${lat} ${lon} · ${pad2(r.hour)}:${pad2(r.minute)} local · T+${t} · LST ${r.lstText} · Moon ${Math.round(r.moonPct)}% · ×${Math.round(r.rate)}`;

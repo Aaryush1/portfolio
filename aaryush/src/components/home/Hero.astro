@@ -8,7 +8,7 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
 ---
 <section class="hero" id="hero" aria-labelledby="hero-name">
   <canvas id="field" aria-hidden="true"></canvas>
-  <div class="sky-readout" aria-hidden="true"></div>
+  <button type="button" class="sky-readout" aria-hidden="true" tabindex="-1"></button>
   <span class="reg reg-tl" aria-hidden="true"></span><span class="reg reg-tr" aria-hidden="true"></span>
   <span class="reg reg-bl" aria-hidden="true"></span><span class="reg reg-br" aria-hidden="true"></span>
   <div class="wrap">
@@ -56,10 +56,12 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
 /* The L readout: faint, top right, clear of the registration mark. */
 .sky-readout{
   position:absolute;top:16px;right:44px;z-index:1;pointer-events:none;
+  appearance:none;background:none;border:0;margin:0;padding:0;
   font:400 12.5px/1.5 var(--label);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.08em;color:var(--text-3);
   white-space:nowrap;text-align:right;opacity:0;transition:opacity 1.2s var(--ease-out);
 }
-.hero:global(.sky-labels) .sky-readout{opacity:.62}
+.hero:global(.sky-labels) .sky-readout{opacity:.62;pointer-events:auto;cursor:pointer}
+.sky-readout:focus-visible{opacity:.9;outline:1px solid rgba(160,164,174,.5);outline-offset:3px}
 @media (max-width:959px){
   .sky-readout{left:16px;right:16px;top:10px;font-size:11px;letter-spacing:.04em;text-align:left;white-space:normal}
 }

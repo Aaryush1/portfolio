@@ -35,6 +35,11 @@ describe('readout', () => {
     expect(t).toBe('Live · 43.1°N 89.4°W · 23:05 local · T+00h18m42s · LST 23h56m12s · Moon 19% · ×225');
     expect(readoutText({ lat: -33.9, lon: 151.2, hour: 1, minute: 2, elapsedMs: 3 * 3600000 + 5 * 60000, lstText: 'x', moonPct: 0, rate: 50 })).toContain('33.9°S 151.2°E');
   });
+  it('shows one decimal (about 11 km) unless the visitor opted in to two', () => {
+    const base = { lat: 43.0731, lon: -89.4012, hour: 1, minute: 2, elapsedMs: 0, lstText: 'x', moonPct: 0, rate: 225 };
+    expect(readoutText(base)).toContain('43.1°N 89.4°W');
+    expect(readoutText({ ...base, digits: 2 })).toContain('43.07°N 89.40°W');
+  });
   it('T+ is simulated time and rolls by the second', () => {
     const at = (ms: number) => readoutText({ lat: 1, lon: 1, hour: 0, minute: 0, elapsedMs: ms, lstText: 'x', moonPct: 0, rate: 225 });
     expect(at(0)).toContain('T+00h00m00s');

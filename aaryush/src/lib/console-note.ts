@@ -14,18 +14,21 @@ export function buildNote(): string[] {
  * The one line that follows once the sky's full catalogue has landed. Same two-style format as the note.
  * Draft wording (copy-review section 19), proposed by the controller.
  */
-export function buildSkyNote(count: number, lat: number, lon: number): string[] {
-  const place = `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? 'E' : 'W'}`;
+export type LocationSource = 'zone' | 'connection' | 'device';
+const FROM: Record<LocationSource, string> = { zone: 'from your time zone', connection: 'from your connection', device: 'from your device' };
+export function buildSkyNote(count: number, lat: number, lon: number, source: LocationSource = 'zone'): string[] {
+  const d = source === 'device' ? 2 : 1;
+  const place = `${Math.abs(lat).toFixed(d)}°${lat >= 0 ? 'N' : 'S'} ${Math.abs(lon).toFixed(d)}°${lon >= 0 ? 'E' : 'W'}`;
   const n = Math.round(count).toLocaleString('en-US');
-  return [`%c✦%c ${n} stars · Hipparcos via d3-celestial · your sky over ${place}`, HEAD, BODY];
+  return [`%c✦%c ${n} stars · Hipparcos via d3-celestial · your sky over ${place} · ${FROM[source]}`, HEAD, BODY];
 }
 
 /** Logs the sky line once per document. */
-export function logSkyNote(c: Console | undefined, g: Record<string, unknown>, count: number, lat: number, lon: number): void {
+export function logSkyNote(c: Console | undefined, g: Record<string, unknown>, count: number, lat: number, lon: number, source: LocationSource = 'zone'): void {
   try {
     if (!c || typeof c.log !== 'function' || g.__agSkyNote) return;
     g.__agSkyNote = true;
-    c.log(...buildSkyNote(count, lat, lon));
+    c.log(...buildSkyNote(count, lat, lon, source));
   } catch { /* optional */ }
 }
 

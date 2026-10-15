@@ -2,7 +2,7 @@
 
 Aaryush Gupta's personal site. It helps people understand who he is as a builder and want to talk to him because he's interesting, not to hire him. There's no selling, no testimonials and no "hire me".
 
-The app lives in `aaryush/` (Astro 5, static, deployed on Vercel).
+The app lives in `aaryush/` (Astro 5, static, deployed on Vercel). It has one tiny server function, `aaryush/api/sky.ts` (the hero sky's approximate position from Vercel's IP headers; see `decisions.md`).
 
 ## Who visits, and on what
 
