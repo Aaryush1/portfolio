@@ -202,7 +202,8 @@ test('[ and ] change the rate, capped at 50x to 1000x, and it is remembered for 
   await expect(field(page)).toHaveAttribute('data-rate', '1000');
   await page.keyboard.press('l');
   await expect.poll(() => readout(page).textContent()).toContain('×1000');
-  await page.reload();
+  await page.goto('/'); // moving between pages in the visit keeps the chosen speed
+  await expect(field(page)).toHaveClass(/\bon\b/, { timeout: 15000 });
   await expect(field(page)).toHaveAttribute('data-rate', '1000');
 });
 
@@ -236,6 +237,7 @@ test('the typed words contextos and ag. do not set anything off', async ({ page 
 
 // ---------- where the sky is looking from: the guess, the connection, the visitor ----------
 const API = '**/api/sky';
+const PRECISE = JSON.stringify({ lat: 48.86, lon: 2.35 });
 const CHICAGO = { lat: 41.88, lon: -87.63 }; // the time-zone table's Chicago (the readout shows 41.9°N 87.6°W)
 /** Counts calls to getCurrentPosition (the prompt), before any page script runs. */
 const countGeolocation = (page: Page) =>
@@ -416,4 +418,114 @@ test('the console line says where the position came from', async ({ page }) => {
   const line = logs.find((l) => l.includes('your sky over'))!;
   expect(logs.filter((l) => l.includes('your sky over'))).toHaveLength(1);
   expect(line).toContain('stars · Hipparcos via d3-celestial');
+});
+
+// ---------- the Vercel preview fixes: credentials, redirects, permission, reload ----------
+test('the position fetch is same-origin, never follows a redirect, and is never cached', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __fetches: { url: string; init: RequestInit }[] };
+    w.__fetches = [];
+    const orig = window.fetch.bind(window);
+    window.fetch = (input: RequestInfo | URL, init?: RequestInit) => { w.__fetches.push({ url: String(input), init: init ?? {} }); return orig(input, init); };
+  });
+  await page.route(API, (route) => route.fulfill({ status: 204 }));
+  await onScreen(page);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __fetches: { url: string }[] }).__fetches.some((f) => f.url === '/api/sky')), { timeout: 15000 }).toBe(true);
+  const init = await page.evaluate(() => (window as unknown as { __fetches: { url: string; init: RequestInit }[] }).__fetches.find((f) => f.url === '/api/sky')!.init);
+  expect(init.credentials).toBe('same-origin');
+  expect(init.redirect).toBe('error');
+  expect(init.cache).toBe('no-store');
+});
+
+test('a redirect to an auth page fails fast: the redirect is never followed, and the guess stands', async ({ page }) => {
+  const followed: string[] = [];
+  page.on('request', (r) => { if (r.url().includes('/sso-target')) followed.push(r.url()); });
+  await page.route(API, (route) => route.fulfill({ status: 302, headers: { location: new URL('/sso-target', page.url() === 'about:blank' ? 'http://localhost:4330' : page.url()).toString() }, body: '' }));
+  await onScreen(page);
+  await expect(field(page)).toHaveAttribute('data-catalogue', /loaded|failed/, { timeout: 15000 });
+  await page.waitForTimeout(1500);
+  expect(followed).toEqual([]);
+  expect((await where(page)).loc).toBe('zone');
+  await expect(field(page)).toHaveAttribute('data-running', 'true');
+});
+
+test('a reload resets the speed; moving between pages keeps it', async ({ page }) => {
+  await onScreen(page);
+  const rate = () => field(page).getAttribute('data-rate');
+  const first = await rate();
+  await page.keyboard.press(']');
+  await expect.poll(rate).not.toBe(first);
+  const chosen = await rate();
+  await page.reload();
+  await expect(field(page)).toHaveClass(/\bon\b/, { timeout: 15000 });
+  expect(await rate()).toBe(first); // a deliberate reload: back to the default
+  await page.keyboard.press(']');
+  await expect.poll(rate).toBe(chosen);
+  await page.goto('/writing');
+  await page.goto('/');
+  await expect(field(page)).toHaveClass(/\bon\b/, { timeout: 15000 });
+  expect(await rate()).toBe(chosen); // normal navigation: kept
+});
+
+const storePrecise = (page: Page) => page.addInitScript((v) => { try { if (!sessionStorage.getItem('sky:loc')) sessionStorage.setItem('sky:loc', v); } catch { /* */ } }, PRECISE);
+const stored = (page: Page) => page.evaluate(() => sessionStorage.getItem('sky:loc'));
+
+test('a stored precise position is dropped when the permission is no longer granted', async ({ browser }) => {
+  const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: [] });
+  const page = await ctx.newPage();
+  await storePrecise(page);
+  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(API, (route) => route.fulfill({ status: 204 }));
+  await onScreen(page);
+  await expect.poll(async () => (await where(page)).loc, { timeout: 5000 }).not.toBe('device');
+  expect(await where(page)).toEqual({ loc: 'zone', ...CHICAGO });
+  expect(await stored(page)).toBeNull();
+  await page.keyboard.press('l');
+  await expect.poll(async () => (await readout(page).textContent()) ?? '').toContain('41.9°N 87.6°W');
+  await ctx.close();
+});
+
+test('a stored precise position is kept while the permission is still granted', async ({ browser }) => {
+  const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: ['geolocation'], geolocation: { latitude: 48.8566, longitude: 2.3522 } });
+  const page = await ctx.newPage();
+  await storePrecise(page);
+  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(API, (route) => route.fulfill({ status: 204 }));
+  await onScreen(page);
+  await page.waitForTimeout(800);
+  expect(await where(page)).toEqual({ loc: 'device', lat: 48.86, lon: 2.35 });
+  expect(await stored(page)).toBe(PRECISE);
+  await ctx.close();
+});
+
+test('without the Permissions API a stored precise position is kept as before', async ({ browser }) => {
+  const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: [] });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => { Object.defineProperty(navigator, 'permissions', { value: undefined, configurable: true }); });
+  await storePrecise(page);
+  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(API, (route) => route.fulfill({ status: 204 }));
+  await onScreen(page);
+  await page.waitForTimeout(800);
+  expect(await where(page)).toEqual({ loc: 'device', lat: 48.86, lon: 2.35 });
+  await ctx.close();
+});
+
+test('revoking the permission mid-session drops back to one decimal', async ({ browser }) => {
+  const ctx = await browser.newContext({ timezoneId: 'America/Chicago', permissions: ['geolocation'], geolocation: { latitude: 48.8566, longitude: 2.3522 } });
+  const page = await ctx.newPage();
+  await page.route(CATALOGUE, (route) => route.fulfill({ json: fixture() }));
+  await page.route(API, (route) => route.fulfill({ json: { lat: 51.5, lon: -0.1 } }));
+  await onScreen(page);
+  await page.keyboard.press('l');
+  await expect.poll(() => opacity(page)).toBeGreaterThan(0.4);
+  await readout(page).click();
+  await expect.poll(async () => (await readout(page).textContent()) ?? '', { timeout: 8000 }).toContain('48.86°N 2.35°E');
+  await ctx.clearPermissions();
+  await expect.poll(async () => (await where(page)).loc, { timeout: 8000 }).not.toBe('device');
+  expect(await stored(page)).toBeNull();
+  // back to the default (here the connection's answer) at one decimal
+  await expect.poll(async () => (await readout(page).textContent()) ?? '', { timeout: 8000 }).toMatch(/5\d\.\d°N 0\.\d°W|41\.9°N 87\.6°W/);
+  expect(await readout(page).textContent()).not.toMatch(/\d\.\d\d°/);
+  await ctx.close();
 });

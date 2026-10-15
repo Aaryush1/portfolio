@@ -151,6 +151,11 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   let ipSettled = false;
   let digitStart = -1; // when the second decimal began to fade in (-1: not started, or already shown)
   let quiet: Quiet = { x0: 0, y0: 0, x1: 0, y1: 0, feather: 1 };
+  let connection: { lat: number; lon: number } | null = null; // what /api/sky said, if it answered
+  // A deliberate reload starts the sky afresh (default speed); moving between pages within the visit keeps what was chosen.
+  const isReload = (() => {
+    try { return (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.type === 'reload'; } catch { return false; }
+  })();
   try {
     const st = JSON.parse(sessionStorage.getItem(LOC_KEY) ?? 'null') as { lat?: number; lon?: number } | null;
     if (st && Number.isFinite(st.lat) && Number.isFinite(st.lon) && Math.abs(st.lat!) <= 90 && Math.abs(st.lon!) <= 180) {
@@ -172,6 +177,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   let catalogue: 'pending' | 'loaded' | 'failed' = 'pending';
 
   try {
+    if (isReload) sessionStorage.removeItem(RATE_KEY);
     const stored = parseStoredRate(sessionStorage.getItem(RATE_KEY));
     if (stored) rate = stored;
     else rate = phoneMQ.matches ? DEFAULT_RATE.phone : DEFAULT_RATE.desktop;
@@ -268,13 +274,14 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     const ctl = new AbortController();
     const to = setTimeout(() => ctl.abort(), LOCATION_TIMEOUT_MS);
     try {
-      const r = await fetch(LOCATION_URL, { signal: ctl.signal, credentials: 'omit', cache: 'no-store', priority: 'low' } as RequestInit);
+      const r = await fetch(LOCATION_URL, { signal: ctl.signal, credentials: 'same-origin', redirect: 'error', cache: 'no-store', priority: 'low' } as RequestInit);
       if (r.status !== 200) return; // 204 (no headers), 404 (not on Vercel), anything else: keep the guess
       const j = (await r.json()) as { lat?: unknown; lon?: unknown };
       const lat = Number(j.lat), lon = Number(j.lon);
       if (typeof j.lat !== 'number' || typeof j.lon !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
       if ((locSource as LocationSource) === 'device') return; // the visitor chose a precise position while we waited
-      moveTo(Math.round(lat * 10) / 10, Math.round(lon * 10) / 10, 'connection');
+      connection = { lat: Math.round(lat * 10) / 10, lon: Math.round(lon * 10) / 10 };
+      moveTo(connection.lat, connection.lon, 'connection');
     } catch { /* timeout, offline or blocked: keep the time-zone guess */ } finally {
       clearTimeout(to);
       ipSettled = true;
@@ -291,8 +298,36 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
         if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
         moveTo(lat, lon, 'device');
         try { sessionStorage.setItem(LOC_KEY, JSON.stringify({ lat, lon })); } catch { /* the move still applies on this page */ }
+        watchGeolocationPermission();
       }, () => { /* declined or unavailable: no message, no change */ }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 });
     } catch { /* no geolocation here */ }
+  }
+
+  /** Back to the default position (the connection if it answered, else the time zone) at one decimal. */
+  function dropPrecise() {
+    try { sessionStorage.removeItem(LOC_KEY); } catch { /* nothing to forget */ }
+    digitStart = -1;
+    if (connection) moveTo(connection.lat, connection.lon, 'connection');
+    else { moveTo(place.lat, place.lon, 'zone'); ipSettled = false; void fetchConnectionLocation(); }
+  }
+
+  /**
+   * A precise position only lasts while the browser still allows it: checked now, and again whenever the permission changes.
+   * If the Permissions API isn't there, the position is kept as it was.
+   */
+  let permWatched = false;
+  function watchGeolocationPermission() {
+    if (permWatched) return;
+    try {
+      const q = navigator.permissions?.query({ name: 'geolocation' as PermissionName });
+      if (!q) return;
+      permWatched = true;
+      q.then((st) => {
+        const check = () => { if (st.state !== 'granted' && locSource === 'device') dropPrecise(); };
+        check();
+        st.addEventListener('change', check);
+      }).catch(() => { permWatched = false; });
+    } catch { /* no Permissions API: keep the current behaviour */ }
   }
 
   let noteLogged = false;
@@ -896,6 +931,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   // Pause while a pop-up is open (html.locked): saves CPU and keeps the frame count low behind the dialog.
   new MutationObserver(() => { if (locked()) stop(); else start(); }).observe(root, { attributes: true, attributeFilter: ['class'] });
   readout?.addEventListener('click', () => { if (labels) requestPrecise(); });
+  if (locSource === 'device') watchGeolocationPermission(); // a stored precise position survives only while still allowed
   // Meteors rush on hover (desktop) and on a tap (phones).
   hero.addEventListener('mouseenter', () => { rushUntil = performance.now() + 4500; });
   hero.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') rushUntil = performance.now() + 2800; });
