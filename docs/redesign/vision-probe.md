@@ -63,6 +63,16 @@ After the landing choice, the visitor gets two doors, framed as the conversation
 - **Humility:** the story is offered as opinion and questions, never as answers.
 - **Open tension:** the premise is copies of one mind, while his answer is many probes carrying many people. That changes what drift and bustle mean.
 
+## The spine: diversity is the point (Aaryush, 2026-10-15)
+
+"It shouldn't just be a few companies and a few people controlling this… diversity is actually the point. It's losing the people and having some central power controlling everything that makes it the problem… It's much more the second."
+- **Divergence is not the failure.** Many probes, many people, wanting different things 100,000 light-years apart is healthy.
+- **The failures are:**
+  - losing the people;
+  - concentration of power: a few companies or people, or one central power, controlling everything.
+- **Democratisation** of the capability is the counter to that.
+- **Bio-risk** (from his stance) sits beside these as a seed that ripples.
+
 ## Guardrails (Aaryush, 2026-10-15)
 
 - **Pace.** It may feel too fast. Beat-to-beat transitions need care, and intermediary passages or beats may be needed so each move lands cleanly.
