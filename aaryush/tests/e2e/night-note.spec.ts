@@ -82,17 +82,18 @@ test('desktop: the notes sit beside the title block without overlapping anything
   expect(n!.x + n!.width).toBeLessThanOrEqual(1280);
 });
 
-test('phone: the notes sit in the footer bar, beside the location line, without overlap', async ({ page }) => {
+test('phone: the notes sit in the hero, right under the contact buttons, without overlap', async ({ page }) => {
   test.skip(test.info().project.name !== 'chromium', 'one browser is enough for geometry');
   await page.setViewportSize({ width: 375, height: 812 });
   await setDaypart(page, 'night');
   await page.goto('/');
   await settled(page);
   await expect(note(page)).toBeVisible();
-  expect(await note(page).evaluate((el) => !!el.closest('[data-footer-meta]'))).toBe(true);
+  expect(await note(page).evaluate((el) => el.previousElementSibling?.matches('.cta') && !!el.closest('#hero'))).toBe(true);
   const n = await box(page, '.gen-notes');
-  const loc = await page.locator('[data-footer-meta]').getByText('Madison, WI').boundingBox();
-  expect(overlaps(n!, loc!)).toBe(false);
+  const cta = await box(page, '#hero .cta');
+  expect(overlaps(n!, cta!)).toBe(false);
+  expect(n!.y).toBeGreaterThan(cta!.y + cta!.height - 1);
   expect(n!.x + n!.width).toBeLessThanOrEqual(375);
 });
 
@@ -134,7 +135,6 @@ test('screenshots for the review (T34_SHOTS=1 only)', async ({ page, browser }) 
   await page.screenshot({ path: path.join(SHOTS, 't34-night-note-1280.png') });
   await page.setViewportSize({ width: 375, height: 812 });
   await settled(page);
-  await page.locator('[data-footer-meta]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: path.join(SHOTS, 't34-night-note-375.png') });
   // phone topography: afternoon and night, at 430 and 360, the hero only; one fresh context per capture
   for (const w of [430, 360]) for (const part of ['afternoon', 'night']) {

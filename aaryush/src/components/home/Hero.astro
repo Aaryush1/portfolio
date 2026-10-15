@@ -66,7 +66,7 @@ const settledHTML = `<span class="slot-w">${settled.before}<em>${settled.em}</em
 :global(.gen-notes .gn-lines){margin:4px 0 0;padding:0 0 0 1.3em;list-style:decimal}
 :global(.gen-notes .gn-lines li){margin-top:2px}
 .hero-foot > :global(.gen-notes){align-self:flex-end;margin-bottom:6px}
-:global([data-footer-meta] > .gen-notes){font-size:17px;white-space:normal}
+:global(#hero .cta + .gen-notes){margin-top:28px;font-size:17px;white-space:normal}
 @media (prefers-reduced-motion:no-preference){
   :global(.gen-notes){animation:gn-in 1.2s var(--ease-out) both}
   @keyframes gn-in{0%{opacity:0}100%{opacity:1}}
