@@ -36,6 +36,8 @@ for (const [w, h] of [[375, 812], [430, 932], [360, 740]]) {
     const n = await pieces.count();
     expect(n).toBeGreaterThan(1);
     const box = async (i: number) => (await pieces.nth(i).boundingBox())!;
+    // newest first: the note, then the letter, then the paper
+    expect(await page.locator('[data-piece]').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.shape))).toEqual(['note', 'letter', 'paper']);
     const first = await box(0);
     expect(first.height).toBeLessThan(478 * 0.7);
     // the first piece sits in the middle of the first screen, below the "Writing" heading

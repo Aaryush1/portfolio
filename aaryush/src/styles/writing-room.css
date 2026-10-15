@@ -377,7 +377,8 @@ html.js .room.drawer-open .desk-wrap { opacity: .3; }
   html.js .piece[data-shape="letter"] .piece-meta { top: 9px; }
   html.js .piece[data-shape="letter"] .piece-why { padding: 10px 24px 0; font-size: 14px; }
   html.js .piece[data-shape="letter"][data-folds] .piece-why { padding-top: 10px; }
-  html.js .piece[data-shape="paper"] .piece-link { font-size: 24px; top: 46px; }
+  /* the right margin keeps a wrapped title clear of the sticky flag, which pokes out of the right edge */
+  html.js .piece[data-shape="paper"] .piece-link { font-size: 24px; top: 46px; right: 38px; }
   html.js .piece[data-shape="paper"] .piece-meta { top: 24px; }
   html.js .piece[data-shape="paper"] .piece-why { bottom: 12px; font-size: 14px; }
   /* only the first phrase shows at rest, as on desktop; the counters stay out of the short panels */
