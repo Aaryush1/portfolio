@@ -33,6 +33,20 @@ Each beat has a question, Aaryush's take, what he wants to do, a picture, and an
   4. **The seed and its ripples.** A small thing set a specific way now ripples out in unexpected ways (the paperclip problem).
 - **Landing.** Back to reality, then you choose what the first probe carries. That choice ties back to the beginning: it rises, becomes the amber dot, and closes out with "ag." (the seam), then the loop.
 
+## Aaryush's stance (2026-10-15, in his words where possible)
+
+Asked whether we should go faster or slower, given that what's set in the next 10–20 years locks in for 100,000:
+- "I don't think it's about slowing down or going faster… We need to think about it, and we need to spend more time thinking."
+- "I'm not trying to do an outcome. I'm trying to invite more people to be part of that conversation."
+- We can go at the same speed "as long as we're putting as much thought and effort into the fact that this is as big as it is. If we're just blindly building for the sake of going faster, then it doesn't matter."
+- He doesn't want to sound alarmist ("I don't think we're at that point yet"), but "it is something that needs to happen."
+- **Concrete needs:** biological-risk mitigation, and the ability for these tools to prevent a concentration of power.
+
+**What it means for the story:**
+- **The landing invites, it doesn't instruct.** The question "what does the first one carry?" is the invitation into the conversation, and there's no right answer to it.
+- **Bustle shows what unexamined building does at scale.** It shouldn't argue for stopping.
+- **Open: where his two concrete needs appear.** Concentration of power could be one of the ways copies diverge (one copy absorbing others), and bio-risk could be a seed that ripples. To discuss.
+
 ## Guardrails (Aaryush, 2026-10-15)
 
 - **Pace.** It may feel too fast. Beat-to-beat transitions need care, and intermediary passages or beats may be needed so each move lands cleanly.

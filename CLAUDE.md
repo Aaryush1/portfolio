@@ -37,6 +37,31 @@ This is the working style that built the redesign (October 2026). Keep it.
   - the revision block (`src/data/revisions.ts`), for anything meaningful that ships;
   - the link-preview cards (`src/lib/og.ts`), if a page's title, kind or structure changes.
 
+## The homepage story ("I am the probe", in progress on branch `probe`)
+
+The homepage is being rebuilt as one continuous, interactive story: the visitor wakes as a software engineer uploaded into a von Neumann probe, and lives through Aaryush's view of the next 50 to 100,000 years. Read these before touching it:
+- `docs/redesign/vision-probe.md`: the vision, the beats, Aaryush's positions and the guardrails. It is the source of truth while the vision is being aligned.
+- `docs/redesign/prd-probe-home.md`: the spec.
+- `docs/redesign/plan-probe-home.md`: the plan. Part 1 is done. Part 2 (`plan-probe-home-2.md`) is paused until the vision is aligned.
+
+**Aaryush's stance, which the story must carry:**
+- **Not "faster" or "slower".** Whatever speed we go, the thought and care must match how big this is. Blind building for speed is the problem.
+- **Inviting people in.** The goal is to bring more people into the conversation, not to push an outcome.
+- **Not alarmist.** We're not at that point, but the work needs to happen.
+- **Concrete needs** he names: biological-risk mitigation, and tools that prevent concentration of power.
+
+**How to work on it:**
+- **Vision before building.** Don't plan or build story features until the vision doc's open items are settled with him. Throwaway prototypes in `portfolio-explorations` are how vision gets settled.
+- **Push him on depth.** He asked for it. Ask the hard question that decides the tone, one at a time. Don't accept the safe answer, and play his answers back in the vision doc in his words. His positions are the content that makes it profound.
+- **Words are his.** Claude writes intent notes, never lines in his voice. Lines come from talk-throughs and need his dated approval (`validateStory` enforces this).
+- **Guardrails:**
+  - It's not AI doom: awe and pride come before the overwhelm, and the ending is agency.
+  - It's not too playable: each interaction makes its point, then hands back.
+  - Pace with passages between beats.
+  - Visuals carry the story; text is sparse.
+  - Background and work are subtle side things.
+  - No drawing-language chrome inside the story.
+
 ## Writing a new piece (letters, papers, notes, and kinds to come)
 
 Pieces live in `aaryush/src/content/writing/`. When one is added:
