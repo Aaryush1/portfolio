@@ -116,7 +116,7 @@ const levelTitle = (n: number) => levels.find((l) => l.n === n);
 }
 .entry.now::before{border-color:var(--text-2);background:radial-gradient(circle, var(--accent) 0 1.6px, var(--bg) 2px)}
 @media (min-width:860px){.entry::before{left:-44px;top:44px}}
-.entry:hover::before{border-color:var(--accent)}
+.entry:hover::before,.entry.is-near::before{border-color:var(--accent)}
 .entry.is-target::before{animation:nodeFlash 1.8s var(--ease)}
 @keyframes nodeFlash{0%,40%{border-color:var(--accent);box-shadow:0 0 0 6px rgba(242,181,68,.14)}100%{box-shadow:0 0 0 14px transparent}}
 .meta{display:flex;flex-wrap:wrap;gap:4px 14px;font:400 12.5px/1.5 var(--mono);letter-spacing:.01em}

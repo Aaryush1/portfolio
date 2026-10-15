@@ -63,6 +63,30 @@ if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
   });
 }
 
+// phones have no hover: the timeline dot of the entry nearest the middle of the screen lights as you scroll
+if (!matchMedia('(hover: hover) and (pointer: fine)').matches && 'IntersectionObserver' in window) {
+  const entries = [...document.querySelectorAll<HTMLElement>('.entry')];
+  const seen = new Set<HTMLElement>();
+  let lit: HTMLElement | null = null;
+  const pick = () => {
+    const mid = innerHeight / 2;
+    let best: HTMLElement | null = null, bestD = Infinity;
+    seen.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const d = r.top <= mid && r.bottom >= mid ? 0 : Math.min(Math.abs(r.top - mid), Math.abs(r.bottom - mid));
+      if (d < bestD) { bestD = d; best = el; }
+    });
+    if (best !== lit) { lit?.classList.remove('is-near'); (best as HTMLElement | null)?.classList.add('is-near'); lit = best; }
+  };
+  const io = new IntersectionObserver((list) => {
+    list.forEach((en) => { if (en.isIntersecting) seen.add(en.target as HTMLElement); else seen.delete(en.target as HTMLElement); });
+    pick();
+  }, { rootMargin: '-35% 0px -35% 0px' });
+  entries.forEach((el) => io.observe(el));
+  let raf = 0;
+  addEventListener('scroll', () => { if (!raf && seen.size > 1) raf = requestAnimationFrame(() => { raf = 0; pick(); }); }, { passive: true });
+}
+
 // back to top: the header is sticky, so jumping to it barely moves; go to the real top instead
 document.querySelectorAll<HTMLAnchorElement>('a[data-to-top]').forEach((a) => {
   a.addEventListener('click', (e) => {
