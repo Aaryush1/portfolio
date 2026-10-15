@@ -28,7 +28,7 @@ if (links.length) {
   const phone = matchMedia('(max-width: 719px)');
 
   const place = (btn: HTMLElement) => {
-    if (phone.matches) { sheet.style.left = sheet.style.top = sheet.style.width = ''; return; }
+    if (phone.matches || innerWidth <= 719) { sheet.style.left = sheet.style.top = sheet.style.width = ''; return; }
     const r = btn.getBoundingClientRect();
     const w = Math.min(340, innerWidth - 32);
     sheet.style.width = `${w}px`;
@@ -90,4 +90,6 @@ if (links.length) {
     if (current && to && !sheet.contains(to) && !current.contains(to)) close(false);
   });
   addEventListener('resize', () => { if (current) place(current); });
+  // a media query can update after the resize event in Firefox and WebKit, so re-place when it flips too
+  phone.addEventListener('change', () => { if (current) place(current); });
 }

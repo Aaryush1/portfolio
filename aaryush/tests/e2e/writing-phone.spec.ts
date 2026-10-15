@@ -26,18 +26,22 @@ for (const w of [360, 375, 412, 430]) {
   });
 }
 
-test('/writing at 375x812: the letter and the paper both fit on the first screen, objects at ~60% height', async ({ browser }) => {
+test('/writing at 375x812: the newest pieces come first and the first two fit on the first screen, objects at ~60% height', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, ...phone });
   const page = await ctx.newPage();
   await afternoon(page);
   await page.goto('/writing');
+  // the desk has three pieces, newest first (PR #5): the note, then the letter, then the paper
+  const note = (await page.locator('[data-shape="note"]').boundingBox())!;
   const letter = (await page.locator('[data-shape="letter"]').boundingBox())!;
   const paper = (await page.locator('[data-shape="paper"]').boundingBox())!;
+  expect(note.y).toBeLessThan(letter.y);
+  expect(letter.y).toBeLessThan(paper.y);
   expect(letter.height).toBeLessThan(478 * 0.7);
   expect(paper.height).toBeLessThan(290 * 0.7);
-  expect(paper.y + paper.height).toBeLessThanOrEqual(812);
+  expect(letter.y + letter.height).toBeLessThanOrEqual(812); // the two newest are on the first screen
   // below the "Writing" heading
-  expect(letter.y).toBeGreaterThan((await page.locator('h1').boundingBox())!.y);
+  expect(note.y).toBeGreaterThan((await page.locator('h1').boundingBox())!.y);
   await ctx.close();
 });
 

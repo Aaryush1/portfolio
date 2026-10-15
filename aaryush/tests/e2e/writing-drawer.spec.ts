@@ -54,7 +54,8 @@ test('click outside closes it', async ({ page }) => {
   await expect(front(page)).toHaveAttribute('aria-expanded', 'false');
 });
 
-test('opening the drawer moves the light to it, and closing hands it back', async ({ page }) => {
+test('opening the drawer moves the light to it, and closing hands it back', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'on phones the light follows the scroll position rather than a rest point, so there is no fixed baseline to hand back to');
   await page.goto('/writing');
   const y = () => page.locator('.room').evaluate((r) => parseFloat(getComputedStyle(r).getPropertyValue('--pool-y')));
   await expect.poll(y).toBeGreaterThan(0);
@@ -106,7 +107,8 @@ test('reduced motion: opens instantly with no running transitions', async ({ bro
   // the drawer itself never animates: nothing targets it, and its contents are open at once
   expect(await page.evaluate(() => {
     const drawer = document.querySelector('[data-drawer]')!;
-    return document.getAnimations().filter((a) => drawer.contains((a.effect as KeyframeEffect)?.target as Element)).length;
+    // reduced motion collapses every duration to 0.01ms; WebKit still lists those instant visibility transitions for a frame, so only real ones count
+    return document.getAnimations().filter((a) => drawer.contains((a.effect as KeyframeEffect)?.target as Element) && (a.effect?.getComputedTiming().endTime as number) > 1).length;
   })).toBe(0);
   expect(await page.locator('#drawer-contents').evaluate((el) => getComputedStyle(el).maxHeight)).toBe('78px');
   // first-paint transitions on the desk settle on their own; afterwards nothing may loop

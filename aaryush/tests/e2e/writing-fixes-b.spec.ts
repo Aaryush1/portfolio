@@ -101,8 +101,7 @@ test('W9: moving the light between pieces announces lit without an unlit in betw
     (window as any).__ev = [];
     for (const t of ['piece:lit', 'piece:unlit']) document.addEventListener(t, () => (window as any).__ev.push(t));
   });
-  await page.locator('[data-piece] .piece-link').first().focus();
-  await page.keyboard.press('Tab'); // keyboard focus: lights the first piece
+  await page.keyboard.press('ArrowRight'); // from the page itself: lights the first piece (Safari's Tab skips links, so don't rely on it)
   await page.evaluate(() => { (window as any).__ev.length = 0; });
   await page.keyboard.press('ArrowRight');
   const ev = await page.evaluate(() => (window as any).__ev as string[]);

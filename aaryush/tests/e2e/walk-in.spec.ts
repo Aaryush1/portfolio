@@ -18,7 +18,8 @@ const names = (page: Page) =>
   page.evaluate(() => [...document.querySelectorAll('*')].map((e) => (getComputedStyle(e) as any).viewTransitionName).filter((n) => n && n !== 'none' && n !== 'root'));
 
 for (const [slug, kind] of [['quiet-singularity', 'paper'], ['bigger-than-electricity', 'letter']] as const) {
-  test(`${kind}: the sheet fills the screen, then the essay opens with the ${kind} arrival`, async ({ page }) => {
+  test(`${kind}: the sheet fills the screen, then the essay opens with the ${kind} arrival`, async ({ page, browserName }) => {
+    test.skip(browserName === 'firefox', 'Firefox has no cross-document view transitions (no onpagereveal), so the walk-in is off there by design');
     await openTwice(page, slug);
     const clone = page.locator('.walk-clone');
     await expect(clone).toHaveCount(1);
@@ -49,7 +50,8 @@ test('Back from the walked-into piece lands on the desk with no overlay left beh
   await expect(page.locator('html')).not.toHaveClass(/walk-out/);
 });
 
-test('a third tap during the walk-in does not start a second one', async ({ page }) => {
+test('a third tap during the walk-in does not start a second one', async ({ page, browserName }) => {
+  test.skip(browserName === 'firefox', 'Firefox has no cross-document view transitions (no onpagereveal), so the walk-in is off there by design');
   await openTwice(page, 'quiet-singularity');
   await link(page, 'quiet-singularity').tap({ force: true, noWaitAfter: true }).catch(() => {});
   await expect(page.locator('.walk-clone')).toHaveCount(1);
@@ -79,7 +81,8 @@ test('wider than a phone (560px and up) keeps the desktop transition: no walk-in
   await ctx.close();
 });
 
-test('320px: the opened sheet never causes sideways scroll on the desk or the essay', async ({ browser }) => {
+test('320px: the opened sheet never causes sideways scroll on the desk or the essay', async ({ browser, browserName }) => {
+  test.skip(browserName === 'firefox', 'Firefox has no cross-document view transitions (no onpagereveal), so the walk-in is off there by design');
   const ctx = await browser.newContext({ viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true });
   const page = await ctx.newPage();
   await openTwice(page, 'bigger-than-electricity');

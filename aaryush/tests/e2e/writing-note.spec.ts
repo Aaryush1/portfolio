@@ -4,7 +4,8 @@ const seed = (page: Page, pieces: Record<string, number>) =>
   page.addInitScript((m) => localStorage.setItem('writing:v1', m), JSON.stringify({ v: 1, pieces: Object.fromEntries(Object.entries(pieces).map(([k, sec]) => [k, { sec, t: 1 }])) }));
 const note = (page: Page) => page.locator('[data-slug="once-for-good"]');
 
-test('the note is on the desk, and hovering opens four labelled cards', async ({ page }) => {
+test('the note is on the desk, and hovering opens four labelled cards', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'hover opens the fan; the phone tap test below covers phones');
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/writing');
   await expect(note(page)).toHaveAttribute('data-shape', 'note');
@@ -84,14 +85,16 @@ test('the letter gets a thumbprint inside the fold reached; opened with no progr
   await expect(note(page).locator('.card.n1')).toHaveClass(/pulled/);
 });
 
-test('reduced motion: the note is static (no transition on its cards) and the fan shows when open', async ({ browser }) => {
+test('reduced motion: the note is static (no transition on its cards) and the fan shows when open', async ({ browser, isMobile }) => {
   const ctx = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();
   await page.goto('/writing');
   expect(await note(page).locator('.card.n2').evaluate((e) => getComputedStyle(e).transitionDuration)).toBe('0s');
-  await note(page).hover();
-  await expect(note(page)).toHaveClass(/is-open/);
-  await expect(note(page).locator('ol.breakdown > li').first()).toHaveCSS('opacity', '1');
+  if (!isMobile) { // hover is how the fan opens on desktop; phones tap (covered by the phone test above)
+    await note(page).hover();
+    await expect(note(page)).toHaveClass(/is-open/);
+    await expect(note(page).locator('ol.breakdown > li').first()).toHaveCSS('opacity', '1');
+  }
   await ctx.close();
 });
 

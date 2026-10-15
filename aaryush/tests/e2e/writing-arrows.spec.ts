@@ -45,7 +45,8 @@ test('Enter opens the lit piece', async ({ page }) => {
   await expect(page).toHaveURL(new RegExp(`/writing/${order[0]}`));
 });
 
-test('with focus on the page itself only the arrows act: Enter, Home and End are left to the browser', async ({ page }) => {
+test('with focus on the page itself only the arrows act: Enter, Home and End are left to the browser', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'needs hover and a keyboard; phones have neither');
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/writing');
   const first = page.locator('[data-piece]').first();
