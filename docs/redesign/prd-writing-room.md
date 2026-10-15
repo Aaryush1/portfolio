@@ -79,7 +79,7 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
   - The essay page tracks the furthest section you reached.
   - Coming back to the essay page offers **"Pick up where you left off"**, which jumps to that section.
 - **Forgetting:** a small, quiet "forget" control on `/writing` clears everything.
-- **E8, the home writing teaser:** if you're partway through a piece, its row on the home page shows its amber dot and ribbon (unchanged by the desk marks) and a "Pick up where you left off" link.
+- **E8, the home writing teaser:** each started piece the teaser lists gets "Keep reading · section III" on its date line (a paper says "section" and a Roman numeral, a note "card 2", a letter "fold 2"), led by the amber dot; the link goes to that piece at the remembered section (`/writing/<slug>#pickup`, the essay page's own mechanism). Under about 400px the place drops off, leaving "Keep reading". The line never wraps and the section never changes height when it appears (asserted at 320, 360, 390, 412 and 1280). If a started piece is *not* listed in the teaser, one link at the foot reads "Pick up *Title*" (serif italic) for the most recently read of those; its line is reserved before first paint, and when every started piece is listed there is no bottom link. The desktop hover ribbon and the generic "Pick up where you left off" link are gone from the teaser (the essay page keeps its own prompt). Approved 2026-10-15.
 
 ## W6. Phones, no JS and accessibility
 

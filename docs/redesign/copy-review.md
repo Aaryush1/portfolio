@@ -955,11 +955,14 @@ Edits:
 
 Current:
 
-- Pick up where you left off (on an essay page, and on the home writing teaser)
+- Pick up where you left off (on an essay page only; the home teaser no longer uses it)
 - forget (a quiet control on /writing that clears what the room remembers)
 - " — section N" (appended to the pick-up link on a paper, e.g. "Pick up where you left off — section III"; letters have no suffix)
 - " — card N" (the same link on a note, with an Arabic numeral, e.g. "Pick up where you left off — card 2"). **Approved by Aaryush on 2026-10-14.**
 - writing I'm working on (the drawer's label)
+- Keep reading (on the home writing teaser, on the date line of each started piece it lists, led by the amber dot). **Approved by Aaryush on 2026-10-15.**
+- Keep reading · section III / card 2 (the same link with the place: "section" and a Roman numeral on a paper, "card" and a numeral on a note, "fold" and a numeral on a letter; the place drops off under about 400px, leaving "Keep reading"). **Approved by Aaryush on 2026-10-15.**
+- Pick up *Title* (the one link at the foot of the teaser, for the most recently read started piece the teaser does not list; the title is in serif italic; absent when every started piece is listed). **Approved by Aaryush on 2026-10-15.**
 
 Edits:
 

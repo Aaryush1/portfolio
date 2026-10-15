@@ -99,3 +99,29 @@ export function pickup(slug: string, total: number, store: Pick<Storage, 'getIte
   if (e.sec < 1 || e.sec > total - 2) return null;
   return { sec: e.sec };
 }
+
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+/** Where the visitor got to, in the piece's own words: a paper's "section III", a note's "card 2", a letter's "fold 2". */
+export function placeLabel(kind: string, sec: number): string {
+  if (kind === 'note') return `card ${sec + 1}`;
+  if (kind === 'letter') return `fold ${sec + 1}`;
+  return `section ${ROMAN[sec + 1] || sec + 1}`;
+}
+
+export interface PieceRef { slug: string; title: string; total: number }
+/**
+ * The most recently read piece that has something to pick up and is not in `shown` (the pieces the home teaser lists),
+ * or null. Pieces shown in the teaser get their own "Keep reading"; this is the one named link for the rest.
+ */
+export function offPagePickup(all: PieceRef[], shown: string[], store: Pick<Storage, 'getItem'> | undefined = local()): { piece: PieceRef; sec: number } | null {
+  const mem = readMemory(store);
+  let best: { piece: PieceRef; sec: number; t: number } | null = null;
+  for (const piece of all) {
+    if (shown.includes(piece.slug)) continue;
+    const p = pickup(piece.slug, piece.total, store);
+    if (!p) continue;
+    const t = mem.pieces[piece.slug]?.t ?? 0;
+    if (!best || t > best.t) best = { piece, sec: p.sec, t };
+  }
+  return best ? { piece: best.piece, sec: best.sec } : null;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { forget, inRange, lastOpened, noteLast, noteOpened, noteSection, pickup, readMemory } from '../../src/lib/writing-memory';
+import { forget, inRange, lastOpened, noteLast, noteOpened, noteSection, offPagePickup, pickup, placeLabel, readMemory } from '../../src/lib/writing-memory';
 
 const fake = (initial?: string) => {
   let v: string | null = initial ?? null;
@@ -55,5 +55,28 @@ describe('writing memory', () => {
     expect(inRange(99, 6)).toBe(false);
     expect(inRange(5, 6)).toBe(true);
     expect(inRange(3, 0)).toBe(true);
+  });
+});
+
+describe('teaser place labels and the off-page pick-up', () => {
+  it("names the place in each piece's own words", () => {
+    expect(placeLabel('paper', 2)).toBe('section III');
+    expect(placeLabel('note', 1)).toBe('card 2');
+    expect(placeLabel('letter', 1)).toBe('fold 2');
+    expect(placeLabel('paper', 14)).toBe('section 15');
+  });
+  const all = [{ slug: 'a', title: 'A', total: 6 }, { slug: 'b', title: 'B', total: 6 }, { slug: 'c', title: 'C', total: 6 }];
+  const store = (pieces: Record<string, { sec: number; t: number }>) => fake(JSON.stringify({ v: 1, pieces }));
+  it('offers the most recently read started piece that is not listed', () => {
+    const s = store({ a: { sec: 2, t: 5 }, b: { sec: 3, t: 9 }, c: { sec: 2, t: 7 } });
+    expect(offPagePickup(all, ['a'], s)).toEqual({ piece: all[1], sec: 3 });
+    expect(offPagePickup(all, ['a', 'b'], s)).toEqual({ piece: all[2], sec: 2 });
+  });
+  it('offers nothing when every started piece is listed, or the unlisted ones are not started or already finished', () => {
+    const s = store({ a: { sec: 2, t: 5 }, b: { sec: 0, t: 9 }, c: { sec: 5, t: 7 } });
+    expect(offPagePickup(all, ['a'], s)).toBeNull();
+    expect(offPagePickup(all, ['a', 'b', 'c'], store({ a: { sec: 2, t: 5 } }))).toBeNull();
+    expect(offPagePickup(all, [], fake())).toBeNull();
+    expect(offPagePickup(all, [], throwing)).toBeNull();
   });
 });
