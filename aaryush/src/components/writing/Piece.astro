@@ -2,6 +2,7 @@
 import { pieceLabel, type PieceView } from '../../lib/writing';
 import type { Placement } from '../../lib/writing-layout';
 import ObjectLetter from './ObjectLetter.astro';
+import ObjectNote from './ObjectNote.astro';
 import ObjectPaper from './ObjectPaper.astro';
 import ObjectSheet from './ObjectSheet.astro';
 
@@ -33,6 +34,7 @@ if (piece.shape === 'paper') vars.push(`--n:${Math.min(n, 6)}`);
   <span class="cast" aria-hidden="true"></span>
   {piece.shape === 'letter' && <ObjectLetter folds={heights.length} />}
   {piece.shape === 'paper' && <ObjectPaper sheets={Math.min(n, 6)} />}
+  {piece.shape === 'note' && <ObjectNote cards={Math.min(n, 4)} />}
   {piece.shape === 'sheet' && <ObjectSheet />}
   <a class="piece-link" href={`/writing/${piece.slug}`} aria-label={pieceLabel(piece.title, piece.kind, piece.minutes)}>{piece.title}</a>
   <p class="piece-meta mono">

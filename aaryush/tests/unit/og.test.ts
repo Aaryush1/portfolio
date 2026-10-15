@@ -16,6 +16,7 @@ const cards: [string, OgCard][] = [
   ['company, 6 systems (capped)', { type: 'company', kicker: 'Company', title: 'A Very Long Company Name Inc', seed: 13, systems: Array.from({ length: 6 }, (_, i) => ({ title: `System ${i}`, diagram: diagrams.loop })) }],
   ['letter', { type: 'essay', shape: 'letter', kicker: 'LETTER · 14 MIN READ', title: 'This Is Bigger Than Electricity' }],
   ['paper', { type: 'essay', shape: 'paper', kicker: 'PAPER · 6 MIN READ', title: 'The Quiet Singularity' }],
+  ['note', { type: 'essay', shape: 'note', kicker: 'NOTE · 2 MIN READ', title: 'Once, for Good' }],
   ['sheet', { type: 'essay', shape: 'sheet', kicker: 'ESSAY · 3 MIN READ', title: 'A very long title that goes on across several lines of the card to prove it still fits' }],
   ['writing', { type: 'writing' }],
 ];

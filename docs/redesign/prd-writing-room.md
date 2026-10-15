@@ -15,6 +15,7 @@ Each piece of writing is a physical object on a desk. The object's structure sho
 - **Objects by kind:**
   - A **letter** is a folded sheet with one panel per part.
   - A **paper** is a stapled stack with one sheet per section.
+  - A **note** is a clipped stack of warm index cards, one per card of the piece. Closed: a black binder clip at the top centre, a ruled front card with a thin red header rule under the title, and three stepped edges beneath it (each card wider than the one above, widest at the back). It shows the kind, the reading time, the title and the "why" line. Open (hover, focus, or the first phone tap): the cards fan out from the clip, slightly rotated, each showing its number, label and gist, and the widths even out. Matte, 2D at rest, the existing slow easing, and the breakdown is a real list for screen readers. Reduced motion shows the final frame.
   - **Other kinds** (essay, talk and anything later) are designed when the first one is published. Until then, an unknown kind renders as a plain single sheet, so nothing breaks.
 - **Composition:** the objects sit in a tight, deliberate arrangement. There are no large empty gaps. They may be slightly rotated and must not overlap illegibly. The layout is deterministic: the same pieces always land in the same places, and it holds up from 2 pieces to about 15.
 - **Grain and props:** the site's film grain applies to the room, **never to the objects**. Objects are matte and clean. No mug, and no lamp object.
@@ -61,6 +62,7 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
 - **Paper:**
   - **Opening:** the stack slides forward and the cover flips at the staple to reveal the page.
   - **Reading progress:** on a paper's essay page, progress shows as two small piles of sheets, with sheets moving from the unread pile to the read pile as each section passes. This replaces the generic progress bar on papers only.
+- **Note:** a plain page, like the letter's. At each card, a quiet section mark: the top edge of an index card (a faint hairline outline about 9px tall) with the number in amber and the label in mono. The mark widens with each card (58%, 70%, 84%, 100% of the text column, at every screen size). Reading progress, memory and "pick up where you left off" work by card, as they do by section on a paper.
 - **Back:** browser Back returns to the desk with the piece back in place.
 - **Reduced motion:** all transitions are instant.
 
@@ -68,11 +70,14 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
 
 - **Storage:** only `localStorage` (`writing:v1`), wrapped in try/catch, per visitor. There is no backend and no analytics.
 - **Behaviour:**
-  - A piece you've opened before is left slightly pulled out of place, with a thin amber ribbon.
+  - A piece you've opened before is left slightly pulled out of place, with a mark at the part you reached (a piece opened with no recorded progress is marked at part 1). The marks replace the old thin ribbon and are all decoration (aria-hidden):
+    - **Paper:** an amber sticky flag (about 42x22, slightly rotated, with a darker adhesive strip and a small shadow) poking out of the right edge at the height of the section reached.
+    - **Letter:** a faint amber thumbprint (broken concentric ellipses, about half opacity, slightly blurred) on the fold reached. It is a child of that fold's panel, so it rides the fold's own transform, and it sits under the text.
+    - **Note:** the card reached is pulled out of the stack, down and to the right and slightly rotated, with a thin amber edge along its bottom. When fanned it stays a little further out than the others.
   - The essay page tracks the furthest section you reached.
   - Coming back to the essay page offers **"Pick up where you left off"**, which jumps to that section.
 - **Forgetting:** a small, quiet "forget" control on `/writing` clears everything.
-- **E8, the home writing teaser:** if you're partway through a piece, its row on the home page shows the same ribbon and a "Pick up where you left off" link.
+- **E8, the home writing teaser:** if you're partway through a piece, its row on the home page shows its amber dot and ribbon (unchanged by the desk marks) and a "Pick up where you left off" link.
 
 ## W6. Phones, no JS and accessibility
 
@@ -86,7 +91,7 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
   - The breakdown is a real list that screen readers can reach.
   - The night note and dust are `aria-hidden`.
   - The keyboard focus order matches the visual order.
-- **Contrast:** every readable label passes WCAG AA on its darkest surface. Amber is used only for small marks: the full stop, ribbons and one accent line.
+- **Contrast:** every readable label passes WCAG AA on its darkest surface. Amber is used only for small marks: the full stop, the memory marks, ribbons and one accent line.
 
 ## Acceptance criteria
 
@@ -99,7 +104,7 @@ Opening a piece is a real navigation to `/writing/<slug>`, using the site's cros
 3. **Night note:** it renders only for 21:00–07:00, including at the boundary hours, and is absent from the DOM in daytime.
 4. **Opening a piece** navigates to its URL, and Back restores the desk with focus on that piece.
 5. **Signature:** every piece's page draws the signature at the end (before the references on a paper). Paper pages show the two piles, which advance by section.
-6. **Remembering:** after reading a paper to section III and returning, the paper is pulled out with a ribbon, and its page offers to pick up at III. "Forget" clears it, and so does storage throwing.
+6. **Remembering:** after reading a paper to section III and returning, the paper is pulled out with an amber flag at section III, and its page offers to pick up at III. "Forget" clears it, and so does storage throwing.
 7. **No JS:** all pieces are listed, with working links.
 8. **Reduced motion:** the page is static and lit, transitions are instant, there's no dust, and no animation loop is running.
 9. **Unknown kind:** a piece with a kind the desk doesn't know renders as a plain sheet without errors.

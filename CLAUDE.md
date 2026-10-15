@@ -45,7 +45,9 @@ Pieces live in `aaryush/src/content/writing/`. When one is added:
 2. Pick its **kind**. Each kind is a physical object on the /writing desk:
    - `letter` is a folded sheet;
    - `paper` is a stapled stack;
-   - `note` is a clipped stack of index cards, each card wider than the last.
+   - `note` is a clipped stack of index cards with stepped edges when closed (each card wider than the one in front), a fan from the clip when open, and quiet section marks when reading (the top edge of a card, widening 58%, 70%, 84%, 100% of the text column). "Once, for Good" is the first.
+
+   The desk's "where you left off" memory is a mark per kind, replacing the old ribbon: a sticky flag on a paper, a faint amber thumbprint on a letter's fold, and a pulled-out card on a note. The home teaser keeps its dot and ribbon.
 
    A new kind gets its own object, designed together when the first one arrives. Until then it renders as a plain sheet.
 3. Write the **breakdown** together: 3–6 entries with a `label` and an optional `gist` of 5 words or fewer. It's what the object shows when it opens:

@@ -1,6 +1,6 @@
 /**
  * The room remembers you: one script for the three places that show it.
- *  - /writing: pieces you have opened are left pulled out of place, with a thin amber ribbon; a quiet "forget" clears it.
+ *  - /writing: pieces you have opened are left pulled out of place, with a mark where you got to (flag, thumbprint or pulled card); a quiet "forget" clears it.
  *  - an essay page: records the furthest section (papers: essay:section; letters: scroll fraction) and offers "Pick up".
  *  - the home teaser: the same ribbon and a pick-up link for a piece you are partway through.
  * Storage is read and written only through ../lib/writing-memory, which never throws.
@@ -12,23 +12,62 @@ const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 
 const ribbon = () => { const i = document.createElement('i'); i.className = 'ribbon'; i.setAttribute('aria-hidden', 'true'); return i; };
 
 // ---------- the desk ----------
+// "Where you left off": one mark per kind, at the part the visitor reached. All are decoration (aria-hidden).
+//  - paper: an amber sticky flag poking out of the right edge, at the height of the section reached
+//  - letter: a faint amber thumbprint on the fold reached (a child of that fold's panel, so it rides the fold's own transform)
+//  - note: the card reached is pulled out of the stack
+const SVG = 'http://www.w3.org/2000/svg';
+function thumbprint(): SVGSVGElement {
+  const svg = document.createElementNS(SVG, 'svg');
+  svg.setAttribute('class', 'print');
+  svg.setAttribute('viewBox', '0 0 46 58');
+  svg.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 9; i++) {
+    const e = document.createElementNS(SVG, 'ellipse');
+    e.setAttribute('cx', '23'); e.setAttribute('cy', '30');
+    e.setAttribute('rx', String(4 + i * 2.3)); e.setAttribute('ry', String(6 + i * 2.9));
+    e.setAttribute('fill', 'none'); e.setAttribute('stroke', '#F2B544'); e.setAttribute('stroke-width', '1.05');
+    e.setAttribute('stroke-dasharray', `${7 + i * 2} ${1.6 + ((i * 7) % 4)}`);
+    e.setAttribute('stroke-dashoffset', String(i * 5));
+    e.setAttribute('opacity', String(0.9 - i * 0.06));
+    svg.appendChild(e);
+  }
+  return svg;
+}
+function clearMarks(p: HTMLElement) {
+  p.classList.remove('seen');
+  p.querySelectorAll('.flag, .print').forEach((n) => n.remove());
+  p.querySelectorAll('.pulled').forEach((n) => n.classList.remove('pulled'));
+}
+function mark(p: HTMLElement, sec: number, total: number) {
+  const shape = p.dataset.shape;
+  const skin = p.querySelector<HTMLElement>('.skin');
+  if (shape === 'paper' && skin) {
+    const f = document.createElement('span');
+    f.className = 'flag';
+    f.setAttribute('aria-hidden', 'true');
+    f.style.setProperty('--fy', String((sec + 0.5) / total));
+    skin.appendChild(f);
+  } else if (shape === 'letter') {
+    p.querySelector(`.fold-${sec + 1}`)?.appendChild(thumbprint());
+  } else if (shape === 'note') {
+    p.querySelector(`.card.n${sec + 1}`)?.classList.add('pulled');
+    p.querySelector(`.breakdown li:nth-child(${sec + 1})`)?.classList.add('pulled');
+  }
+}
+
 const pieces = Array.from(document.querySelectorAll<HTMLElement>('[data-piece]'));
 if (pieces.length) {
   const button = document.querySelector<HTMLButtonElement>('[data-forget]');
   const paint = () => {
     const mem = readMemory();
     for (const p of pieces) {
-      p.classList.remove('seen');
-      p.querySelector(':scope > .ribbon')?.remove();
+      clearMarks(p);
       const e = mem.pieces[p.dataset.slug ?? ''];
       const total = Number(p.dataset.total) || 0;
       if (!e || !inRange(e.sec, total)) continue;
       p.classList.add('seen');
-      if (e.sec >= 1 && total > 0) {
-        const r = ribbon();
-        r.style.setProperty('--rib', String(Math.min(1, (e.sec + 1) / total)));
-        p.appendChild(r);
-      }
+      if (total > 0) mark(p, Math.min(e.sec, total - 1), total);
     }
     if (button) button.hidden = !pieces.some((p) => p.classList.contains('seen'));
   };

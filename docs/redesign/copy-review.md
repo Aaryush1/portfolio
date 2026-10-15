@@ -91,9 +91,9 @@ Current meta description (search results and link previews):
 
 ---
 
-## 2. About (moved off the homepage; will become a writing piece)
+## 2. About (moved off the homepage; now the writing note "Once, for Good", see section 18)
 
-**Source:** `aaryush/src/data/site.ts` (`site.aboutArchive`, three paragraphs; the first is shown larger)
+**Source:** was `site.aboutArchive` in `aaryush/src/data/site.ts`, removed 2026-10-14 (nothing used it). The text below is kept here for the record.
 
 Current paragraph 1:
 
@@ -685,7 +685,7 @@ The small header strip on each section (a "§" number, a name and a "Sheet" note
 | Section | Strip | Heading | Lead | Source |
 | ------- | ----- | ------- | ---- | ------ |
 | Hero | none | (name) | see section 1 | `components/home/Hero.astro` |
-| About | (removed: moved off the homepage; will become a writing piece) | - | see section 2 | `site.aboutArchive` (no component) |
+| About | (removed: moved off the homepage; now the note "Once, for Good") | - | see section 2 | none (`site.aboutArchive` removed) |
 | How AI fits | § 02 · How AI fits · Sheet 02 / 05 | Four levels where AI changes an organization. | see section 3a | `components/home/Levels.astro` |
 | Work | § 03 · Work · Fig. 3.1 — Timeline, newest first | Companies, and the systems inside them. | see section 5 | `components/home/Timeline.astro` |
 | Writing | § 04 · Writing · Sheet 04 / 05 | Notes on where this is going. | none | `components/home/WritingTeaser.astro` |
@@ -1022,6 +1022,27 @@ Source: `aaryush/src/pages/404.astro` (the room shows only for /writing/<unknown
 
 - Heading (the page's only h1, small and quiet like the desk's kicker): Not on the desk.
 - Link: Back to the desk (from the spec)
+
+Edits:
+
+```
+(any changes)
+```
+
+## 18. "Once, for Good" (the first note)
+
+Source: `aaryush/src/content/writing/once-for-good.md` (kind `note`; four cards, one `##` section each). No subtitle.
+
+**Approved by Aaryush 2026-10-14:** the body (word for word, four cards: One problem, A class of problems, The system, Everyone), the title, the "why" line and the breakdown.
+
+- Title: Once, for Good
+- Why: The short answer to 'so, how do you use AI?'
+- Breakdown (label: gist):
+  - One problem: why solve it twice?
+  - A class of problems: the fixes start adding up
+  - The system: a box that talks back
+  - Everyone: people solve their own
+- Summary (**approved 2026-10-14**): Solving the same problem twice never sat right with me. Here’s what AI changed about that.
 
 Edits:
 

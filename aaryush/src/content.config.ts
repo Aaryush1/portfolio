@@ -42,10 +42,10 @@ const writing = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/writing' }),
   schema: z.object({
     title: z.string(),
-    subtitle: z.string(),
+    subtitle: z.string().default(''),
     date: z.coerce.date(),
     summary: z.string(),
-    kind: z.enum(['letter', 'paper', 'essay', 'talk']),
+    kind: z.enum(['letter', 'paper', 'note', 'essay', 'talk']),
     pdf: z.string().optional(),
     /** One line, handwritten italic on the object (writing room). */
     why: z.string().min(1).optional(),

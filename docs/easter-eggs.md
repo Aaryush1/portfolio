@@ -23,7 +23,7 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | **The drawer** | /writing | A small, quiet drawer that slides open to a contextOS folder. | ✅ |
 | **Every piece signs itself** | Essay pages (letters, papers) | At the end of every piece, the "ag." signature draws itself. | ✅ |
 | **Two piles of paper** | Paper essay pages | Reading progress shown as sheets moving from one pile to the other. | ✅ |
-| **The room remembers you** | /writing and the home teaser | Pieces you've opened sit slightly pulled out with a ribbon, with "pick up where you left off". It's stored only in your own browser. | ✅ |
+| **The room remembers you** | /writing and the home teaser | Pieces you've opened sit slightly pulled out, with a mark at the part you reached: an amber sticky flag on a paper, a faint amber thumbprint on a letter's fold, and the card you reached pulled out of a note's stack. "Pick up where you left off" on the page. It's stored only in your own browser. | ✅ |
 | **General notes** | Home hero, 9pm–7am (footer on phones) | Pencilled "GENERAL NOTES 1. It's past nine. 2. So are you." | ✅ |
 | **contextOS caret** | Home timeline, "Next" line | An amber caret blinks where the period was, as if the name is still being typed. | ✅ |
 | **Type `contextos`** | Home, anywhere outside text fields | The contextOS word re-types itself once with the hero's morph. | ✅ |

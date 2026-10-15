@@ -10,12 +10,6 @@ export const site = {
     settled: { before: 'how ', em: 'anyone', after: ' solves problems' },
     lede: 'Interesting people are the best part of this. Say hi.',
   },
-  /** Unused on the homepage: moving to a writing piece. Kept so the copy isn't lost. */
-  aboutArchive: [
-    'AI is becoming the infrastructure underneath how decisions get made, how expertise gets applied, and how teams create value. The organizations that see this early won’t just be faster. They’ll be built differently.',
-    'That’s the work I do: finding the system underneath how an organization runs, then rebuilding it around AI so it handles a whole class of problems on its own. I’ve done it across healthcare, finance, hiring and education, inside companies and as an advisor.',
-    'If you’re thinking about what AI means for how your organization actually works, I’d like to hear about it.',
-  ],
   contact: {
     /** Split on purpose: never render the joined address or number into HTML (scraper protection). */
     emailParts: ['aaryush', 'outlook.com'],

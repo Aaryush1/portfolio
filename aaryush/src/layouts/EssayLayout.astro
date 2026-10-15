@@ -16,7 +16,7 @@ const month = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric',
     <header class="essay-head" style={`view-transition-name:piece-${slug};view-transition-class:vt-${shape}`}>
       <p class="mono kicker"><a href="/writing">Writing</a> · {month}</p>
       <h1>{title}</h1>
-      <p class="sub">{subtitle}</p>
+      {subtitle && <p class="sub">{subtitle}</p>}
       <p class="mono meta"><span>Aaryush Gupta</span><span>{minutes} min read</span></p>
     </header>
     <div class="pickup-slot" id="pickup"></div>

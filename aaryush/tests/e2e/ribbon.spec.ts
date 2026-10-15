@@ -62,16 +62,15 @@ for (const width of [320, 375, 430, 720]) {
 }
 
 for (const width of [320, 430, 1280]) {
-  test(`the desk's own tick, ${width}px, never meets a title`, async ({ page }) => {
+  test(`the desk's own marks, ${width}px, never meet a title`, async ({ page }) => {
     await seed(page);
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/writing');
-    const ribbons = page.locator('[data-piece] > .ribbon');
-    await expect(ribbons.first()).toBeAttached();
-    for (const p of await page.locator('[data-piece]:has(> .ribbon)').all()) {
-      const tick = await rect(p.locator('> .ribbon'));
-      expect(hits(tick, await rect(p.locator('.piece-link'))), 'tick vs title').toBe(false);
-    }
+    await expect(page.locator('[data-slug="quiet-singularity"] .flag')).toBeAttached();
+    await expect(page.locator('[data-piece] > .ribbon')).toHaveCount(0);
+    const flag = await rect(page.locator('[data-slug="quiet-singularity"] .flag'));
+    expect(hits(flag, await rect(page.locator('[data-slug="quiet-singularity"] .piece-link'))), 'flag vs title').toBe(false);
+    expect(await page.locator('[data-slug="bigger-than-electricity"] .fold .print').count()).toBe(1);
   });
 }
 

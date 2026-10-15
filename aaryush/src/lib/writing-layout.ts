@@ -10,6 +10,7 @@ const MIN_ROT = 0.5;
 export function nominalSize(shape: string): { w: number; h: number } {
   if (shape === 'letter') return { w: 300, h: 478 };
   if (shape === 'paper') return { w: 300, h: 290 };
+  if (shape === 'note') return { w: 300, h: 250 };
   return { w: 260, h: 220 };
 }
 

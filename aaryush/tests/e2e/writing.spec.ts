@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-test('writing index lists essays newest first', async ({ page }) => {
+test('writing index lists every published piece', async ({ page }) => {
   await page.goto('/writing');
   const titles = await page.locator('[data-writing-list] .piece-link').allInnerTexts();
-  expect(titles).toEqual(['This Is Bigger Than Electricity', 'The Quiet Singularity']);
+  expect([...titles].sort()).toEqual(['Once, for Good', 'The Quiet Singularity', 'This Is Bigger Than Electricity']);
 });
 
 test('no-JS: every piece is listed with title, kind, minutes, why and a working link', async ({ browser }) => {
@@ -11,8 +11,8 @@ test('no-JS: every piece is listed with title, kind, minutes, why and a working 
   const page = await ctx.newPage();
   await page.goto('/writing');
   const items = page.locator('[data-writing-list] > li');
-  await expect(items).toHaveCount(2);
-  const first = items.first();
+  await expect(items).toHaveCount(3);
+  const first = page.locator('[data-slug="bigger-than-electricity"]');
   await expect(first.getByRole('link', { name: /This Is Bigger Than Electricity — letter, \d+ min read/ })).toHaveAttribute('href', '/writing/bigger-than-electricity');
   await expect(first.locator('.piece-why')).not.toBeEmpty();
   await expect(first.locator('ol.breakdown li')).toHaveCount(4);

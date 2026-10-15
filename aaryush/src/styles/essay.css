@@ -77,3 +77,16 @@ html.js .essay--paper{padding-bottom:max(clamp(72px,10vw,136px),150px)}
 .pickup-slot{max-width:var(--essay-measure);margin:0 auto;height:0;position:relative}
 .pickup{position:absolute;left:0;top:10px;font:400 13px/1.35 var(--mono);letter-spacing:.02em;color:var(--text-2);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
 .pickup:hover{color:var(--text)}
+
+/* A note reads as a plain page; each card opens with a quiet mark: the top edge of an index card, a little wider every time. */
+.essay-body[data-kind="note"]{counter-reset:card}
+.essay-body[data-kind="note"] h2{counter-increment:card;position:relative;width:100%;height:26px;margin:38px auto 16px;padding-top:13px;box-sizing:border-box;
+  font:500 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;text-align:center;white-space:nowrap;color:var(--text-3)}
+.essay-body[data-kind="note"] h2:first-child{margin-top:0}
+.essay-body[data-kind="note"] h2::before{content:counter(card,decimal-leading-zero);margin-right:8px;color:var(--accent);opacity:.8}
+.essay-body[data-kind="note"] h2::after{content:"";position:absolute;inset:0 0 auto 0;height:9px;border:1px solid rgba(255,235,200,.11);border-bottom:none;border-radius:2px 2px 0 0}
+.essay-body[data-kind="note"] h2:nth-of-type(1){width:58%}
+.essay-body[data-kind="note"] h2:nth-of-type(2){width:70%}
+.essay-body[data-kind="note"] h2:nth-of-type(3){width:84%}
+.essay-body[data-kind="note"] h2:nth-of-type(n+4){width:100%}
+.essay-body[data-kind="note"] em{font-family:var(--serif);font-size:1.12em}

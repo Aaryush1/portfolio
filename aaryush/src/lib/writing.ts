@@ -1,4 +1,4 @@
-export const KNOWN_KINDS = ['letter', 'paper'] as const;
+export const KNOWN_KINDS = ['letter', 'paper', 'note'] as const;
 export type KnownKind = (typeof KNOWN_KINDS)[number];
 
 export function wordCount(body: string): number {

@@ -22,7 +22,7 @@ export type OgCard =
   | { type: 'place'; kicker: string; title: string; sub?: string; diagram?: DiagramSpec; seed: number }
   /** A company and the set of systems inside it: name big, one small framed figure per system. */
   | { type: 'company'; kicker: string; title: string; seed: number; systems: { title: string; diagram?: DiagramSpec }[] }
-  | { type: 'essay'; shape: 'letter' | 'paper' | 'sheet'; kicker: string; title: string }
+  | { type: 'essay'; shape: 'letter' | 'paper' | 'note' | 'sheet'; kicker: string; title: string }
   /** /writing is a static cover: it must not change as pieces are published. */
   | { type: 'writing' };
 
@@ -233,6 +233,23 @@ function sheetObj(x: number, y: number, w: number, hh: number, rot: number): El 
   return abs({ left: x, top: y, width: w, height: hh, transform: `rotate(${rot}deg)`, background: 'linear-gradient(160deg,#F1E8D4 0%,#E6DBC3 100%)', boxShadow: '0 26px 50px rgba(0,0,0,.65), 0 4px 10px rgba(0,0,0,.5)', padding: `${40 * k}px ${30 * k}px 0`, flexDirection: 'column' }, bars(w - 60 * k, k));
 }
 
+/** A clipped stack of index cards, each wider than the one above (the desk's note). */
+function noteObj(x: number, y: number, w: number, hh: number, rot: number): El {
+  const cardH = hh * 0.62;
+  const card = (i: number, widthK: number, c: string): El => abs({ left: x + (w * (1 - widthK)) / 2, top: y + i * 18, width: w * widthK, height: cardH, transform: `rotate(${rot}deg)`, background: c, borderRadius: 3, boxShadow: '0 10px 22px rgba(0,0,0,.45)' });
+  return h({ position: 'absolute', left: 0, top: 0, width: W, height: H }, [
+    card(4, 1, '#D2C7AE'),
+    card(3, 0.947, '#D9CEB5'),
+    card(2, 0.893, '#E0D5BC'),
+    card(1, 0.84, '#E6DCC4'),
+    abs({ left: x + w * 0.107, top: y, width: w * 0.787, height: cardH, transform: `rotate(${rot}deg)`, background: 'linear-gradient(160deg,#F1E8D4 0%,#E6DBC3 100%)', borderRadius: 3, boxShadow: '0 14px 30px rgba(0,0,0,.55)', padding: `${cardH * 0.34}px 26px 0`, flexDirection: 'column' }, [
+      abs({ left: 0, right: 0, top: cardH * 0.3, height: 2, background: 'rgba(190,92,80,.55)' }),
+      bars(w * 0.787 - 52, w / 300),
+    ]),
+    abs({ left: x + w / 2 - 24, top: y - 12, width: 48, height: 30, background: '#16171b', borderRadius: 4, transform: `rotate(${rot}deg)` }),
+  ]);
+}
+
 /* ---------- cards ---------- */
 const fit = (text: string, sizes: [number, number][]) => (sizes.find(([max]) => text.length <= max) ?? sizes[sizes.length - 1])[1];
 const root = (children: unknown[]) => h({ width: W, height: H, position: 'relative', background: '#0A0B0E', fontFamily: 'Instrument Sans', color: '#E6E7EA' }, children);
@@ -304,7 +321,7 @@ function company(c: Extract<OgCard, { type: 'company' }>): El {
 }
 
 function essay(c: Extract<OgCard, { type: 'essay' }>): El {
-  const obj = c.shape === 'letter' ? letterObj(150, 120, 300, 392, -4) : c.shape === 'paper' ? paperObj(150, 120, 300, 392, -3) : sheetObj(150, 120, 300, 392, -3);
+  const obj = c.shape === 'letter' ? letterObj(150, 120, 300, 392, -4) : c.shape === 'paper' ? paperObj(150, 120, 300, 392, -3) : c.shape === 'note' ? noteObj(150, 140, 300, 392, -3) : sheetObj(150, 120, 300, 392, -3);
   return root([
     glow(330, 315, 600, 440, warm(0.36), 4),
     obj,

@@ -7,15 +7,14 @@ const reach = async (page: Page, n: number) => {
 const forgetBtn = (page: Page) => page.getByRole('button', { name: /forget what this room remembers/i });
 const mem = (sec: number) => JSON.stringify({ v: 1, pieces: { 'quiet-singularity': { sec, t: 1 } } });
 
-test('read a paper to III, return: it is pulled out with a ribbon and its page offers to pick up at III', async ({ page }) => {
+test('read a paper to III, return: it is pulled out with an amber flag and its page offers to pick up at III', async ({ page }) => {
   await page.goto('/writing/quiet-singularity');
   await reach(page, 2);
   await page.goto('/writing');
   const p = page.locator('[data-slug="quiet-singularity"]');
   await expect(p).toHaveClass(/seen/);
-  await expect(p.locator('.ribbon')).toBeVisible();
-  const color = await p.locator('.ribbon').evaluate((e) => getComputedStyle(e).backgroundColor);
-  expect(color).toBe('rgb(242, 181, 68)'); // --accent
+  await expect(p.locator('.flag')).toHaveCount(1);
+  await expect(p.locator('.flag')).toHaveAttribute('aria-hidden', 'true');
   await page.goto('/writing/quiet-singularity');
   const link = page.getByRole('link', { name: /Pick up where you left off/ });
   await expect(link).toContainText(/III/);
@@ -64,13 +63,13 @@ test('a letter remembers the fold reached from the scroll fraction and pick up s
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(300);
 });
 
-test('forget clears everything and the ribbon goes', async ({ page }) => {
+test('forget clears everything and the marks go', async ({ page }) => {
   await page.goto('/writing/quiet-singularity');
   await reach(page, 2);
   await page.goto('/writing');
   await forgetBtn(page).click();
   await expect(page.locator('[data-slug="quiet-singularity"]')).not.toHaveClass(/seen/);
-  await expect(page.locator('.ribbon')).toHaveCount(0);
+  await expect(page.locator('.flag, .print, .pulled')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('writing:v1'))).toBeNull();
   await expect(forgetBtn(page)).toHaveCount(0);
   await page.goto('/writing/quiet-singularity');
@@ -107,7 +106,7 @@ test('storage that throws never breaks the room or the essay', async ({ page }) 
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/writing');
-  await expect(page.locator('[data-piece]')).toHaveCount(2);
+  await expect(page.locator('[data-piece]')).toHaveCount(3);
   await page.goto('/writing/quiet-singularity');
   await reach(page, 2);
   await expect(page.getByRole('link', { name: /Pick up where you left off/ })).toHaveCount(0);
@@ -117,7 +116,7 @@ test('storage that throws never breaks the room or the essay', async ({ page }) 
 test('corrupt storage is ignored', async ({ page }) => {
   await page.addInitScript((m) => localStorage.setItem('writing:v1', m), mem(99));
   await page.goto('/writing');
-  // sec 99 is beyond the piece's sections: no ribbon pointing at a section that does not exist
+  // sec 99 is beyond the piece's sections: no mark pointing at a section that does not exist
   await expect(page.locator('[data-slug="quiet-singularity"]')).not.toHaveClass(/seen/);
 });
 
@@ -140,7 +139,7 @@ test('Back focus still works: the last piece lives in writing:v1.last', async ({
   await expect(page.locator('[data-slug="quiet-singularity"] .piece-link')).toBeFocused();
 });
 
-test('reduced motion: the ribbon and pulled-out state show with no transition', async ({ browser }) => {
+test('reduced motion: the marks and pulled-out state show with no transition', async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await ctx.newPage();
   await page.goto('/writing/quiet-singularity');
@@ -149,7 +148,7 @@ test('reduced motion: the ribbon and pulled-out state show with no transition', 
   await page.goto('/writing');
   await expect(page.locator('[data-slug="quiet-singularity"]')).toHaveClass(/seen/);
   // the room's own lighting still settles on load (Tasks 2 and 3); the remembered state itself must not animate
-  const mine = await page.evaluate(() => document.getAnimations().filter((a) => (a as CSSTransition).transitionProperty === 'translate' || (a.effect as KeyframeEffect | null)?.target?.classList?.contains('ribbon')).length);
+  const mine = await page.evaluate(() => document.getAnimations().filter((a) => (a as CSSTransition).transitionProperty === 'translate' || (a.effect as KeyframeEffect | null)?.target?.classList?.contains('flag')).length);
   expect(mine).toBe(0);
   expect(await page.locator('[data-slug="quiet-singularity"]').evaluate((e) => getComputedStyle(e).translate)).toBe('12px 16px');
   await ctx.close();
