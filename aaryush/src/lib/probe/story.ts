@@ -3,7 +3,9 @@
  * Log lines exist only once Aaryush has approved them (§4), so a log thought without a dated approval is an error, not a draft.
  * Memories point at companies (/work/<slug>) and transmissions at writing (/writing/<slug>); a bad ref fails the build.
  */
-export type BeatId = 'boot' | 'liftoff' | 'replication' | 'drift' | 'bustle' | 'landing' | 'seam';
+import type { Timing } from './director';
+
+export type BeatId ='boot' | 'liftoff' | 'replication' | 'drift' | 'bustle' | 'landing' | 'seam';
 export type ThoughtKind = 'log' | 'memory' | 'transmission';
 export interface ApprovedLine { text: string; approved: string }
 export interface Thought { kind: ThoughtKind; atMs: number; ref?: string; line?: ApprovedLine }
@@ -33,4 +35,4 @@ export function validateStory(beats: readonly Beat[], known: { companies: readon
   return errs;
 }
 
-export const timingOf = (beats: readonly Beat[], idleMs: number, cooldownMs: number) => ({ dwellMs: beats.map((b) => b.dwellMs), idleMs, cooldownMs });
+export const timingOf = (beats: readonly Beat[], idleMs: number, cooldownMs: number): Timing => ({ dwellMs: beats.map((b) => b.dwellMs), idleMs, cooldownMs });

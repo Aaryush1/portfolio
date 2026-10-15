@@ -125,3 +125,10 @@ The key decisions behind the October 2026 redesign, and why. Every entry is date
 - **Filter:** apparent magnitude 7.5 or brighter, a known distance (HYG marks unknown as 100000), and the Sun (id 0) dropped. Missing colour index defaults to 0.65. Sorted by absolute magnitude.
 - **Result:** 24,940 stars, 349,164 bytes raw, 300,748 gzipped.
 - **Format (little-endian, exactly 4 + 14n bytes):** `uint32 n`, `float32 x[n]`, `y[n]`, `z[n]` (parsecs, equatorial J2000, Sun at origin), `uint8 absmag[n]` (`q/10 - 10`), `uint8 ci[n]` (`q/100 - 0.5`). Out-of-range magnitude and colour clamp rather than wrap.
+
+## Old QR codes go to the contact page (2026-10-15)
+
+- **The rule:** `/?met|about|note` redirects (temporary, 307) to `/card` and keeps the query, while a plain `/` is untouched.
+- **Why:** these codes exist to save the contact, and this follows Aaryush's call that the QR code opens the contact page.
+- **The guard:** `tests/unit/card-redirect.test.ts` pins it.
+- **The limit:** `astro preview` doesn't run Vercel redirects, so it's verified on the Vercel preview.
