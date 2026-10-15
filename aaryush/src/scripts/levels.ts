@@ -64,6 +64,8 @@ function update() {
 // the level just like a tap, until the visitor scrolls on. Only the figure takes the gesture; the rest of the page
 // keeps its normal pinch-zoom.
 const PINCH_STEP = 40; // px of finger-distance change per level
+let pinchUntil = 0; // a finger of a pinch that lifts over a row is not a tap on that row
+const pinching = () => performance.now() < pinchUntil;
 function stepLevel(dir: 1 | -1) {
   const cur = hover ?? focus ?? pinned ?? scrolled ?? 1;
   const next = Math.min(4, Math.max(1, cur + dir));
@@ -75,21 +77,36 @@ function stepLevel(dir: 1 | -1) {
   update();
 }
 if (fig) {
-  let d0 = 0;
+  // Real fingers rarely land together or both inside the band: the first touch often starts on it and the second
+  // anywhere. So a gesture is "armed" by a touch that starts on the figure, and from then on the whole document is
+  // watched (non-passive) until every finger lifts. Distances come from the live touches list (clientX/Y).
+  let armed = false, d0 = 0;
   const dist = (t: TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-  fig.addEventListener('touchstart', (e) => { d0 = e.touches.length === 2 ? dist(e.touches) : 0; }, { passive: true });
-  fig.addEventListener('touchmove', (e) => {
-    if (e.touches.length !== 2 || !d0) return;
-    e.preventDefault();
+  window.addEventListener('touchstart', (e) => {
+    if (!armed && fig.contains(e.target as Node)) armed = true;
+    if (armed && e.touches.length === 2) { d0 = dist(e.touches); pinchUntil = Infinity; }
+  }, { passive: true, capture: true });
+  window.addEventListener('touchmove', (e) => {
+    if (!armed || e.touches.length !== 2) return;
+    if (e.cancelable) e.preventDefault(); // keeps the browser from taking the pinch as page zoom or a scroll
+    if (!d0) { d0 = dist(e.touches); return; }
     const d = dist(e.touches);
     while (Math.abs(d - d0) >= PINCH_STEP) {
       const dir = d > d0 ? 1 : -1;
       stepLevel(dir);
       d0 += dir * PINCH_STEP;
     }
-  }, { passive: false });
-  fig.addEventListener('touchend', () => { d0 = 0; }, { passive: true });
-  fig.addEventListener('touchcancel', () => { d0 = 0; }, { passive: true });
+  }, { passive: false, capture: true });
+  const lift = (e: TouchEvent) => {
+    if (e.touches.length < 2) { d0 = 0; if (pinchUntil === Infinity) pinchUntil = performance.now() + 400; }
+    if (e.touches.length === 0) armed = false;
+  };
+  window.addEventListener('touchend', lift, { passive: true, capture: true });
+  window.addEventListener('touchcancel', lift, { passive: true, capture: true });
+  // iOS Safari reports pinches as gestures; claim them over the figure only.
+  for (const type of ['gesturestart', 'gesturechange']) {
+    fig.addEventListener(type, (e) => e.preventDefault());
+  }
 
   // Trackpad pinch arrives as wheel + ctrlKey. Only claimed while over the figure; ctrl+wheel elsewhere is untouched.
   let acc = 0, lockedUntil = 0, idle = 0;
@@ -116,7 +133,7 @@ rows.forEach(({ el, depth }) => {
   });
   // Touch has no hover: a tap on a row pins its level, tapping it again lets go.
   el.addEventListener('pointerup', (e) => {
-    if (e.pointerType !== 'touch' || (e.target as Element).closest('a')) return;
+    if (e.pointerType !== 'touch' || (e.target as Element).closest('a') || pinching()) return;
     pinned = pinned === depth ? null : depth;
     update();
   });

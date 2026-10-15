@@ -268,7 +268,26 @@ test.describe('phones: the level nearest the middle of the screen is the active 
       for (let i = 1; i <= n; i++) await touch('touchMove', from + ((to - from) * i) / n);
       await touch('touchEnd', null);
     };
-    const y0 = await page.evaluate(() => scrollY);
+    // Real fingers: the first lands on the band, the second well outside it (below, on the list). The page must not zoom.
+    const outsidePinch = async (apart: boolean) => {
+      const ax = cx, ay = cy, bx = cx, by = box.y + box.height + 150; // finger B: on the level text
+      const pts = (k: number) => [{ x: ax, y: ay, id: 1 }, { x: bx, y: by + (apart ? k : -k), id: 2 }];
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: ax, y: ay, id: 1 }] });
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: pts(0) });
+      for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: pts(i * 12) });
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    };
+    await outsidePinch(true); // 96px apart with the second finger off the band: one or two levels in
+    await expect.poll(async () => Number(await fig(page).getAttribute('data-level'))).toBeGreaterThan(2);
+    expect(await page.evaluate(() => visualViewport!.scale)).toBe(1);
+    await toCentre(page, 3); // scrolling on releases the pin
+    await expect(fig(page)).toHaveAttribute('data-level', '3');
+    await outsidePinch(false);
+    await expect(fig(page)).toHaveAttribute('data-level', '1');
+    expect(await page.evaluate(() => visualViewport!.scale)).toBe(1);
+    await toCentre(page, 2);
+    await expect(fig(page)).toHaveAttribute('data-level', '2');
+    const y1 = await page.evaluate(() => scrollY);
     await pinch(60, 105); // fingers apart: one level in
     await expect(fig(page)).toHaveAttribute('data-level', '3');
     await pinch(60, 105);
@@ -282,10 +301,28 @@ test.describe('phones: the level nearest the middle of the screen is the active 
     await expect(fig(page)).toHaveAttribute('data-level', '1');
     await pinch(105, 60); // already at the top
     await expect(fig(page)).toHaveAttribute('data-level', '1');
-    expect(await page.evaluate(() => scrollY)).toBe(y0); // the gesture never scrolled the page
+    expect(await page.evaluate(() => scrollY)).toBe(y1); // the gesture never scrolled the page
+    expect(await page.evaluate(() => visualViewport!.scale)).toBe(1);
     // the pin holds until the visitor scrolls on
     await toCentre(page, 3);
     await expect(fig(page)).toHaveAttribute('data-level', '3');
+    await context.close();
+  });
+
+  test('a real browser pinch gesture over the band steps a level and does not zoom the page', async ({ browser, browserName }) => {
+    test.skip(browserName !== 'chromium', 'CDP gesture synthesis');
+    test.slow();
+    const context = await browser.newContext(phone);
+    const page = await context.newPage();
+    await page.goto('/');
+    await fig(page).scrollIntoViewIfNeeded();
+    await toCentre(page, 2);
+    await expect(fig(page)).toHaveAttribute('data-level', '2');
+    const cdp = await context.newCDPSession(page);
+    const box = (await fig(page).boundingBox())!;
+    await cdp.send('Input.synthesizePinchGesture', { x: box.x + box.width / 2, y: box.y + box.height / 2, scaleFactor: 2.2, relativeSpeed: 300, gestureSourceType: 'touch' });
+    await expect.poll(async () => Number(await fig(page).getAttribute('data-level'))).toBeGreaterThan(2);
+    expect(await page.evaluate(() => visualViewport!.scale)).toBe(1);
     await context.close();
   });
 
