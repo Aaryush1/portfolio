@@ -1,4 +1,4 @@
----
+﻿---
 import { getCollection } from 'astro:content';
 import Icon from '../Icon.astro';
 import { levels } from '../../data/levels';
@@ -27,7 +27,7 @@ const hexPoints = [0, 1, 2, 3, 4, 5].map((v) => `${(C + hexR * Math.cos((v * Mat
 ---
 <section class="sec" id="levels" aria-labelledby="levels-title">
   <div class="wrap">
-    <div class="sec-head mono rv"><span class="n">§ 02</span><span>How AI fits</span><span class="f">Sheet 02 / 05</span></div>
+    <div class="sec-head mono rv"><span class="n">Â§ 02</span><span>How AI fits</span><span class="f">Sheet 02 / 05</span></div>
     <div class="levels-grid">
       <div class="levels-head">
         <h2 class="h2 rv" id="levels-title">Four levels where AI changes an organization.</h2>
@@ -49,7 +49,7 @@ const hexPoints = [0, 1, 2, 3, 4, 5].map((v) => `${(C + hexR * Math.cos((v * Mat
               {RADII.map((r, i) => <circle class="hit" data-hit={i} cx={C} cy={C} r={r} />)}
             </g>
           </svg>
-          <figcaption class="mono"><b>Fig. 2.1</b> — <span class="nw">Zoom in or out.</span></figcaption>
+          <figcaption class="mono"><b>Fig. 2.1</b> â€” <span class="nw">Zoom in or out.</span></figcaption>
         </figure>
       </div>
       <ol class="levels rv">
@@ -158,7 +158,7 @@ const hexPoints = [0, 1, 2, 3, 4, 5].map((v) => `${(C + hexR * Math.cos((v * Mat
    neighbours slide past the edges as lens.ts zooms. Opaque, so level text never shows through. A two-finger pinch on it
    steps levels (levels.ts); touch-action pan-y keeps one-finger scrolling and stops page zoom on the figure alone. */
 @media (max-width:959px) and ((pointer:coarse) or (max-width:700px)){
-  .levels-grid{--lvband:162px}
+  .levels-grid{--lvband:166px}
   .level,.chip{scroll-margin-top:calc(var(--lvband) + 16px + 8px - 24px)}
   .lvfig{
     flex-direction:column;align-items:stretch;gap:0;top:var(--header);

@@ -107,7 +107,7 @@ test('reduced motion: still full picture, no frame loop, ring still highlights',
   await page.waitForTimeout(600);
   await expect(fig(page)).toHaveAttribute('data-zoom', '0');
   expect(await fig(page).evaluate((el) => el.getAnimations({ subtree: true }).length)).toBe(0);
-  expect(await page.evaluate(() => (window as any).__raf)).toBe(0);
+  // (a page-wide rAF count no longer works: the live sky chart shares the page; data-running=false above is the figure's own proof)
   await page.mouse.move(0, 0);
   await expect(fig(page)).toHaveAttribute('data-level', '');
   await context.close();
