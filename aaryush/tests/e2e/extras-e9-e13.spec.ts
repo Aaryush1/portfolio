@@ -18,7 +18,8 @@ test.describe('E9 "Save contact" becomes "Saved."', () => {
     expect(dl.suggestedFilename()).toBe('Aaryush Gupta.vcf');
     await expect(label(btn)).toHaveText('Saved.');
     await expect(btn).toHaveClass(/is-saved/);
-    await expect(btn).toHaveAccessibleName('Contact saved');
+    // (one announcement only: the status line says "Contact saved"; the button just carries its new label)
+    await expect(btn).not.toHaveAttribute('aria-label', /.+/);
     const status = page.locator('[data-contact="hero"] [data-save-status]');
     await expect(status).toHaveAttribute('aria-live', 'polite');
     await expect(status).toHaveText('Contact saved');
@@ -31,7 +32,7 @@ test.describe('E9 "Save contact" becomes "Saved."', () => {
     await btn.scrollIntoViewIfNeeded();
     await Promise.all([page.waitForEvent('download'), btn.click()]);
     await expect(label(btn)).toHaveText('Saved.');
-    await expect(btn).toHaveAccessibleName('Contact saved');
+    await expect(btn).not.toHaveAttribute('aria-label', /.+/);
   });
 
   test('a failed build never morphs the label or sets the saved state', async ({ page }) => {
@@ -39,8 +40,14 @@ test.describe('E9 "Save contact" becomes "Saved."', () => {
     await settled(page);
     await page.evaluate(() => { URL.createObjectURL = () => { throw new Error('no blob'); }; });
     const btn = heroSave(page);
-    const [dl] = await Promise.all([page.waitForEvent('download'), btn.click()]);
-    expect(dl.suggestedFilename()).toBe('Aaryush Gupta.vcf'); // the static file still downloads
+    // the click is left to the browser (the link itself goes to LinkedIn; there is no static file), so probe it without following it
+    const left = await btn.evaluate((a) => {
+      let ok = false;
+      document.addEventListener('click', (e) => { ok = !e.defaultPrevented; e.preventDefault(); }, { once: true });
+      a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+      return ok;
+    });
+    expect(left).toBe(true);
     await page.waitForTimeout(900);
     await expect(label(btn)).toHaveText('Save contact');
     await expect(btn).not.toHaveClass(/is-saved/);
@@ -76,7 +83,8 @@ test.describe('E10 the deploy hash', () => {
     await page.goto('/');
     // located by place, not role. The cell has no role (a role on a dl row fails axe); its text carries the date and commit.
     const cell = page.locator('#hero .dep');
-    await expect(cell).toContainText(`${new Date().getFullYear()}.${String(new Date().getMonth() + 1).padStart(2, '0')} · ${gitShort()}`);
+    // the date is the build's, not today's (a build from last month must still pass at month-end), so only its format is checked
+    await expect(cell).toContainText(new RegExp(`\\d{4}\\.\\d{2} · ${gitShort()}`));
   });
 
   test('focus and hover reveal the hash, and nothing around it moves', async ({ page }) => {
@@ -86,10 +94,10 @@ test.describe('E10 the deploy hash', () => {
     const sha = cell.locator('.sha');
     await expect(sha).toHaveCSS('opacity', '0');
     const before = await cell.boundingBox();
-    await cell.focus();
+    await cell.locator('button').focus();
     await expect(sha).toHaveCSS('opacity', '1');
     expect(await cell.boundingBox()).toEqual(before);
-    await cell.evaluate((el) => (el as HTMLElement).blur());
+    await page.evaluate(() => (document.activeElement as HTMLElement).blur());
     await page.mouse.move(0, 0);
     await expect(sha).toHaveCSS('opacity', '0');
     await cell.hover();
@@ -110,7 +118,7 @@ test.describe('E11 type "ag."', () => {
     await page.goto('/');
     await settled(page);
     const mark = page.locator('svg.mark-svg:not([data-signature])').first();
-    await page.waitForTimeout(2500); // let the first-visit draw-on finish
+    await expect(page.locator('html')).not.toHaveClass(/mark-first/); // the first-visit draw-on has finished
     await expect(mark).not.toHaveClass(/is-playing/);
     await page.locator('body').click({ position: { x: 5, y: 5 } });
     await page.keyboard.type('ag.');

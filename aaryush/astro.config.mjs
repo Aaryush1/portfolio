@@ -13,7 +13,10 @@ const gitSha = readShortSha(() => execSync('git rev-parse --short HEAD', { stdio
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://aaryush.com',
-	integrations: [sitemap()],
+	// Parallel builders set ASTRO_OUT_DIR so two builds never write the same dist/.
+	outDir: process.env.ASTRO_OUT_DIR || './dist',
+	// /qr is a private tool page (noindex), so it stays out of the sitemap.
+	integrations: [sitemap({ filter: (page) => !/\/qr\/?$/.test(page) })],
 	markdown: { rehypePlugins: [rehypeRaw, rehypeCitations, rehypeReferences] },
 	// Inline the (small) stylesheets so first paint doesn't wait on a CSS round trip and then the fonts it references.
 	build: { inlineStylesheets: 'always' },

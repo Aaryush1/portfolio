@@ -17,6 +17,10 @@ ol,ul{margin:0;padding:0;list-style:none}
 svg{display:block}
 ::selection{background:rgba(242,181,68,.28);color:#fff}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+/* Skip link: off screen until it takes focus, then the house mono label with the amber ring. */
+.skip{position:fixed;left:12px;top:12px;z-index:200;padding:11px 14px 10px;border:1px solid var(--accent);border-radius:8px;background:var(--s2);color:var(--text);transform:translateY(-200%)}
+.skip:focus,.skip:focus-visible{transform:none;outline:2px solid var(--accent);outline-offset:3px}
+main:focus{outline:none}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .wrap{max-width:calc(var(--maxw) + var(--gutter)*2);margin:0 auto;padding:0 var(--gutter)}
 .mono{font-family:var(--mono);font-size:12px;line-height:1.4;letter-spacing:.06em;text-transform:uppercase;font-weight:400}
@@ -61,7 +65,7 @@ html.locked .bg i{animation-play-state:paused} /* a pop-up covers the page: stop
   .js .enter.d4{animation-delay:.36s}.js .enter.d5{animation-delay:.6s}
   @keyframes enter{to{opacity:1;transform:none}}
   .js .rv{opacity:0;transform:translateY(14px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out)}
-  .js .rv.in{opacity:1;transform:none}
+  .js .rv.in,.js.rv-fallback .rv{opacity:1;transform:none}
 }
 /* ---------- Sections ---------- */
 .sec{position:relative;padding:clamp(72px, 10vw, 136px) 0}

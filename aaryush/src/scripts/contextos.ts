@@ -10,6 +10,7 @@ import { createMorph } from './morph';
 
 const WORD = 'contextOS';
 const TINT_MS = 2400;
+const BUSY_MAX_MS = 1500;
 
 const line = document.querySelector<HTMLElement>('.tl-wrap > .next');
 const word = line?.querySelector<HTMLElement>('.nx-word') ?? null;
@@ -39,7 +40,10 @@ if (line && word && dot) {
     // Re-type: the old letters are dropped and the word arrives letter by letter, all of it new.
     morph!.transition([[WORD, false]], true, morphTiming(changedLetters('', WORD)));
     // Busy until every letter has landed and settled, so a repeat trigger in the meantime is ignored.
-    Promise.allSettled(word!.getAnimations({ subtree: true }).map((a) => a.finished)).then(() => { busy = false; });
+    // (with a ceiling: an animation that never finishes, say in a hidden tab, must not leave the word busy for good)
+    const done = Promise.allSettled(word!.getAnimations({ subtree: true }).map((a) => a.finished));
+    const ceiling = new Promise((r) => window.setTimeout(r, BUSY_MAX_MS));
+    Promise.race([done, ceiling]).then(() => { busy = false; });
   }
 
   const onScreen = () => { const r = line.getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight; };

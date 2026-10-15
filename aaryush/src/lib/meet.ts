@@ -25,6 +25,16 @@ const HOST = /^(?:[\p{L}\p{N}_-]+\.)+(?:\p{L}{2,24}|xn--[a-z0-9-]{2,20})$/iu;
 // Separators and brackets that can sit in front of, between or after the parts of a link.
 const SEPARATORS = /[,;:()[\]{}"'*|\\/<>?#&=“”‘’–—]+/u;
 const ALNUM = /[\p{L}\p{N}]/u;
+// Hidden characters that can be threaded through a link to break the tests below: format characters (\p{Cf}: soft hyphen,
+// zero-width and bidi marks, the tag block) and combining marks (\p{M}, which includes the variation selectors). Format
+// characters are removed from the saved text too; marks only for the link test, so accented and non-Latin words keep theirs.
+const HIDDEN = /[\p{Cf}\p{M}­︀-️\u{e0000}-\u{e007f}\u{e0100}-\u{e01ef}]/gu;
+const FORMAT = /[\p{Cf}\u{e0000}-\u{e007f}]/gu;
+// Links with no scheme and no letters-only TLD: IP literals, localhost, host:port and dotted host/path.
+const IPV4 = /^(?:\d{1,3}\.){3}\d{1,3}$/;
+const IPV6 = /\[[0-9a-f:.]*:[0-9a-f:.]*\]/i;
+const HOST_PORT = /^(?=[\p{L}\p{N}_.-]*\p{L})[\p{L}\p{N}_-]+(?:\.[\p{L}\p{N}_-]+)*:\d{1,5}(?![\p{L}\p{N}])/u;
+const HOST_PATH = /^(?=[\p{L}\p{N}_.-]*\p{L})[\p{L}\p{N}_-]+(?:\.[\p{L}\p{N}_-]+)+\//u;
 
 const trimEdges = (s: string) => {
   let a = 0;
@@ -36,11 +46,14 @@ const trimEdges = (s: string) => {
 
 // Over-strips on purpose: anything shaped like label.label with a letters-only TLD is dropped, so "Mr.Smith" and "Node.js"
 // go too. A missed link in someone's saved contact is worse than a lost word.
-function isLink(token: string): boolean {
-  if (token.includes('://') || token.includes('@') || SCHEME.test(token)) return true;
+function isLink(raw: string): boolean {
+  const token = raw.replace(HIDDEN, '');
+  if (token.includes('://') || token.includes('@') || SCHEME.test(token) || IPV6.test(token)) return true;
+  const lead = token.replace(/^[^\p{L}\p{N}]+/u, '');
+  if (HOST_PORT.test(lead) || HOST_PATH.test(lead)) return true;
   for (const piece of token.split(SEPARATORS)) {
     const p = trimEdges(piece);
-    if (p && (/^www\./i.test(p) || HOST.test(p))) return true;
+    if (p && (/^www\./i.test(p) || /^localhost$/i.test(p) || IPV4.test(p) || HOST.test(p))) return true;
   }
   return false;
 }
@@ -51,7 +64,7 @@ export function clean(raw: unknown, max: number): string {
   let head = raw.slice(0, RAW_CAP);
   const last = head.charCodeAt(head.length - 1);
   if (last >= 0xd800 && last <= 0xdbff) head = head.slice(0, -1); // never end on half an emoji
-  const s = head.normalize('NFKC').replace(DOTS, '.').replace(/[\t\r\n]/g, ' ').replace(CONTROL, '').replace(/[<>]/g, '');
+  const s = head.normalize('NFKC').replace(DOTS, '.').replace(/[\t\r\n]/g, ' ').replace(CONTROL, '').replace(FORMAT, '').replace(/[<>]/g, '');
   const kept = s.split(/\s+/).filter((t) => t && !isLink(t)).join(' ');
   return Array.from(kept).slice(0, max).join('').trim();
 }
@@ -72,7 +85,7 @@ export function cleanMeet(m: { met?: unknown; about?: unknown; note?: unknown },
   return { met: clean(m.met, LIMITS.where), about: cleanAbout(m.about, known), note: clean(m.note, LIMITS.note) };
 }
 
-export const isEmpty = (m: Meet) => !m.met && !m.note && m.about.length === 0;
+const isEmpty = (m: Meet) => !m.met && !m.note && m.about.length === 0;
 
 export function hasMeetParams(search: string): boolean {
   const p = new URLSearchParams(search);

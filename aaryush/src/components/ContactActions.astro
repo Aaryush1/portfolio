@@ -6,8 +6,10 @@ const { variant } = Astro.props;
 const c = site.contact;
 const [given, ...rest] = site.name.split(' ');
 const family = rest.join(' ');
-// "Save contact": href is the static .vcf (the no-JS fallback). scripts/contact-card.ts replaces the click with a vCard built
-// at runtime so it can carry the "where we met" note; it reads this instance's own [data-obf][data-v] anchors below.
+// "Save contact": there is no vCard file on the server (it would serve the address and number in plain text). scripts/contact-card.ts
+// builds the card in the browser at click time, from this instance's own [data-obf][data-v] anchors below, and downloads it as a
+// blob, so it can also carry the "where we met" note. The href is only LinkedIn, for the rare click where the card can't be built;
+// without JavaScript the button is hidden (the icon buttons remain).
 // Selector dependency (E4): the print contact lines (scripts/site.ts, beforeprint) read the HERO instance's
 // [data-obf][data-v] anchors, so keep that markup and the data-contact="hero" wrapper stable.
 // Email and phone: parts are reversed and joined with "|", so neither the address nor the number appears in HTML.
@@ -21,7 +23,7 @@ const links = [
 ] as const;
 ---
 <div class="cta" data-contact={variant}>
-  <a class="btn btn-primary" href={c.vcard} download="Aaryush Gupta.vcf" data-vcard data-given={given} data-family={family} data-url={site.url}><Icon name="card" class="ic-card" /><Icon name="check" class="ic-check" /><span class="save-label">Save contact</span></a>
+  <a class="btn btn-primary" href={c.linkedin} rel="noopener" data-filename="Aaryush Gupta.vcf" data-vcard data-given={given} data-family={family} data-url={site.url}><Icon name="card" class="ic-card" /><Icon name="check" class="ic-check" /><span class="save-label">Save contact</span></a>
   <span class="sr-only" role="status" aria-live="polite" data-save-status></span>
   <span class="sep-v" aria-hidden="true"></span>
   <div class="icons">
@@ -83,5 +85,5 @@ const links = [
   .ico{width:44px;height:44px;padding:0}
   .ico .lbl{display:none}
 }
-:global(html:not(.js)) .ico[data-obf]{display:none}
+:global(html:not(.js)) .ico[data-obf],:global(html:not(.js)) .btn-primary[data-vcard],:global(html:not(.js)) .cta .sep-v{display:none}
 </style>

@@ -45,7 +45,8 @@ if (rot && slot) {
     // pacing: nothing advances while the tab is hidden or the hero is offscreen
     let visible = true;
     let pending: (() => void) | null = null;
-    const canRun = () => visible && !document.hidden;
+    // (a pop-up open over the page — html.locked — pauses it too, e.g. after a direct load of /work/<slug>)
+    const canRun = () => visible && !document.hidden && !root.classList.contains('locked');
     const resume = () => {
       if (pending && canRun()) { const f = pending; pending = null; f(); }
     };
@@ -55,7 +56,9 @@ if (rot && slot) {
       : null;
     io?.observe(rot);
     document.addEventListener('visibilitychange', resume);
-    const teardown = () => { io?.disconnect(); document.removeEventListener('visibilitychange', resume); };
+    const lockWatch = new MutationObserver(resume);
+    lockWatch.observe(root, { attributes: true, attributeFilter: ['class'] });
+    const teardown = () => { io?.disconnect(); lockWatch.disconnect(); document.removeEventListener('visibilitychange', resume); };
 
     build(phrases[0]); // same text as the first paint, now as letters
 

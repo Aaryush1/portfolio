@@ -58,3 +58,40 @@ describe('clean: documented trade-offs', () => {
     expect(clean('hmm… ok', 80)).toBe('hmm... ok');
   });
 });
+
+describe('clean: links hidden with invisible characters', () => {
+  const hidden: Record<string, string> = {
+    'soft hyphen': '­',
+    'zero-width space': '​',
+    'zero-width joiner': '‍',
+    'word joiner': '⁠',
+    'combining acute accent': '́',
+    'variation selector': '️',
+    'tag character': '\u{e0041}',
+    'right-to-left mark': '‏',
+  };
+  for (const [name, ch] of Object.entries(hidden)) {
+    it(`drops evil.com with a ${name} inside it`, () => {
+      expect(clean(`before evil${ch}.com after`, 80)).toBe('before after');
+      expect(clean(`before ev${ch}il.c${ch}om after`, 80)).toBe('before after');
+      expect(clean(`before https${ch}://x after`, 80)).toBe('before after');
+    });
+  }
+  it('removes format characters from the saved text but keeps marks on real words', () => {
+    expect(clean('Café​ Zürich', 60)).toBe('Café Zürich');
+    expect(clean('नमस्ते', 60)).toBe('नमस्ते');
+    expect(clean('école', 60)).toBe('école');
+  });
+});
+
+describe('clean: addresses without a scheme or a TLD', () => {
+  const links = ['192.168.0.1', '10.0.0.1/admin', '127.0.0.1:8080', '[::1]', '[2001:db8::1]:80', 'localhost', 'localhost:3000', 'localhost/x',
+    'intranet.corp/admin', 'my-host:8080', 'host:80/path', 'server.local:22', '(192.168.1.1)', 'ssh://host'];
+  for (const link of links) {
+    it(`drops ${link}`, () => expect(clean(`before ${link} after`, 80)).toBe('before after'));
+  }
+  const prose = ['10:30', '3:45pm', 'Dr. Smith', '3.5 hours', 'and/or', '24/7', 'AI/ML', 'v1.2', 'Q&A', '1.5/2', 'Hotel: Hilton', '2026'];
+  for (const word of prose) {
+    it(`keeps ${word}`, () => expect(clean(`before ${word} after`, 80)).toBe(`before ${word} after`));
+  }
+});

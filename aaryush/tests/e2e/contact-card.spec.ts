@@ -1,11 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import jsQR from 'jsqr';
 import { unfold } from '../../src/lib/vcard';
+import { EMAIL, EMAIL_FORMAT, HOST, HOST_NAME, PHONE_DIGITS, PHONE_E164, PHONE_FORMAT, PHONE_FULL, USER } from '../contact-fixture';
 
 // E6: the QR page builds a QR that remembers where Aaryush met someone; the scanner's Save contact carries it.
 
 const BASE = 'https://aaryush.com';
-const SAVED = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
+// computed when read, so a test that runs across midnight still compares against the day it saved on
+const saved = () => new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
 
 /** Rasterize the page's own QR <svg> (its path data) in node and decode it. Returns the encoded text or null. */
 async function decodeQr(page: Page): Promise<string | null> {
@@ -169,7 +171,8 @@ test.describe('E6 /qr: the tool', () => {
 
   test('no network call leaves the origin', async ({ page }) => {
     const external: string[] = [];
-    page.on('request', (r) => { if (!r.url().startsWith('http://localhost:4322') && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) external.push(r.url()); });
+    const origin = new URL(test.info().project.use.baseURL!).origin; // whichever port this run serves on
+    page.on('request', (r) => { if (new URL(r.url()).origin !== origin && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) external.push(r.url()); });
     await page.goto('/qr');
     await where(page).fill('Madison');
     await page.waitForTimeout(300);
@@ -216,13 +219,13 @@ test.describe('E6 /qr: the tool', () => {
     expect(info.minY).toBeGreaterThanOrEqual(4);
   });
 
-  test('without JavaScript: the static QR shows, the tool hides, Save contact keeps the static vCard', async ({ browser }) => {
+  test('without JavaScript: the static QR shows, the tool hides, and there is no dead Save contact button', async ({ browser }) => {
     const ctx = await browser.newContext({ javaScriptEnabled: false });
     const page = await ctx.newPage();
     await page.goto('/qr');
     await expect(page.getByRole('img', { name: 'QR code for aaryush.com' })).toBeVisible();
     await expect(page.locator('[data-qr-form]')).toBeHidden();
-    await expect(page.getByRole('link', { name: 'Save contact' }).first()).toHaveAttribute('href', '/Aaryush%20Contact%20Info.vcf');
+    await expect(page.locator('[data-vcard]').first()).toBeHidden();
     await ctx.close();
   });
 
@@ -267,10 +270,12 @@ test.describe('E6 the person who scans', () => {
       expect(v.text.endsWith('END:VCARD\r\n')).toBe(true);
       expect(v.fields.get('FN')).toBe('Aaryush Gupta');
       expect(v.fields.get('N')).toBe('Gupta;Aaryush;;;');
-      expect(v.fields.get('EMAIL')).toBe('aaryush@outlook.com');
-      expect(v.fields.get('TEL')).toBe('+1 949 331 2850');
+      expect(v.fields.get('EMAIL')).toBe(EMAIL);
+      expect(v.fields.get('EMAIL')).toMatch(EMAIL_FORMAT);
+      expect(v.fields.get('TEL')).toBe(PHONE_FULL);
+      expect(v.fields.get('TEL')).toMatch(PHONE_FORMAT);
       expect(v.fields.get('URL')).toBe(BASE);
-      expect(v.noteText).toBe(`Met at Madison AI Week · ${SAVED} · Talked about: Engineering loop, Writing, pricing AI agents`);
+      expect(v.noteText).toBe(`Met at Madison AI Week · ${saved()} · Talked about: Engineering loop, Writing, pricing AI agents`);
       expect(v.noteText).not.toMatch(/https?:|www\./);
       for (const line of v.text.split('\r\n')) expect(Buffer.byteLength(line)).toBeLessThanOrEqual(75);
     }
@@ -289,14 +294,14 @@ test.describe('E6 the person who scans', () => {
     await expect.poll(() => new URL(page.url()).search).toBe('?x=1');
     const other = await context.newPage();
     await other.goto('/');
-    expect((await saveContact(other)).noteText).toBe(`Saved ${SAVED}`);
+    expect((await saveContact(other)).noteText).toBe(`Saved ${saved()}`);
     await other.close();
   });
 
   test('without params the card still gets the save date, and nothing else', async ({ page }) => {
     await page.goto('/');
     const v = await saveContact(page);
-    expect(v.noteText).toBe(`Saved ${SAVED}`);
+    expect(v.noteText).toBe(`Saved ${saved()}`);
     expect(await page.evaluate(() => sessionStorage.getItem('meet-context'))).toBeNull();
   });
 
@@ -305,12 +310,12 @@ test.describe('E6 the person who scans', () => {
     await expect.poll(() => new URL(page.url()).search).toBe('');
     await page.keyboard.press('Escape'); // the standalone page opens its pop-up; close it to reach the footer
     await expect(page.locator('dialog#popup')).toBeHidden();
-    expect((await saveContact(page, 'footer')).noteText).toBe(`Met at Dinner · ${SAVED}`);
+    expect((await saveContact(page, 'footer')).noteText).toBe(`Met at Dinner · ${saved()}`);
   });
 
   test('unknown, repeated and surplus topics are dropped', async ({ page }) => {
     await page.goto('/?about=writing,writing,nope,advisory,ready-rebound-loop,constructor');
-    expect((await saveContact(page)).noteText).toBe(`Saved ${SAVED} · Talked about: Writing, Gupta Advisory`);
+    expect((await saveContact(page)).noteText).toBe(`Saved ${saved()} · Talked about: Writing, Gupta Advisory`);
   });
 
   test('hostile values: <script>, links, newlines and vCard injection are neutralized', async ({ page }) => {
@@ -341,7 +346,7 @@ test.describe('E6 the person who scans', () => {
   test('params that clean to nothing leave no context but are still stripped', async ({ page }) => {
     await page.goto('/?met=https%3A%2F%2Fevil.example&about=nope');
     await expect.poll(() => new URL(page.url()).search).toBe('');
-    expect((await saveContact(page)).noteText).toBe(`Saved ${SAVED}`);
+    expect((await saveContact(page)).noteText).toBe(`Saved ${saved()}`);
   });
 
   test('when sessionStorage is blocked the card is plain and Save contact still works', async ({ page }) => {
@@ -352,14 +357,14 @@ test.describe('E6 the person who scans', () => {
     await page.goto(CTX);
     await expect.poll(() => new URL(page.url()).search).toBe('?x=1');
     const v = await saveContact(page);
-    expect(v.noteText).toBe(`Saved ${SAVED}`);
-    expect(v.fields.get('EMAIL')).toBe('aaryush@outlook.com');
+    expect(v.noteText).toBe(`Saved ${saved()}`);
+    expect(v.fields.get('EMAIL')).toBe(EMAIL);
   });
 
   test('the served HTML still never holds the email or phone, with or without params', async ({ request }) => {
     for (const path of ['/', '/qr', '/?met=x&about=writing']) {
       const html = await (await request.get(path)).text();
-      for (const s of ['aaryush@outlook.com', 'aaryush@', '@outlook', '9493312850', '949 331 2850', '+1 949', 'mailto:', 'tel:', 'BEGIN:VCARD']) {
+      for (const s of [EMAIL, `${USER}@`, `@${HOST_NAME}`, PHONE_DIGITS, PHONE_FULL.slice(3), PHONE_FULL.slice(0, 6), 'mailto:', 'tel:', 'BEGIN:VCARD']) {
         expect(html, `${path} leaks ${s}`).not.toContain(s);
       }
     }
@@ -375,7 +380,7 @@ test.describe('E6 the person who scans', () => {
     const bodies = await Promise.all(pending);
     expect(bodies.length).toBeGreaterThan(0);
     // specific forms only: the joined address, the host half, the number as written or digits-only, and the two link schemes
-    for (const b of bodies) for (const s of ['aaryush@outlook.com', 'outlook.com', '+1 949', '949 331', '9493312850', '+19493312850', 'mailto:', 'tel:']) expect(b, s).not.toContain(s);
+    for (const b of bodies) for (const s of [EMAIL, HOST, PHONE_FULL.slice(0, 6), PHONE_FULL.slice(3, 10), PHONE_DIGITS, PHONE_E164, 'mailto:', 'tel:']) expect(b, s).not.toContain(s);
   });
 });
 
@@ -389,7 +394,7 @@ test.describe('E6 hardening', () => {
     expect(stored).toEqual({ local: 0, session: 0, cookie: '' });
     // and the visit left no context for a later Save contact in this tab
     await page.goto('/');
-    expect((await saveContact(page)).noteText).toBe(`Saved ${SAVED}`);
+    expect((await saveContact(page)).noteText).toBe(`Saved ${saved()}`);
   });
 
   test('a huge met value cannot stall the page', async ({ page }) => {
@@ -416,10 +421,11 @@ test.describe('E6 hardening', () => {
     expect(notPrevented).toEqual({ ctrl: true, meta: true, shift: true, alt: true, plain: false });
   });
 
-  test('when the card cannot be built the click is not prevented and the static .vcf downloads', async ({ page }) => {
+  test('when the card cannot be built the click is not prevented and the button is not a dead link', async ({ page }) => {
     await page.goto('/');
     await page.locator('[data-contact="hero"] a[data-obf="mail"]').evaluate((e) => e.remove()); // vcardFor() now returns null
-    const notPrevented = await page.locator('[data-contact="hero"] [data-vcard]').evaluate((a) => {
+    const save = page.locator('[data-contact="hero"] [data-vcard]');
+    const notPrevented = await save.evaluate((a) => {
       let ok = false;
       const probe = (e: Event) => { ok = !e.defaultPrevented; e.preventDefault(); }; // runs after our handler (bubble, document first)
       document.addEventListener('click', probe, { once: true });
@@ -427,19 +433,16 @@ test.describe('E6 hardening', () => {
       return ok;
     });
     expect(notPrevented).toBe(true);
-    // a real click goes to the browser's own download of the static file
-    const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('[data-contact="hero"] [data-vcard]').click()]);
-    expect(dl.suggestedFilename()).toBe('Aaryush Gupta.vcf');
-    const text = (await (async () => { const c: Buffer[] = []; for await (const x of await dl.createReadStream()) c.push(x as Buffer); return Buffer.concat(c).toString('utf8'); })());
-    expect(text).toContain('REV:'); // only the static file has it
-    expect(text).not.toContain('NOTE');
+    // there is no vCard file on the server; the link itself points at the LinkedIn profile
+    await expect(save).toHaveAttribute('href', /linkedin\.com\/in\//);
+    expect((await page.request.get('/Aaryush%20Contact%20Info.vcf')).status()).toBe(404);
   });
 
   test('on /qr the footer Save contact still works (plain, dated) and the URL params are ignored', async ({ page }) => {
     await page.goto('/qr?met=Dinner&note=y&about=writing');
     const v = await saveContact(page, 'footer');
-    expect(v.noteText).toBe(`Saved ${SAVED}`);
-    expect(v.fields.get('EMAIL')).toBe('aaryush@outlook.com');
+    expect(v.noteText).toBe(`Saved ${saved()}`);
+    expect(v.fields.get('EMAIL')).toBe(EMAIL);
     const stored = await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }));
     expect(stored).toEqual({ local: 0, session: 0 });
     expect(new URL(page.url()).search).toContain('met=Dinner'); // /qr leaves its own URL alone

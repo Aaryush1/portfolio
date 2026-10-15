@@ -16,7 +16,6 @@ export const site = {
     phoneParts: ['+1', '949', '331', '2850'],
     linkedin: 'https://www.linkedin.com/in/aaryush',
     github: 'https://github.com/Aaryush1',
-    vcard: '/Aaryush%20Contact%20Info.vcf',
   },
   /** /qr: the page Aaryush uses on his phone to make a QR that remembers where he met someone (E6). Draft copy. */
   meet: {

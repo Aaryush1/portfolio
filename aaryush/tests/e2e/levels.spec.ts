@@ -18,7 +18,8 @@ test('lens figure is server-rendered with four rings, hidden from assistive tech
   await context.close();
 });
 
-test('focusing a level zooms the figure to it, and blurring returns to the full picture', async ({ page }) => {
+test('focusing a level zooms the figure to it, and blurring returns to the full picture', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'on phones the figure follows the scroll instead of resting at the full picture (see the phones tests)');
   test.slow();
   await page.goto('/');
   await fig(page).scrollIntoViewIfNeeded();
@@ -88,7 +89,8 @@ test('figure pauses when scrolled away', async ({ page }) => {
   await expect(fig(page)).toHaveAttribute('data-running', 'false');
 });
 
-test('reduced motion: still full picture, no frame loop, ring still highlights', async ({ browser }) => {
+test('reduced motion: still full picture, no frame loop, ring still highlights', async ({ browser, isMobile }) => {
+  test.skip(isMobile, 'on phones the figure follows the scroll (see the phones tests)');
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
   await page.addInitScript(() => {
@@ -111,7 +113,8 @@ test('reduced motion: still full picture, no frame loop, ring still highlights',
   await context.close();
 });
 
-test('figure pauses when scrolled away and comes back as the full picture', async ({ page }) => {
+test('figure pauses when scrolled away and comes back as the full picture', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'on phones coming back lights the level at the middle of the screen (see the phones tests)');
   test.slow();
   await page.goto('/');
   await fig(page).scrollIntoViewIfNeeded();
@@ -151,8 +154,9 @@ test('mini lens stays pinned on a 375px phone and a tap zooms it', async ({ brow
   await row(page, 4).locator('h3').tap();
   await expect(lens).toHaveAttribute('data-level', '4');
   await expectZoomAbove(lens);
+  // tapping it again lets go: below 700px the figure then goes back to following the scroll (which level that is depends on where the row sits)
   await row(page, 4).locator('h3').tap();
-  await expect(lens).toHaveAttribute('data-zoom', '0', { timeout: SETTLE });
+  await expect(lens).toHaveAttribute('data-level', /^[1-4]$/);
   await context.close();
 });
 
@@ -172,4 +176,53 @@ test('a chip reached by keyboard on a 375px phone is not hidden under the pinned
     }, { message: `L${n} chip visible below the pinned lens`, timeout: 5000 }).toBe(true);
   }
   await context.close();
+});
+
+// ---- Task 41: on phones the active level follows the scroll ----
+test.describe('phones: the level nearest the middle of the screen is the active one', () => {
+  const phone = { viewport: { width: 412, height: 915 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 } as const;
+  const toCentre = (page: import('@playwright/test').Page, n: number) =>
+    row(page, n).evaluate((el) => { const r = el.getBoundingClientRect(); window.scrollBy({ top: r.top + r.height / 2 - innerHeight / 2, behavior: 'instant' }); });
+
+  test('scrolling lights each level in turn, the figure follows, taps still work', async ({ browser }) => {
+    test.slow();
+    const context = await browser.newContext(phone);
+    const page = await context.newPage();
+    await page.goto('/');
+    await fig(page).scrollIntoViewIfNeeded();
+    for (const n of [1, 3, 4, 2]) {
+      await toCentre(page, n);
+      await expect(fig(page)).toHaveAttribute('data-level', String(n));
+    }
+    await toCentre(page, 4);
+    await expect(fig(page)).toHaveAttribute('data-level', '4');
+    await expectZoomAbove(fig(page));
+    if (process.env.T41_SHOTS) await page.screenshot({ path: 'C:/Users/aaryu/code/personal/portfolio-explorations/shots/t41-levels-412.png' });
+    // a tap on another row pins it, as before
+    await row(page, 2).locator('h3').tap();
+    await expect(fig(page)).toHaveAttribute('data-level', '2');
+    // scrolling above the list returns to the full picture
+    await page.evaluate(() => document.querySelector('#levels')!.scrollIntoView({ behavior: 'instant' }));
+    await expect(fig(page)).toHaveAttribute('data-level', '');
+    await context.close();
+  });
+
+  test('reduced motion: it still switches, without animation', async ({ browser }) => {
+    const context = await browser.newContext({ ...phone, reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    await page.goto('/');
+    await toCentre(page, 3);
+    await expect(fig(page)).toHaveAttribute('data-level', '3');
+    await expect(fig(page)).toHaveAttribute('data-zoom', '0');
+    await expect(fig(page)).toHaveAttribute('data-running', 'false'); // no frame loop: the switch is instant
+    await context.close();
+  });
+
+  test('a desktop window with a mouse does not follow the scroll', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'touch device');
+    await page.goto('/');
+    await toCentre(page, 3);
+    await page.waitForTimeout(500);
+    await expect(fig(page)).not.toHaveAttribute('data-level', /\d/);
+  });
 });

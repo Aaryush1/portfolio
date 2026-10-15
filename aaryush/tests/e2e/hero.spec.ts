@@ -81,3 +81,22 @@ test('morph keeps the word spaces: every subject reads correctly once it lands',
   }
   expect(seen.length).toBe(subjects.length + 1);
 });
+
+test('the longest rotating phrase fits on one line at 375px, 360px and 320px', async ({ browser }) => {
+  for (const width of [320, 360, 375]) {
+    const context = await browser.newContext({ viewport: { width, height: 740 } });
+    const page = await context.newPage();
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    const m = await page.evaluate(() => {
+      const r2 = document.querySelector('.rot-2') as HTMLElement;
+      const probe = document.createElement('span');
+      probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap';
+      r2.appendChild(probe);
+      probe.textContent = 'how problems solve themselves.';
+      return { avail: r2.parentElement!.getBoundingClientRect().width, need: probe.getBoundingClientRect().width };
+    });
+    expect(m.need, `at ${width}px`).toBeLessThan(m.avail);
+    await context.close();
+  }
+});
