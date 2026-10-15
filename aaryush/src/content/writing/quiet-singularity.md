@@ -55,7 +55,7 @@ draft: false
 
 <p>MiniMax M2.5, released days ago, is the first open-weights model to match Claude Sonnet on independent coding benchmarks.<sup>[16]</sup></p>
 
-<table class="data-table">
+<table class="data-table" tabindex="0">
   <thead>
     <tr>
       <th>Model</th>
