@@ -132,3 +132,11 @@ The key decisions behind the October 2026 redesign, and why. Every entry is date
 - **Why:** these codes exist to save the contact, and this follows Aaryush's call that the QR code opens the contact page.
 - **The guard:** `tests/unit/card-redirect.test.ts` pins it.
 - **The limit:** `astro preview` doesn't run Vercel redirects, so it's verified on the Vercel preview.
+
+## The boot, the seam and /card, approved designs (2026-10-15)
+
+Aaryush approved the round 2 mockups in `portfolio-explorations/probe-boot.html` (`shots/t61-r2-*`) at a high level. The mockups are deliberately simple, and the real build is where the depth goes.
+
+- **Boot:** take B, "the eyelid". From the amber dot, a slit of light spreads sideways and then opens upward, and the sky comes out of a blur. He likes it because it reads like waking up, and like a robot's eye. The boot has no words and no drawing elements. The ground is a soft glow with a figure on it, and there is no drawn horizon.
+- **Seam:** "ag." shrinks while its period grows into the amber dot. The sky and the letters fade out together. Pulling back until stars merge was rejected: "You can't zoom out of the universe. There are always going to be dots."
+- **/card:** layout 2. The real "ag." mark sits above "Continue to website", Save contact and the icons sit in the thumb zone, and the period is the dot. Continue plays the seam's move into the boot.
