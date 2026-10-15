@@ -29,6 +29,7 @@
 .progress::after{content:"";position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(var(--progress,0));background:var(--accent)}
 .progress .tick{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;z-index:1;background:var(--bg)}
 @media (max-width:719px){.essay-body .data-table{display:block;overflow-x:auto}}
+.essay-body .data-table:focus-visible{outline:1px solid var(--accent);outline-offset:4px}
 .essay-body a.cite{color:inherit;text-decoration:none}
 .essay-body .references li:target{color:var(--text)}
 /* the marker button: a larger tap target than the glyphs, without moving the line */
