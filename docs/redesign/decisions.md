@@ -70,3 +70,13 @@ The key decisions behind the October 2026 redesign, and why. Every entry is date
 - **A previewed period moves the sky's clock** (the `t` key and `data-daypart`), so the Sun and Moon are where they would really be at 09:30, 14:30, 19:00 or 23:00. The Sun is otherwise pinned to the real time of day while the stars run fast.
 - **Labels use the label face.** On-canvas labels and the `L` readout are Spectral SC small caps in sentence case, like the rest of the drawing language, not mono.
 - **`L`, `[` and `]` live in the keyboard router** (`src/lib/keymap.ts`) so they share its guards (text fields, modifiers, open map, open pop-up) and `g` then `l` still means the levels section. They are never listed in the `?` map.
+
+### Sky update, 2026-10-15 (after review): instant first paint, background catalogue
+
+- **Why:** the sky took a second or two to appear on desktop and the hero sat empty. Aaryush also found the density bare.
+- **Two tiers.** The baked set is now only the 361 brightest stars (magnitude 3.7 and brighter), the constellation lines and names: 7 KB gzipped, in a first chunk of about 21 KB with the engine. It draws right after first paint (about 140 ms after navigation on desktop, about 600 to 700 ms with a 4x CPU slowdown). The Milky Way grid is its own baked chunk (11 KB gzipped) that loads with the catalogue. The rest of the catalogue (`stars.6.json`, magnitude 6, 5,044 stars) is fetched from jsDelivr in the background and its stars twinkle in over a few seconds. This **reverses** the earlier "no CDN call" rule for this one request (decided with Aaryush); it sends nothing but a GET, is skipped under Save-Data, and the sky works without it.
+- **Why the fetch waits.** Fetching the 656 KB file straight after first paint moved Lighthouse's simulated LCP by about 1.1 s. Waiting for load, the fonts and a 1.2 s settle (then idle) brings it back to within 10 ms of the base. Loading the first chunk right after first paint, without the fetch, cost about 135 ms, so the Milky Way chunk waits too.
+- **Star limits.** The d3-celestial file stops at magnitude 6; a deeper cut (magnitude 6.5 and beyond) is thousands of stars and megabytes, which isn't worth it for a hero. Limits: night shows all of it on desktop, phones to magnitude 5.6.
+- **T+ was the bug, not LST.** T+ counted real seconds; it now counts simulated time, so it and LST agree (LST gains 1.0027 sidereal seconds per simulated second). Both roll with seconds at about 20 updates a second.
+- **Rate cap is 1000x** (ladder 50, 100, 150, 200, 250, 300, 400, 500, 700, 1000). Trails keep their 26 degree cap.
+- **Location is unchanged:** still the time zone. An IP-based option is being decided separately.

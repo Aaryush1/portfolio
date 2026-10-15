@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { consoleNote } from '../../src/data/console';
-import { buildNote, logNote } from '../../src/lib/console-note';
+import { buildNote, buildSkyNote, logNote, logSkyNote } from '../../src/lib/console-note';
 import { HOST_NAME, PHONE } from '../contact-fixture';
 
 // The approved console note (copy-review section 14, approved by Aaryush 2026-10-14).
@@ -39,5 +39,24 @@ describe('console note', () => {
     expect(() => logNote({} as Console, {})).not.toThrow();
     const bad = { log: () => { throw new Error('x'); } } as unknown as Console;
     expect(() => logNote(bad, {})).not.toThrow();
+  });
+});
+
+describe('the sky line in the console', () => {
+  it('is one line with a star count and the visitor sky, in the note style', () => {
+    const [fmt, ...styles] = buildSkyNote(5044, 43.07, -89.4);
+    expect(String(fmt)).toBe('%c✦%c 5,044 stars · Hipparcos via d3-celestial · your sky over 43.1°N 89.4°W');
+    expect(styles).toHaveLength(2);
+    expect(String(fmt)).not.toContain('\n');
+    expect(String(buildSkyNote(100, -33.9, 151.2)[0])).toContain('33.9°S 151.2°E');
+  });
+  it('logs once per document and never throws', () => {
+    const calls: unknown[][] = [];
+    const g: Record<string, unknown> = {};
+    const c = { log: (...a: unknown[]) => calls.push(a) } as unknown as Console;
+    logSkyNote(c, g, 5044, 43, -89);
+    logSkyNote(c, g, 5044, 43, -89);
+    expect(calls).toHaveLength(1);
+    expect(() => logSkyNote(undefined, {}, 1, 1, 1)).not.toThrow();
   });
 });

@@ -1052,3 +1052,15 @@ Approved 2026-10-14. It replaces "1. It's past nine. 2. So are you.", which didn
 - [ ] I have reviewed every block above.
 - [ ] Blocks I want left exactly as they are: (list the section numbers)
 - [ ] Anything I want to cut entirely: (list)
+
+## 19. The sky's console line (DRAFT)
+
+Source: `aaryush/src/lib/console-note.ts` (`buildSkyNote`). Logged once when the sky's full star catalogue lands, in the same two-style format as the DevTools note. **Draft, proposed in the controller's brief, not yet approved by Aaryush.** The line gets the count and the guessed place filled in:
+
+`✦ 5,044 stars · Hipparcos via d3-celestial · your sky over 43.1°N 89.4°W`
+
+Edits:
+
+```
+(any changes)
+```

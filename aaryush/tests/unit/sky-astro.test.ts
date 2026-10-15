@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { altAz, computeSky, SGR_A, showerFactor, starColour } from '../../src/lib/sky/astro';
+import { altAz, computeSky, hmsSec, SGR_A, showerFactor, starColour } from '../../src/lib/sky/astro';
 
 // Madison 43.0731N 89.4012W, 2026-10-14 03:00 UT, checked against JPL Horizons (task 44 report).
 const LAT = 43.0731, LON = -89.4012, T = Date.UTC(2026, 9, 14, 3, 0, 0);
@@ -54,5 +54,18 @@ describe('helpers', () => {
     expect(blue[2]).toBeGreaterThan(blue[0]);
     expect(orange[0]).toBeGreaterThan(orange[2]);
     expect(starColour(NaN, 3)).toHaveLength(3);
+  });
+});
+
+describe('LST readout', () => {
+  it('shows seconds, rolls forward, and gains about 361 degrees a day', () => {
+    expect(hmsSec(0)).toBe('0h00m00s');
+    expect(hmsSec(15)).toBe('1h00m00s');
+    expect(hmsSec(15 * 23 + 15 / 60 * 56 + 15 / 3600 * 12.01)).toBe('23h56m12s');
+    expect(hmsSec(359.9999)).toMatch(/^23h59m5\ds$/);
+    expect(hmsSec(-15)).toBe('23h00m00s');
+    // one real second at 225x is 225 simulated seconds, so LST moves about 56 s of sidereal time
+    const a = computeSky(T, LAT, LON), b = computeSky(T + 225000, LAT, LON);
+    expect((b.lst - a.lst) * 240).toBeCloseTo(225.6, 0);
   });
 });

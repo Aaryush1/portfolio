@@ -208,6 +208,13 @@ export const hms = (deg: number) => {
   return hh + 'h' + String(mm).padStart(2, '0') + 'm';
 };
 
+/** Local sidereal time with seconds, `23h56m12s`, so the readout visibly rolls at speed. */
+export const hmsSec = (deg: number) => {
+  const total = Math.floor(((((deg % 360) + 360) % 360) / 15) * 3600);
+  const hh = Math.floor(total / 3600), mm = Math.floor((total % 3600) / 60), ss = total % 60;
+  return hh + 'h' + String(mm).padStart(2, '0') + 'm' + String(ss).padStart(2, '0') + 's';
+};
+
 // ---------- fixed objects ----------
 /** Sgr A*, the galactic centre: the single amber accent. */
 export const SGR_A = body(eqVec(266.41683, -29.00781), 'Sgr A*', [242, 181, 68], 0);

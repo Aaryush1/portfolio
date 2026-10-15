@@ -12,10 +12,10 @@ export const smooth = (a: number, b: number, x: number) => {
 };
 
 // ---------- rate (how fast the sky runs) ----------
-/** The steps `[` and `]` walk through. Visitors can't go outside 50x to 500x. */
-export const RATES: readonly number[] = [50, 100, 150, 200, 250, 300, 400, 500];
+/** The steps `[` and `]` walk through. Visitors can't go outside 50x to 1000x. */
+export const RATES: readonly number[] = [50, 100, 150, 200, 250, 300, 400, 500, 700, 1000];
 export const RATE_MIN = 50;
-export const RATE_MAX = 500;
+export const RATE_MAX = 1000;
 export const DEFAULT_RATE = { desktop: 225, phone: 150 } as const;
 export const clampRate = (v: number) => (Number.isFinite(v) ? Math.max(RATE_MIN, Math.min(RATE_MAX, Math.round(v))) : DEFAULT_RATE.desktop);
 /** One step up (dir > 0) or down (dir < 0) from `cur`. The default 225 isn't on the ladder, so it steps to 250 or 200. */
@@ -34,12 +34,13 @@ export function parseStoredRate(raw: string | null | undefined): number | null {
 // ---------- the readout under L ----------
 const pad2 = (n: number) => String(n).padStart(2, '0');
 export interface ReadoutInput { lat: number; lon: number; hour: number; minute: number; elapsedMs: number; lstText: string; moonPct: number; rate: number }
-/** `Live · 43.1°N 89.4°W · 23:00 local · T+00h18m · LST 23h56m · Moon 19% · ×225` (small caps come from the label face) */
+/** `Live · 43.1°N 89.4°W · 23:00 local · T+00h18m42s · LST 23h56m12s · Moon 19% · ×225`. T+ is simulated sky time since load; local is the real clock. */
 export function readoutText(r: ReadoutInput): string {
   const lat = Math.abs(r.lat).toFixed(1) + '°' + (r.lat >= 0 ? 'N' : 'S');
   const lon = Math.abs(r.lon).toFixed(1) + '°' + (r.lon >= 0 ? 'E' : 'W');
-  const el = Math.max(0, Math.floor(r.elapsedMs / 60000));
-  return `Live · ${lat} ${lon} · ${pad2(r.hour)}:${pad2(r.minute)} local · T+${pad2(Math.floor(el / 60))}h${pad2(el % 60)}m · LST ${r.lstText} · Moon ${Math.round(r.moonPct)}% · ×${Math.round(r.rate)}`;
+  const el = Math.max(0, Math.floor(r.elapsedMs / 1000));
+  const t = `${pad2(Math.floor(el / 3600))}h${pad2(Math.floor((el % 3600) / 60))}m${pad2(el % 60)}s`;
+  return `Live · ${lat} ${lon} · ${pad2(r.hour)}:${pad2(r.minute)} local · T+${t} · LST ${r.lstText} · Moon ${Math.round(r.moonPct)}% · ×${Math.round(r.rate)}`;
 }
 
 // ---------- looks per period ----------
@@ -59,10 +60,10 @@ export interface Look {
   glow: number;
 }
 export const LOOKS: Readonly<Record<Daypart, Look>> = {
-  night: { top: [4, 7, 19], bot: [10, 17, 38], star: 1, mag: 6.2, mw: 1, line: 1, glow: 0.55 },
-  evening: { top: [9, 11, 26], bot: [44, 26, 22], star: 0.8, mag: 5.4, mw: 0.55, line: 1.05, glow: 0.85 },
-  morning: { top: [10, 19, 40], bot: [34, 50, 76], star: 0.55, mag: 4.7, mw: 0.28, line: 1.1, glow: 1 },
-  afternoon: { top: [12, 18, 32], bot: [30, 40, 58], star: 0.45, mag: 4.3, mw: 0.12, line: 1.2, glow: 1 },
+  night: { top: [4, 7, 19], bot: [10, 17, 38], star: 1, mag: 6.9, mw: 1, line: 1, glow: 0.55 },
+  evening: { top: [9, 11, 26], bot: [44, 26, 22], star: 0.8, mag: 6.2, mw: 0.55, line: 1.05, glow: 0.85 },
+  morning: { top: [10, 19, 40], bot: [34, 50, 76], star: 0.55, mag: 5.3, mw: 0.28, line: 1.1, glow: 1 },
+  afternoon: { top: [12, 18, 32], bot: [30, 40, 58], star: 0.45, mag: 4.8, mw: 0.12, line: 1.2, glow: 1 },
 };
 export const lookFor = (d: Daypart): Look => LOOKS[d];
 

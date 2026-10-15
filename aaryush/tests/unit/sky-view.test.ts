@@ -1,34 +1,45 @@
 import { describe, expect, it } from 'vitest';
 import { instantForPart, placeFor, zoneParts } from '../../src/lib/sky/place';
-import { clampRate, DEFAULT_RATE, makeView, meteorInterval, parseStoredRate, project, quietFactor, readoutText, sampleGrid, stepRate, trailArc, trailSamples } from '../../src/lib/sky/view';
+import { clampRate, DEFAULT_RATE, RATES, makeView, meteorInterval, parseStoredRate, project, quietFactor, readoutText, sampleGrid, stepRate, trailArc, trailSamples } from '../../src/lib/sky/view';
 
 describe('rate', () => {
   it('defaults are 225x desktop, 150x phone', () => {
     expect(DEFAULT_RATE).toEqual({ desktop: 225, phone: 150 });
   });
-  it('steps through the ladder and stops at 50 and 500', () => {
+  it('steps through the ladder 50 to 1000 and stops at both ends', () => {
     expect(stepRate(225, 1)).toBe(250);
     expect(stepRate(225, -1)).toBe(200);
-    expect(stepRate(500, 1)).toBe(500);
+    expect(stepRate(500, 1)).toBe(700);
+    expect(stepRate(700, 1)).toBe(1000);
+    expect(stepRate(1000, 1)).toBe(1000);
     expect(stepRate(50, -1)).toBe(50);
+    expect(RATES).toEqual([50, 100, 150, 200, 250, 300, 400, 500, 700, 1000]);
     let r = 50;
     for (let i = 0; i < 20; i++) r = stepRate(r, 1);
-    expect(r).toBe(500);
+    expect(r).toBe(1000);
   });
   it('clamps and rejects bad stored values', () => {
-    expect(clampRate(9000)).toBe(500);
+    expect(clampRate(9000)).toBe(1000);
+    expect(clampRate(1000)).toBe(1000);
     expect(clampRate(1)).toBe(50);
     expect(clampRate(NaN)).toBe(225);
     expect(parseStoredRate('300')).toBe(300);
-    for (const bad of [null, '', 'abc', '10', '1000', 'NaN']) expect(parseStoredRate(bad)).toBeNull();
+    expect(parseStoredRate('1000')).toBe(1000);
+    for (const bad of [null, '', 'abc', '10', '1001', '5000', 'NaN']) expect(parseStoredRate(bad)).toBeNull();
   });
 });
 
 describe('readout', () => {
   it('has the agreed shape', () => {
-    const t = readoutText({ lat: 43.07, lon: -89.4, hour: 23, minute: 5, elapsedMs: 18 * 60000, lstText: '23h56m', moonPct: 19.4, rate: 225 });
-    expect(t).toBe('Live · 43.1°N 89.4°W · 23:05 local · T+00h18m · LST 23h56m · Moon 19% · ×225');
+    const t = readoutText({ lat: 43.07, lon: -89.4, hour: 23, minute: 5, elapsedMs: 18 * 60000 + 42000, lstText: '23h56m12s', moonPct: 19.4, rate: 225 });
+    expect(t).toBe('Live · 43.1°N 89.4°W · 23:05 local · T+00h18m42s · LST 23h56m12s · Moon 19% · ×225');
     expect(readoutText({ lat: -33.9, lon: 151.2, hour: 1, minute: 2, elapsedMs: 3 * 3600000 + 5 * 60000, lstText: 'x', moonPct: 0, rate: 50 })).toContain('33.9°S 151.2°E');
+  });
+  it('T+ is simulated time and rolls by the second', () => {
+    const at = (ms: number) => readoutText({ lat: 1, lon: 1, hour: 0, minute: 0, elapsedMs: ms, lstText: 'x', moonPct: 0, rate: 225 });
+    expect(at(0)).toContain('T+00h00m00s');
+    expect(at(1000)).toContain('T+00h00m01s');
+    expect(at(3600000 * 5 + 59000)).toContain('T+05h00m59s');
   });
 });
 

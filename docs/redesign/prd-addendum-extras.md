@@ -248,7 +248,7 @@ The hero's topography is replaced by the visitor's own sky, drawn live. Approved
 **Framing.** Full-bleed, looking straight up, north at the top, with the celestial pole 16px above the top edge, so the whole sky wheels around the pole on arcs. The horizon is just below the bottom edge. There is no disc, grid or ground.
 
 **What is in it.**
-- Stars to magnitude 5 (about 1,600; phones draw to 4.5), in their real B-V colours, saturation rising with brightness.
+- Stars in their real B-V colours, saturation rising with brightness. The first paint has the roughly 360 brightest (magnitude 3.7 and brighter). The full catalogue (about 5,000 stars to magnitude 6) arrives in the background and **twinkles in**: each new star fades in over a few seconds after a random delay, so the faint ones fill the empty patches as tiny, quiet points. Phones draw to magnitude 5.6, desktop to the whole catalogue at night.
 - Subtle constellation lines.
 - The Milky Way: cool blue with warm dust toward the galactic centre.
 - The planets in their own colours, and the Moon in its real phase and orientation.
@@ -268,19 +268,21 @@ The hero's topography is replaced by the visitor's own sky, drawn live. Approved
 - **Pausing:** the loop pauses when the tab is hidden, the hero is offscreen, or a pop-up is open.
 
 **Production requirements.**
-- **Data:** a trimmed, baked dataset, 28 KB gzipped in total (stars to magnitude 5, constellation lines and names, and the Milky Way as a 1 degree brightness grid). Source and licence in `decisions.md`. No CDN calls.
-- **LCP:** the engine and data load as one lazy chunk after the page load, after the web fonts, plus a settle delay of about 1.2 s, then in idle time. The canvas fades in. The sky never delays LCP. Precomputed vectors; each frame only rotates and projects them. One rAF loop, 30 fps cap, DPR capped at 2. The first frame runs in its own task.
-- **Failure:** if the chunk can't load, the hero is simply calm. Storage is wrapped in try/catch.
+- **First paint is instant.** A small first chunk (about 21 KB gzipped: the engine, the 361 brightest stars, constellation lines and names) loads after one rAF following the page's own first paint, and the sky draws in its own short task, about 140 ms after navigation on desktop. The Moon, Sun, planets and Sgr A\* need no data. The quiet zone applies from the first frame.
+- **Background catalogue:** once the page has loaded, the fonts are in and things have settled (about 1.2 s), in idle time, the engine fetches d3-celestial 0.7.35's `stars.6.json` from jsDelivr (magnitude 6, 5,044 stars) and merges the stars fainter than 3.7. The Milky Way grid (11 KB gzipped, baked, own chunk) arrives with it and fades in. This is the only outside request; nothing is sent but the GET. It is skipped under Save-Data. If the fetch fails, is blocked or returns junk, the small set simply stays and nothing breaks.
+- **Console:** when the catalogue lands, one line: `✦ 5,044 stars · Hipparcos via d3-celestial · your sky over 43.1°N 89.4°W` (draft wording, copy review section 19).
+- **LCP:** the first chunk is small, the first frame is one short task, and the big fetch waits until what LCP measures is done, so the sky does not move LCP. Precomputed vectors; each frame only rotates and projects them (faint stars are drawn in a few batched fills). One rAF loop, 30 fps cap, DPR capped at 2.
+- **Failure:** if even the first chunk can't load, the hero is simply calm. Storage is wrapped in try/catch.
 
-**Known limitations.** The time-zone location is a city guess, up to a few degrees off, so alt/az is approximate (the sky itself is true for that guess). No atmospheric refraction or twilight model. The Moon is drawn larger than life. Stars stop at magnitude 5, so the faintest naked-eye stars are missing compared with the prototype's magnitude 6. A phone shows the top of the sky only, since the hero is short there.
+**Known limitations.** The time-zone location is a city guess, up to a few degrees off, so alt/az is approximate (the sky itself is true for that guess). No atmospheric refraction or twilight model. The Moon is drawn larger than life. Stars stop at magnitude 6 (the d3-celestial file), so the very faintest naked-eye stars are missing. Without the network, the sky is the 361 brightest stars. A phone shows the top of the sky only, since the hero is short there.
 
 ## E18. `L` toggles labels and a readout
 
-Pressing `L` (not `g` then `l`, which still goes to the levels section) fades in very subtle labels: the planets, the Moon, the Sun, 26 bright stars, constellation names (small caps, in the label face), Sgr A\*, and the Cyg X-1, Crab and Vela marks. A readout appears top right: `Live · lat/long · HH:MM local · T+XXhYYm · LST · Moon % · ×rate`. `T+` counts the time the sky has run since page load, `LST` is the simulated local sidereal time, and `Moon` is the illuminated fraction. Ignored in text fields and while the keyboard map or a pop-up is open. Not in the `?` map.
+Pressing `L` (not `g` then `l`, which still goes to the levels section) fades in very subtle labels: the planets, the Moon, the Sun, 26 bright stars, constellation names (small caps, in the label face), Sgr A\*, and the Cyg X-1, Crab and Vela marks. A readout appears top right: `Live · lat/long · HH:MM local · T+XXhYYmZZs · LST XXhYYmZZs · Moon % · ×rate`. `local` is the real clock. `T+` is the **simulated** sky time elapsed since page load, at the current rate, including changes from `[` and `]`; `LST` is the simulated local sidereal time. Both show seconds and roll about 20 times a second (once a second under reduced motion), in tabular figures so the digits don't jitter. `Moon` is the illuminated fraction. Ignored in text fields and while the keyboard map or a pop-up is open. Not in the `?` map.
 
 ## E19. `[` and `]` change the sky's speed
 
-`[` slows and `]` speeds up the sky through 50, 100, 150, 200, 250, 300, 400 and 500x (from 225x, the first step is 200 or 250). Capped at 50x to 500x for visitors. The rate is remembered for the session (sessionStorage in a try/catch), the readout shows it, and the trails lengthen or shorten with it. Same guards as `L`. Not in the `?` map. Neither key conflicts with `t`, `g`, `?` or the typed words `contextos` and `ag.`.
+`[` slows and `]` speeds up the sky through 50, 100, 150, 200, 250, 300, 400, 500, 700 and 1000x (from 225x, the first step is 200 or 250). Capped at 50x to 1000x for visitors. Trails keep their cap of 26 degrees of sky rotation. The rate is remembered for the session (sessionStorage in a try/catch), the readout shows it, and the trails lengthen or shorten with it. Same guards as `L`. Not in the `?` map. Neither key conflicts with `t`, `g`, `?` or the typed words `contextos` and `ag.`.
 
 ## Out of scope here (planned separately)
 

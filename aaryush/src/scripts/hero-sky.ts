@@ -1,6 +1,6 @@
 // Hero background: the live star chart (E17). This file is the small part that ships with the page. It stamps the
-// period on the canvas, shows the `t` preview label, and loads the sky itself (scripts/sky/engine.ts, with the baked
-// star data) after first paint, in idle time, so it never competes with LCP. The canvas then fades in.
+// period on the canvas, shows the `t` preview label, and loads the sky itself (scripts/sky/engine.ts, with the small
+// baked first-paint star set) right after first paint, so it never blocks the LCP text. The canvas then fades in.
 // Lifecycle (pause when offscreen, hidden or a pop-up is open; a still frame under reduced motion) lives in the engine
 // and is what tests/e2e/hero.spec.ts depends on.
 
@@ -53,19 +53,7 @@ if (hero && cv) {
     }
   }
 
-  // Well after first paint: wait for the page load and the web fonts (the text's final paint, which is what LCP
-  // measures, happens when they land), give that a moment to settle, then start in idle time. The canvas fades in.
-  const SETTLE_MS = 1200;
-  const idle = () => {
-    setTimeout(() => {
-      if ('requestIdleCallback' in window) requestIdleCallback(() => void load(), { timeout: 1500 });
-      else void load();
-    }, SETTLE_MS);
-  };
-  const afterFonts = () => {
-    const ready = document.fonts?.ready;
-    if (ready) ready.then(idle, idle); else idle();
-  };
-  if (document.readyState === 'complete') afterFonts();
-  else window.addEventListener('load', afterFonts, { once: true });
+  // The first draw comes right after first paint: one rAF, with the engine's small first chunk (about 360 stars,
+  // lines, planets, Moon, Sun). The rest of the catalogue is fetched in the background by the engine afterwards.
+  requestAnimationFrame(() => void load());
 }

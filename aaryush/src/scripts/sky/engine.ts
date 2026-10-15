@@ -1,14 +1,18 @@
 // The hero's live star chart (E17). Loaded after first paint, in idle time, by scripts/hero-sky.ts.
 //
-// Star, constellation-line and Milky Way data are baked into src/data/sky/sky-data.json (scripts/bake-sky.mjs) from
-// d3-celestial 0.7.35 by Olaf Frohn, BSD 3-Clause, https://github.com/ofrohn/d3-celestial. The stars derive from the
-// ESA Hipparcos catalogue. The app makes no network call for any of it. See docs/redesign/decisions.md for the credit.
+// Data is from d3-celestial 0.7.35 by Olaf Frohn, BSD 3-Clause, https://github.com/ofrohn/d3-celestial. The stars derive
+// from the ESA Hipparcos catalogue. See docs/redesign/decisions.md for the credit.
+//   - Baked in (src/data/sky/sky-data.json, scripts/bake-sky.mjs): the ~360 brightest stars, constellation lines and names,
+//     so the first draw needs nothing from the network. The Milky Way grid is baked too (sky-mw.json), loaded beside the engine.
+//   - Fetched in the background, once the first frame is up: the rest of the catalogue (stars.6.json, magnitude 6). Its stars
+//     twinkle in over a few seconds. If the fetch fails or is blocked, the sky keeps the small set and nothing breaks.
 //
-// Everything is precomputed once (star vectors, colours, line points, the Milky Way grid). Each frame only rotates the
-// vectors by the local sidereal time and projects them: one rAF loop, one canvas, capped at 30 fps.
+// Everything is precomputed once (star vectors, colours, line points). Each frame only rotates the vectors by the local
+// sidereal time and projects them: one rAF loop, one canvas, capped at 30 fps.
 import raw from '../../data/sky/sky-data.json';
 import { PHONE_QUERY, type Daypart } from '../../lib/daypart';
-import { computeSky, D2R, enu, eqVec, hms, MARKS, R2D, SGR_A, showerFactor, starColour, type Enu, type Sky } from '../../lib/sky/astro';
+import { logSkyNote } from '../../lib/console-note';
+import { computeSky, D2R, enu, eqVec, hmsSec, MARKS, R2D, SGR_A, showerFactor, starColour, type Enu, type Sky } from '../../lib/sky/astro';
 import { instantForPart, visitorPlace, type Place } from '../../lib/sky/place';
 import {
   clampRate, DEFAULT_RATE, decodeGrid, horizonAlpha, lookFor, makeView, meteorInterval, parseStoredRate, project, quietFactor, readoutText,
@@ -21,12 +25,20 @@ interface SkyData {
   names: Record<string, string>;
   lines: number[][];
   cons: [string, number, number][];
-  mw: { w: number; h: number; grid: string };
 }
+interface MwData { w: number; h: number; grid: string }
 const data = raw as unknown as SkyData;
 
 type Scratch = Enu & Pt;
 const RATE_KEY = 'sky:rate';
+/** The baked set is every star at or brighter than this; the fetched catalogue adds the fainter ones. Keep in step with scripts/bake-sky.mjs. */
+const BRIGHT_LIMIT = 3.7;
+const CATALOGUE_URL = 'https://cdn.jsdelivr.net/npm/d3-celestial@0.7.35/data/stars.6.json';
+/** Each fetched star fades in over FADE_MS, after a random delay of up to STAGGER_MS. */
+const FADE_MS = 2600;
+const STAGGER_MS = 4200;
+/** Quiet time after load and fonts before the catalogue fetch starts. */
+const SETTLE_MS = 1200;
 const FRAME_MS = 1000 / 30;
 const RECHECK_MS = 10 * 60 * 1000;
 // Drawing labels are Spectral SC small caps (the --label face), written in sentence case, never uppercased.
@@ -35,21 +47,35 @@ const FONT_CONS = '10.5px "Spectral SC", "Spectral SC Fallback", Georgia, serif'
 
 // ---------- the baked data, turned into vectors once ----------
 const N = data.stars.mag.length;
-const S = {
+interface Stars {
+  n: number; vx: Float32Array; vy: Float32Array; vz: Float32Array; mag: Float32Array; ph: Float32Array;
+  col: string[]; rgb: Uint8Array;
+  /** Colour class 0 to 4 (blue to orange), for batching the faint stars. */
+  bin: Uint8Array;
+  /** When each star starts to fade in (performance.now clock); 0 for the baked ones. */
+  appear: Float32Array;
+}
+const S: Stars = {
   n: N,
   vx: new Float32Array(N), vy: new Float32Array(N), vz: new Float32Array(N),
-  mag: new Float32Array(N), ph: new Float32Array(N), col: new Array<string>(N), rgb: new Uint8Array(N * 3),
+  mag: new Float32Array(N), ph: new Float32Array(N), col: new Array<string>(N), rgb: new Uint8Array(N * 3), bin: new Uint8Array(N), appear: new Float32Array(N),
 };
-for (let i = 0; i < N; i++) {
-  const v = eqVec(data.stars.ra[i] / 100, data.stars.dec[i] / 100);
-  S.vx[i] = v[0]; S.vy[i] = v[1]; S.vz[i] = v[2];
-  const m = data.stars.mag[i] / 10;
-  S.mag[i] = m;
-  S.ph[i] = (((i * 2654435761) >>> 0) / 4294967296) * 6.283;
-  const c = starColour(data.stars.bv[i] / 100, m);
-  S.rgb[i * 3] = c[0]; S.rgb[i * 3 + 1] = c[1]; S.rgb[i * 3 + 2] = c[2];
-  S.col[i] = `rgb(${c[0]},${c[1]},${c[2]})`;
+function setStar(St: Stars, i: number, ra: number, dec: number, m: number, bv: number) {
+  const v = eqVec(ra, dec);
+  St.vx[i] = v[0]; St.vy[i] = v[1]; St.vz[i] = v[2];
+  St.mag[i] = m;
+  St.ph[i] = (((i * 2654435761) >>> 0) / 4294967296) * 6.283;
+  const c = starColour(bv, m);
+  St.rgb[i * 3] = c[0]; St.rgb[i * 3 + 1] = c[1]; St.rgb[i * 3 + 2] = c[2];
+  St.col[i] = `rgb(${c[0]},${c[1]},${c[2]})`;
+  St.bin[i] = bv < 0 ? 0 : bv < 0.4 ? 1 : bv < 0.8 ? 2 : bv < 1.2 ? 3 : 4;
 }
+/** One colour per class, for the batched faint stars. */
+const BIN_RGB = [-0.1, 0.2, 0.6, 1.0, 1.4].map((bv) => starColour(bv, 5.5));
+const LEVELS = 8;
+/** Faint stars are collected here by colour class and brightness level, then drawn in one fill each (fewer canvas calls). */
+const batches: number[][] = Array.from({ length: 5 * LEVELS }, () => []);
+for (let i = 0; i < N; i++) setStar(S, i, data.stars.ra[i] / 100, data.stars.dec[i] / 100, data.stars.mag[i] / 10, data.stars.bv[i] / 100);
 const NAMED: [number, string][] = Object.entries(data.names).map(([i, n]) => [Number(i), n]);
 
 // constellation lines: one point pool, polylines as index ranges
@@ -69,7 +95,7 @@ const L = { n: LP, vx: new Float32Array(LP), vy: new Float32Array(LP), vz: new F
   }
 }
 const CONS = data.cons.map(([name, ra, dec]) => ({ name, v: eqVec(ra / 10, dec / 10) }));
-const MW = { w: data.mw.w, h: data.mw.h, grid: decodeGrid(data.mw.grid) };
+let MW: { w: number; h: number; grid: Uint8Array } | null = null;
 
 // A soft round sprite for halos, built once.
 const halo = (() => {
@@ -115,10 +141,12 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   let visible = true, ready = false;
   let rate: number = DEFAULT_RATE.desktop;
   let baseMs = Date.now(), elapsed = 0; // simulated instant = baseMs + elapsed (ms of simulated time since the base)
-  let realElapsed = 0; // real ms the sky has run, for the readout's T+
   let sunSky: Sky = computeSky(baseMs, place.lat, place.lon);
   let sunAt = 0;
   let labels = false, labelA = 0;
+  let mwBorn = 0; // when the Milky Way grid arrived (it fades in)
+  let loadStarted = false;
+  let catalogue: 'pending' | 'loaded' | 'failed' = 'pending';
 
   try {
     const stored = parseStoredRate(sessionStorage.getItem(RATE_KEY));
@@ -199,7 +227,8 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
 
   // ---------- Milky Way: cached, refreshed when the sidereal time has moved a little ----------
   function updateMW(sky: Sky) {
-    if (!mwImg || !mwCtx || !mwCv) return;
+    if (!mwImg || !mwCtx || !mwCv || !MW) return;
+    const grid = MW;
     if (Math.abs(sky.lst - mwLst) < 0.25 && mwKey === part) return;
     mwLst = sky.lst; mwKey = part;
     const d = mwImg.data, total = cellU.length, { cL, sL, cp, sp } = sky;
@@ -215,7 +244,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
       let ra = Math.atan2(vy, vx) * R2D;
       if (ra < 0) ra += 360;
       const dec = Math.asin(Math.max(-1, Math.min(1, zp))) * R2D;
-      const den = sampleGrid(MW.grid, MW.w, MW.h, ra, dec);
+      const den = sampleGrid(grid.grid, grid.w, grid.h, ra, dec);
       if (den < 0.004) { d[o + 3] = 0; continue; }
       const ang = Math.acos(Math.max(-1, Math.min(1, vx * gx + vy * gy + zp * gz)));
       const warm = Math.exp(-(ang * ang) / 0.36);
@@ -290,11 +319,13 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     c.fillRect(0, 0, W, H);
 
     // Milky Way
-    if (look.mw > 0.02 && mwCv) {
+    if (look.mw > 0.02 && mwCv && MW) {
       updateMW(sky);
       c.imageSmoothingEnabled = true;
       c.imageSmoothingQuality = 'high';
+      c.globalAlpha = still ? 1 : smooth(0, 1, (now - mwBorn) / 2200);
       c.drawImage(mwCv, 0, 0, W, H);
+      c.globalAlpha = 1;
     }
 
     const tw = still ? 0 : now / 1000;
@@ -347,7 +378,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     }
 
     // stars
-    const mm = Math.min(look.mag, phone ? 4.5 : 6.2);
+    const mm = Math.min(look.mag, phone ? 5.6 : 6.9);
     let last = 0;
     while (last < S.n && S.mag[last] <= mm) last++;
     for (let i = 0; i < last; i++) {
@@ -358,14 +389,32 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
         a *= 1 + (m < 3.2 ? 0.17 : 0.12) * Math.sin(tw * (1.7 + (i % 7) * 0.45) + S.ph[i]) * (1 + 2.2 * Math.pow(Math.max(0, 1 - Math.max(o.u, 0) * 2.2), 2));
       }
       a *= quietFactor(V.quiet, o.x, o.y);
+      const ap = S.appear[i];
+      if (ap > 0 && !still) {
+        // a newly fetched star twinkles in: a fade with a little flicker on the way
+        const t = (now - ap) / FADE_MS;
+        if (t <= 0) continue;
+        if (t < 1) a *= smooth(0, 1, t) * (1 + 0.7 * Math.sin(t * 16) * (1 - t));
+      }
       if (a < 0.02) continue;
       const r = (0.45 + (6.3 - m) * 0.3) * (phone ? 0.9 : 1);
       if (m < 2.2) { c.globalAlpha = Math.min(0.5, a * 0.45); const hr = r * 5; c.drawImage(halo, o.x - hr, o.y - hr, 2 * hr, 2 * hr); }
       c.globalAlpha = Math.min(1, a);
       c.fillStyle = S.col[i];
+      if (r < 0.95) { batches[S.bin[i] * LEVELS + Math.min(LEVELS - 1, (Math.min(a, 0.99) * 14) | 0)].push(o.x, o.y); continue; }
       c.beginPath(); c.arc(o.x, o.y, r, 0, 7); c.fill();
     }
     c.globalAlpha = 1;
+    for (let k = 0; k < batches.length; k++) {
+      const bt = batches[k];
+      if (!bt.length) continue;
+      const rgbc = BIN_RGB[(k / LEVELS) | 0], lv = k % LEVELS;
+      c.fillStyle = `rgba(${rgbc[0]},${rgbc[1]},${rgbc[2]},${((lv + 0.5) / 14).toFixed(3)})`;
+      c.beginPath();
+      for (let j = 0; j < bt.length; j += 2) c.rect(bt[j] - 0.65, bt[j + 1] - 0.65, 1.3, 1.3);
+      c.fill();
+      bt.length = 0;
+    }
 
     // trails: true arcs, sampled along each star's own past path and projected through the same map
     if (!still) {
@@ -525,7 +574,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   function updateReadout(sky: Sky) {
     if (!readout) return;
     const d = new Date();
-    const t = readoutText({ lat: place.lat, lon: place.lon, hour: d.getHours(), minute: d.getMinutes(), elapsedMs: realElapsed, lstText: hms(sky.lst), moonPct: sky.moon.k * 100, rate });
+    const t = readoutText({ lat: place.lat, lon: place.lon, hour: d.getHours(), minute: d.getMinutes(), elapsedMs: elapsed, lstText: hmsSec(sky.lst), moonPct: sky.moon.k * 100, rate });
     if (readout.textContent !== t) readout.textContent = t;
   }
 
@@ -538,8 +587,15 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     const sky = currentSky();
     const dm = new Date();
     draw(now, sky, still, showerFactor(dm.getMonth() + 1, dm.getDate()));
-    if (force || now - lastReadout > 800 || still) { lastReadout = now; updateReadout(sky); }
-    if (!cv.classList.contains('on')) cv.classList.add('on');
+    // The readout rolls smoothly (about 20 updates a second) while it is on show; once a second under reduced motion.
+    if (labels || labelA > 0.02) {
+      if (force || now - lastReadout >= (still ? 1000 : 50)) { lastReadout = now; updateReadout(sky); }
+    }
+    if (!cv.classList.contains('on')) {
+      cv.classList.add('on');
+      cv.dataset.firstDraw = String(Math.round(performance.now())); // ms after navigation start
+      cv.dataset.stars = String(S.n);
+    }
   }
 
   // ---------- the loop ----------
@@ -556,7 +612,6 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     const dt = last ? Math.min(100, now - last) : 0;
     last = now; lastDraw = now;
     elapsed += dt * rate;
-    realElapsed += dt;
     stepLabelFade();
     frame(now);
   }
@@ -588,6 +643,63 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     fadeRaf = requestAnimationFrame(step);
   }
 
+  // ---------- the rest of the catalogue, in the background ----------
+  function mergeCatalogue(features: unknown[], landed: number) {
+    interface Feat { properties?: { mag?: number; bv?: string }; geometry?: { coordinates?: number[] } }
+    const rows: { ra: number; dec: number; mag: number; bv: number }[] = [];
+    for (const f0 of features) {
+      const f = f0 as Feat, m = f.properties?.mag, co = f.geometry?.coordinates;
+      if (typeof m !== 'number' || !co || co.length < 2 || m <= BRIGHT_LIMIT) continue;
+      const bv = parseFloat(f.properties?.bv ?? '');
+      rows.push({ ra: ((co[0] % 360) + 360) % 360, dec: co[1], mag: m, bv: Number.isNaN(bv) ? 0.6 : bv });
+    }
+    rows.sort((x, y) => x.mag - y.mag);
+    const n0 = S.n, n1 = n0 + rows.length;
+    const grow = <T extends Float32Array | Uint8Array>(a: T, k: number): T => { const b = new (a.constructor as new (n: number) => T)(n1 * k); b.set(a); return b; };
+    const next: Stars = {
+      n: n1, vx: grow(S.vx, 1), vy: grow(S.vy, 1), vz: grow(S.vz, 1), mag: grow(S.mag, 1), ph: grow(S.ph, 1),
+      rgb: grow(S.rgb, 3), bin: grow(S.bin, 1), appear: grow(S.appear, 1), col: S.col.slice(),
+    };
+    const still = reduced();
+    rows.forEach((r, k) => {
+      setStar(next, n0 + k, r.ra, r.dec, r.mag, r.bv);
+      next.appear[n0 + k] = still ? 0 : landed + 1 + Math.random() * STAGGER_MS;
+    });
+    return next;
+  }
+
+  async function loadCatalogue() {
+    const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) { catalogue = 'failed'; cv.dataset.catalogue = catalogue; return; }
+    try {
+      const r = await fetch(CATALOGUE_URL, { credentials: 'omit', referrerPolicy: 'no-referrer' });
+      if (!r.ok) throw new Error(String(r.status));
+      const j = (await r.json()) as { features?: unknown[] };
+      if (!Array.isArray(j.features) || !j.features.length) throw new Error('empty');
+      await new Promise((res) => setTimeout(res, 0)); // let a frame go between the parse and the merge
+      const next = mergeCatalogue(j.features, performance.now());
+      Object.assign(S, next);
+      catalogue = 'loaded';
+      cv.dataset.catalogue = catalogue;
+      cv.dataset.stars = String(S.n);
+      logSkyNote(console, window as unknown as Record<string, unknown>, S.n, place.lat, place.lon);
+      redraw();
+    } catch {
+      catalogue = 'failed';
+      cv.dataset.catalogue = catalogue; // the small set stays, and nothing else changes
+    }
+  }
+
+  async function loadMilkyWay() {
+    try {
+      const m = ((await import('../../data/sky/sky-mw.json')).default) as unknown as MwData;
+      MW = { w: m.w, h: m.h, grid: decodeGrid(m.grid) };
+      mwBorn = performance.now();
+      mwLst = -999;
+      redraw();
+    } catch { /* no Milky Way: the stars and lines still draw */ }
+  }
+
   function refresh() {
     ready = true;
     syncPart(true);
@@ -596,6 +708,17 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
     // The first frame gets its own task, so setup and the first draw never add up to one long task.
     requestAnimationFrame(() => {
       if (reduced()) { stop(); frame(performance.now(), true); } else { frame(performance.now(), true); start(); }
+      if (!loadStarted) {
+        loadStarted = true;
+        // The Milky Way grid and the big fetch waits until the page has loaded, the fonts are in and things have settled (what LCP measures
+        // is done by then), then runs in idle time. The first frame above never waits for it.
+        const go = () => setTimeout(() => {
+          if ('requestIdleCallback' in window) requestIdleCallback(() => { void loadMilkyWay(); void loadCatalogue(); }, { timeout: 1500 });
+          else { void loadMilkyWay(); void loadCatalogue(); }
+        }, SETTLE_MS);
+        const afterFonts = () => { const f = document.fonts?.ready; if (f) f.then(go, go); else go(); };
+        if (document.readyState === 'complete') afterFonts(); else window.addEventListener('load', afterFonts, { once: true });
+      }
     });
   }
 
@@ -621,6 +744,7 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   };
 
   cv.dataset.rate = String(rate);
+  cv.dataset.catalogue = catalogue;
   cv.dataset.labels = 'false';
   cv.dataset.running = 'false';
 

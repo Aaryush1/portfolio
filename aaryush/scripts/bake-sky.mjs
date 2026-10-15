@@ -8,11 +8,12 @@
 // file's upstream credit. Redistribution notice kept in docs/redesign/decisions.md.
 //
 // What it keeps:
-//   stars          magnitude <= 5.0, as four integer columns, brightest first
+//   stars          magnitude <= 3.7 (the first-paint set, ~380 stars), as four integer columns, brightest first.
+//                  The rest of the catalogue (d3-celestial stars.6.json) is fetched in the background by the engine.
 //   names          index -> name for ~26 well-known bright stars (labels view only)
 //   lines          constellation lines, 0.1 degree integers
 //   cons           constellation names with a label position
-//   mw             the five nested Milky Way outlines, filled and blurred into a 1 degree brightness grid (base64 bytes)
+//   mw             (own file, sky-mw.json) the five nested Milky Way outlines, filled and blurred into a 1 degree brightness grid (base64 bytes)
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
@@ -34,7 +35,7 @@ async function load(name) {
 
 const rev = (x) => ((x % 360) + 360) % 360;
 const BRIGHT = { 32349: 'Sirius', 30438: 'Canopus', 69673: 'Arcturus', 91262: 'Vega', 24608: 'Capella', 24436: 'Rigel', 37279: 'Procyon', 27989: 'Betelgeuse', 97649: 'Altair', 21421: 'Aldebaran', 80763: 'Antares', 65474: 'Spica', 37826: 'Pollux', 113368: 'Fomalhaut', 102098: 'Deneb', 49669: 'Regulus', 11767: 'Polaris', 7588: 'Achernar', 68702: 'Hadar', 60718: 'Acrux', 36850: 'Castor', 85927: 'Shaula', 92855: 'Nunki', 54061: 'Dubhe', 15863: 'Mirfak', 26311: 'Alnilam' };
-const MAG_LIMIT = 5.0;
+const MAG_LIMIT = 3.7; // keep in step with BRIGHT_LIMIT in src/scripts/sky/engine.ts
 
 const [st, ln, cn, mw] = await Promise.all(FILES.map(load));
 
@@ -108,8 +109,10 @@ for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
   grid[j * GW + i] = Math.round((s / 4) * 255);
 }
 // Row 0 is dec +90, column 0 is longitude -180 (RA 180 when read as signed), 1 degree cells.
-const data = { v: 1, stars, names, lines, cons, mw: { w: GW, h: GH, grid: Buffer.from(grid).toString('base64') } };
+const data = { v: 2, stars, names, lines, cons };
 const json = JSON.stringify(data);
+const mwJson = JSON.stringify({ w: GW, h: GH, grid: Buffer.from(grid).toString('base64') });
 await mkdir(dirname(out), { recursive: true });
 await writeFile(out, json);
-console.log(`stars ${F.length}, lines ${lines.length}, cons ${cons.length}, json ${(json.length / 1024).toFixed(1)} KB, gzip ${(gzipSync(json).length / 1024).toFixed(1)} KB`);
+await writeFile(join(dirname(out), 'sky-mw.json'), mwJson);
+console.log(`stars ${F.length}, lines ${lines.length}, cons ${cons.length}, sky-data ${(json.length / 1024).toFixed(1)} KB (gzip ${(gzipSync(json).length / 1024).toFixed(1)}), sky-mw ${(mwJson.length / 1024).toFixed(1)} KB (gzip ${(gzipSync(mwJson).length / 1024).toFixed(1)})`);
