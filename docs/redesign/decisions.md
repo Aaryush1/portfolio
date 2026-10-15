@@ -116,3 +116,12 @@ The key decisions behind the October 2026 redesign, and why. Every entry is date
 - **How:** the fetch keeps its settled-stage gate (that is what protects LCP). Only the reveal is paced: when a tile is decoded, its stars are sorted brightest first and given a reveal time in batches of 150 to 300, one batch every 80 to 120 ms, on a clock that runs on from the previous tile's. The frame loop reads each star's reveal time (no per-star timers), so a field of 24,000 fills in about 10 s on desktop and about 4 s on a phone. A star blooms to about 1.6 times its brightness over about 0.5 s with a soft square glow in its own, more saturated colour, then settles; stars fainter than magnitude 7 only fade. Under reduced motion every star is in place at once.
 - **Cost:** frame JS stays near 4 ms during the trickle: the glow is another set of batched fills, not per-star sprites.
 - **Console labels:** the sky line says `from your IP` (the `/api/sky` answer), `from your device` (the precise opt-in) or `from your time zone` (the fallback).
+
+## 3D star catalogue (2026-10-15)
+
+- **What:** `aaryush/public/stars3d.bin`, a binary catalogue of every star with a measured distance, so the probe story can fly between stars at true distances. Baked by hand with `scripts/bake-stars3d.mjs`, decoded by `src/lib/probe/stars3d.ts`.
+- **Source:** the HYG database v4.4 by David Nash (astronexus), licensed CC BY-SA 4.0. URL: https://codeberg.org/astronexus/hyg/media/branch/main/data/hyg/CURRENT/hyg_v44.csv.gz (git-lfs, file commit 53e3df31 of 2026-07-12, LFS sha256 00b349893b9a53106dd488d8371e8d2fa586043e500bb3cdb8bff3931682197d), fetched 2026-10-15 and gunzipped unmodified. Credit: HYG database, David Nash, astronexus, CC BY-SA 4.0. The CSV itself is not committed.
+- **Why HYG:** it already pairs Hipparcos and Gaia distances with the Hipparcos IDs the hero's catalogue uses.
+- **Filter:** apparent magnitude 7.5 or brighter, a known distance (HYG marks unknown as 100000), and the Sun (id 0) dropped. Missing colour index defaults to 0.65. Sorted by absolute magnitude.
+- **Result:** 24,940 stars, 349,164 bytes raw, 300,748 gzipped.
+- **Format (little-endian, exactly 4 + 14n bytes):** `uint32 n`, `float32 x[n]`, `y[n]`, `z[n]` (parsecs, equatorial J2000, Sun at origin), `uint8 absmag[n]` (`q/10 - 10`), `uint8 ci[n]` (`q/100 - 0.5`). Out-of-range magnitude and colour clamp rather than wrap.
