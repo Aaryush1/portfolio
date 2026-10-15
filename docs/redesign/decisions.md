@@ -94,3 +94,8 @@ The key decisions behind the October 2026 redesign, and why. Every entry is date
 - **`/api/sky` on a protected preview.** Vercel Authentication redirects an unauthenticated fetch to `vercel.com/sso-api`, which fails CORS. The client now sends the request same-origin (so the auth cookie goes with it) and with `redirect: 'error'`, so a redirect to an auth page fails at once, makes no cross-origin request, and the time-zone guess stands.
 - **A precise position lasts only while the browser still allows it.** A stored precise position is checked against the Permissions API on load and dropped (back to the connection, then the time zone, at one decimal) if the state isn't granted; a `change` event drops it mid-session. Without the Permissions API it is kept as before.
 - **A reload resets the speed;** moving between pages in the visit keeps it (the navigation type is the test). A precise position survives a reload only if the permission is still granted.
+
+### Meteors (2026-10-15)
+
+- **The hover rush wasn't noticeable.** The old rush only changed the rate of the next scheduled meteor, which could be seconds away, at about four times the ordinary rate. It now fires from the hero's own pointer events (enter and move, not the canvas under the text), spawns one at once, pulls the next one in, and runs at about eight times the rate for 6 s, easing off over the last 3 s, with a 9 s rest. Touch keeps its own shorter rush.
+- **Clicks make bursts (E22).** Clicking the hero background sets off 2 to 4 meteors radiating from the click. A link, button, field, the readout or a text selection never does. A 0.7 s cooldown and a cap on active meteors bound it; reduced motion gets none.

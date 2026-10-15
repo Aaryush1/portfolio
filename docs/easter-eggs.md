@@ -12,6 +12,7 @@ These are hidden details for curious visitors. The rule is that they're **shown,
 | **The hero is your sky** | Home hero | A live star chart of the sky over you, wheeling slowly around the pole: real star colours, the planets, the Moon in its real phase, the Milky Way, the Sun when it's up, and one amber dot for the centre of the galaxy. Meteors cross it now and then, and more of them on real shower nights. | ✅ |
 | **Sky labels and a readout** | Home hero | Press `L`. Very faint labels and a one-line live readout fade in. Press it again to hide them. | ✅ |
 | **The sky's speed** | Home hero | Press `[` or `]` to slow down or speed up the turning sky (50x to 1000x). It's remembered for the session. | ✅ |
+| **A click sets off a shower** | Home hero | Click or tap the background of the hero and 2 to 4 faint meteors radiate from the spot. Moving the pointer over the hero (or touching it) brings a short flurry of them too. | ✅ |
 | **The sky starts over you** | Home hero | The sky's position glides to where your connection seems to be (about 11 km), instead of the time-zone's city. | ✅ |
 | **Your exact sky** | Home hero | Press `L`, then click the readout line at the top. If you allow it, the sky glides to your exact position and remembers it for the session. | ✅ |
 | **The writing room keeps your clock** | /writing | Morning window light, a softer afternoon, warm evening light, and only the lamp-light pool at night. | ✅ |

@@ -262,7 +262,7 @@ The hero's topography is replaced by the visitor's own sky, drawn live. Approved
 - The sky runs at an accelerated rate: **225x on desktop, 150x on phones**.
 - **Trails** are true arcs that follow each star's past positions, only for the brightest 50 stars (30 on phones), the planets and the Moon, fading along their length. Length grows with the rate: 10 + 4 ln(rate/50) degrees of sky rotation, capped at 26.
 - **Twinkle** on stars brighter than magnitude 4.2, stronger near the horizon.
-- **Meteors:** about one every 3.5 seconds (4.5 on phones), thin and faint, up to about five times as often on real shower peaks (Quadrantids, Lyrids, Eta Aquariids, Perseids, Orionids, Leonids, Geminids, Ursids). Hovering the hero (desktop) or tapping it (phones) adds a rush that eases off over 4.5 s (2.8 s on phones).
+- **Meteors:** about one every 3.5 seconds (4.5 on phones), thin and faint, up to about five times as often on real shower peaks (Quadrantids, Lyrids, Eta Aquariids, Perseids, Orionids, Leonids, Geminids, Ursids). Moving a pointer over the hero (desktop) or touching it (phones) starts a rush: a meteor straight away and a few within the first second (about eight times the ordinary rate), still thin and faint, easing off over the last 3 s of about 6 s (3.6 s on phones), then a 9 s rest before it can start again. The listeners are on the hero, so the text above the canvas can't swallow them.
 - **Time of day:** the existing daypart behaviour stays (`daypart.ts`, the `t` preview, `data-daypart`). Sky colour, star depth and the Milky Way follow the real clock; daytime stays populated, just quieter. A previewed period moves the sky to that period's representative time today (09:30, 14:30, 19:00, 23:00), so the Sun and Moon are where they would really be.
 - **Reduced motion:** one still frame, with no trails and no meteors.
 - **Pausing:** the loop pauses when the tab is hidden, the hero is offscreen, or a pop-up is open.
@@ -299,6 +299,10 @@ With the labels on (E18), the `Live · ...` readout becomes a button: clickable 
 - **Declined, unavailable or failed:** nothing changes, and there are no messages.
 - **Never on load:** the browser is only asked from this click.
 - The readout is not focusable and stays hidden from assistive technology while the labels are off.
+
+## E22. A click on the sky sets off a few meteors
+
+Any click or tap on the hero background, meaning not on a link, button, field or the readout and not the end of a text selection, sets off a small burst of 2 to 4 thin, faint meteors radiating from roughly the click point, like a little shower radiant. It works on desktop and phones. A 0.7 s cooldown and a cap on active meteors stop rapid clicking from flooding the sky. Under reduced motion it does nothing. Shown, never explained.
 
 ## Out of scope here (planned separately)
 

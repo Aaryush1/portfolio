@@ -388,26 +388,52 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
 
   // ---------- meteors ----------
   const meteors: Meteor[] = [];
-  let nextMeteor = 0, rushUntil = 0;
+  let nextMeteor = 0, rushUntil = 0, lastRush = -1e9, lastBurst = -1e9, spawned = 0;
+  const RUSH_MS = { desktop: 6000, touch: 3600 };
+  /** The hover or tap rush: meteors come several times as often at first (a few within the first second), easing off over its last 3 s. */
+  function startRush(now: number, ms: number) {
+    if (reduced() || now < rushUntil - 1500 || now - lastRush < 9000) return;
+    lastRush = now;
+    rushUntil = now + ms;
+    nextMeteor = Math.min(nextMeteor || Infinity, now + 120); // do not wait out a long ambient gap
+  }
+  /** A click on the hero background: 2 to 4 meteors that radiate from the click, like a little shower. */
+  function burst(now: number, x: number, y: number) {
+    if (reduced() || now - lastBurst < 700 || meteors.length > 9) return;
+    lastBurst = now;
+    cv.dataset.bursts = String(Number(cv.dataset.bursts ?? 0) + 1);
+    const n = 2 + Math.floor(Math.random() * 3), a0 = Math.random() * Math.PI * 2;
+    for (let i = 0; i < n; i++) {
+      const a = a0 + (i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.9;
+      const dx = Math.cos(a), dy = Math.sin(a), off = 6 + Math.random() * 16;
+      meteors.push({ x: x + dx * off, y: y + dy * off, dx, dy, t0: now + i * 60, dur: 700 + Math.random() * 500, len: (phone ? 45 : 60) + Math.random() * 60, a: 0.3 + Math.random() * 0.25 });
+      spawned++;
+    }
+    cv.dataset.spawned = String(spawned);
+    if (!raf) redraw();
+  }
   function spawnMeteor(now: number) {
     const ang = (0.35 + Math.random() * 0.5) * Math.PI;
     const dirx = Math.cos(ang * 0.62 + 0.2) * (Math.random() < 0.78 ? 1 : -1);
     const diry = Math.abs(Math.sin(ang * 0.62 + 0.2)) * 0.8 + 0.2;
     const l = Math.hypot(dirx, diry);
+    spawned++;
+    cv.dataset.spawned = String(spawned);
     meteors.push({ x: Math.random() * W, y: Math.random() * H * 0.75, dx: dirx / l, dy: diry / l, t0: now, dur: 1000 + Math.random() * 900, len: (phone ? 50 : 70) + Math.random() * 80, a: 0.28 + Math.random() * 0.3 });
   }
   function drawMeteors(now: number, shower: number) {
-    const rush = rushUntil > now ? Math.min(1, (rushUntil - now) / 1800) : 0; // eases off over the last 1.8s
+    const rush = rushUntil > now ? Math.min(1, (rushUntil - now) / 3000) : 0; // eases off over the last 3 s
     const interval = meteorInterval(phone, shower, rush);
     if (!nextMeteor) nextMeteor = now + 1500 + Math.random() * 3500;
     if (now >= nextMeteor) {
-      if (meteors.length < 4) spawnMeteor(now);
+      if (meteors.length < (rush > 0 ? 8 : 4)) spawnMeteor(now);
       nextMeteor = now + interval * (0.5 + Math.random());
     }
     c.lineCap = 'round';
     for (let i = meteors.length - 1; i >= 0; i--) {
       const m = meteors[i], t = (now - m.t0) / m.dur;
       if (t >= 1) { meteors.splice(i, 1); continue; }
+      if (t < 0) continue; // a burst meteor waiting for its turn
       const e = t * t * (3 - 2 * t), hx = m.x + m.dx * m.len * 1.6 * e, hy = m.y + m.dy * m.len * 1.6 * e;
       const tail = m.len * Math.min(1, t * 3) * (1 - t * 0.5), tx = hx - m.dx * tail, ty = hy - m.dy * tail;
       const al = m.a * Math.sin(Math.PI * t) ** 1.2;
@@ -933,8 +959,17 @@ export function mountSky(hero: HTMLElement, cv: HTMLCanvasElement): SkyHandle | 
   readout?.addEventListener('click', () => { if (labels) requestPrecise(); });
   if (locSource === 'device') watchGeolocationPermission(); // a stored precise position survives only while still allowed
   // Meteors rush on hover (desktop) and on a tap (phones).
-  hero.addEventListener('mouseenter', () => { rushUntil = performance.now() + 4500; });
-  hero.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') rushUntil = performance.now() + 2800; });
+  // Listening on the hero (not the canvas, which sits under the text) so nothing above it swallows the events.
+  hero.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') startRush(performance.now(), RUSH_MS.desktop); });
+  hero.addEventListener('pointermove', (e) => { if (e.pointerType !== 'touch') startRush(performance.now(), RUSH_MS.desktop); });
+  hero.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') startRush(performance.now(), RUSH_MS.touch); });
+  hero.addEventListener('click', (e) => {
+    const t = e.target as Element | null;
+    if (!t || t.closest('a, button, input, textarea, select, summary, label, [role="button"], [contenteditable], .sky-readout')) return;
+    if (window.getSelection()?.toString()) return; // the click ended a text selection
+    const r = hero.getBoundingClientRect();
+    burst(performance.now(), e.clientX - r.left, e.clientY - r.top);
+  });
 
   return handle;
 }

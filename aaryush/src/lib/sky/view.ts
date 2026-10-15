@@ -146,5 +146,5 @@ export function decodeGrid(b64: string): Uint8Array {
 // ---------- the meteors ----------
 /** Average milliseconds between meteors on an ordinary night: 3500 on desktop, 4500 on phones, shorter on a shower or a rush. */
 export function meteorInterval(phone: boolean, shower: number, rush: number): number {
-  return (phone ? 4500 : 3500) / (Math.max(1, shower) * (1 + 3.2 * rush));
+  return (phone ? 4500 : 3500) / (Math.max(1, shower) * (1 + 7 * rush));
 }

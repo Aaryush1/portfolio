@@ -529,3 +529,77 @@ test('revoking the permission mid-session drops back to one decimal', async ({ b
   expect(await readout(page).textContent()).not.toMatch(/\d\.\d\d°/);
   await ctx.close();
 });
+
+// ---------- meteors: the hover rush and the click burst ----------
+const spawned = async (page: Page) => Number((await dataset(page, 'spawned')) ?? 0);
+const bursts = async (page: Page) => Number((await dataset(page, 'bursts')) ?? 0);
+/** A point on the hero that is bare background: not a link, button or the readout. */
+const bareSpot = (page: Page) => page.evaluate(() => {
+  const hero = document.getElementById('hero')!, r = hero.getBoundingClientRect();
+  for (let y = Math.max(r.top, 0) + 90; y < Math.min(r.bottom, innerHeight) - 20; y += 23) {
+    for (let x = r.right - 6; x > r.left + 6; x -= 41) {
+      const el = document.elementFromPoint(x, y);
+      if (el && hero.contains(el) && !el.closest('a, button, input, [role="button"]') && !el.closest('.name, .rot, .lede')) return { x, y };
+    }
+  }
+  return null;
+});
+
+test('hovering the hero starts a rush: a few meteors within the first second or two', async ({ page }) => {
+  test.skip(test.info().project.name.includes('mobile'), 'the hover is a desktop thing');
+  await onScreen(page, 'night');
+  const base0 = await spawned(page);
+  await page.waitForTimeout(1000);
+  expect((await spawned(page)) - base0).toBeLessThanOrEqual(1); // an ordinary second has about none
+  const before = await spawned(page);
+  await page.mouse.move(900, 330);
+  await page.mouse.move(930, 340);
+  await page.waitForTimeout(1500);
+  expect((await spawned(page)) - before).toBeGreaterThanOrEqual(2);
+});
+
+test('a click on the hero background sets off a small burst of meteors; a click on a link sets off none', async ({ page }) => {
+  await onScreen(page, 'night');
+  await page.waitForTimeout(300);
+  const spot = (await bareSpot(page))!;
+  expect(spot).not.toBeNull();
+  const a = await spawned(page), ba = await bursts(page);
+  await page.mouse.click(spot.x, spot.y);
+  await page.waitForTimeout(300);
+  const made = (await spawned(page)) - a;
+  expect(made).toBeGreaterThanOrEqual(2);
+  expect((await bursts(page)) - ba).toBe(1);
+  // a link: add one to the hero and click it
+  await page.evaluate(() => {
+    const l = document.createElement('a');
+    l.id = 'probe-link'; l.href = '#probe-link'; l.textContent = 'x';
+    l.style.cssText = 'position:absolute;left:10px;top:100px;z-index:5;padding:10px;color:#fff';
+    document.getElementById('hero')!.appendChild(l);
+  });
+  await page.waitForTimeout(2500); // past the bursts and the rush
+  const bb = await bursts(page);
+  await page.locator('#probe-link').click();
+  await page.waitForTimeout(350);
+  expect((await bursts(page)) - bb).toBe(0); // (a hover can still start the ordinary rush; a link click never makes a burst)
+});
+
+test('rapid clicking cannot flood the sky', async ({ page }) => {
+  await onScreen(page, 'night');
+  await page.waitForTimeout(300);
+  const spot = (await bareSpot(page))!;
+  const a = await spawned(page);
+  for (let i = 0; i < 8; i++) await page.mouse.click(spot.x, spot.y);
+  await page.waitForTimeout(250);
+  expect((await spawned(page)) - a).toBeLessThanOrEqual(9); // one burst of up to 4, plus whatever the rush adds
+});
+
+test('under reduced motion a click sets off nothing', async ({ browser }) => {
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await onScreen(page, 'night');
+  const spot = (await bareSpot(page))!;
+  await page.mouse.click(spot.x, spot.y);
+  await page.waitForTimeout(400);
+  expect(await spawned(page)).toBe(0);
+  await ctx.close();
+});
