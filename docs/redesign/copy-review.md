@@ -1040,6 +1040,15 @@ Edits:
 
 ---
 
+### 16e. Homepage night note (E7)
+
+Approved 2026-10-14. It replaces "1. It's past nine. 2. So are you.", which didn't parse.
+
+> GENERAL NOTES
+> 1. It's past nine.
+> 2. You're still here.
+> 3. Good.
+
 ## Sign-off
 
 - [ ] I have reviewed every block above.

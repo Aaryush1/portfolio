@@ -5,7 +5,7 @@ import { NIGHT_NOTE } from '../../src/lib/night-note';
 describe('general notes (E7)', () => {
   it('reads exactly as the spec: a drafting label and two numbered lines', () => {
     expect(NIGHT_NOTE.label).toBe('General notes');
-    expect(NIGHT_NOTE.lines).toEqual(['It’s past nine.', 'So are you.']);
+    expect(NIGHT_NOTE.lines).toEqual(['It’s past nine.', 'You’re still here.', 'Good.']);
   });
   it('the note period is night: 21:00 to 07:00, with the boundary hours', () => {
     const night = (h: number) => daypartFor(h) === 'night';

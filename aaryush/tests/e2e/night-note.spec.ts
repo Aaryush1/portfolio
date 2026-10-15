@@ -33,7 +33,7 @@ test('the served HTML never contains the notes', async ({ request }) => {
   const html = await (await request.get('/')).text();
   expect(html).not.toContain('past nine');
   expect(html).not.toContain('General notes');
-  expect(html).not.toContain('So are you');
+  expect(html).not.toContain('still here');
 });
 
 test('the note is decorative, unannounced, and shows the pencil copy', async ({ page }) => {
@@ -42,7 +42,8 @@ test('the note is decorative, unannounced, and shows the pencil copy', async ({ 
   await expect(note(page)).toHaveAttribute('aria-hidden', 'true');
   await expect(note(page)).toContainText('General notes');
   await expect(note(page)).toContainText('It’s past nine.');
-  await expect(note(page)).toContainText('So are you.');
+  await expect(note(page)).toContainText('You’re still here.');
+  await expect(note(page)).toContainText('Good.');
   await expect(page.locator('[aria-label*="note" i], [title*="note" i], [class*="easter"]')).toHaveCount(0);
 });
 

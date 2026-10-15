@@ -137,7 +137,8 @@ Each feature works without JavaScript, or degrades to nothing. Each respects `pr
 - **What it is:** between 21:00 and 07:00 in the visitor's local time, a small "General notes" block in pencil appears on the hero drawing, near the title block. It reads:
   > GENERAL NOTES
   > 1. It's past nine.
-  > 2. So are you.
+  > 2. You're still here.
+  > 3. Good.
 
   "General notes" is set as a drafting label. The numbered lines are in the pencil hand: Instrument Serif italic, slightly rotated, the colour of pencil graphite.
 - **Placement:**
