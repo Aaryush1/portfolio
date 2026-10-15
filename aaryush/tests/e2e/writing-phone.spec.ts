@@ -84,7 +84,7 @@ test('phones: a faint drift of dust invites a scroll, says nothing, and goes for
   expect(((await cue.textContent()) ?? '').trim()).toBe('');
   await expect(cue).toHaveClass(/is-on/, { timeout: 4000 });
   expect(await cue.locator('i').first().evaluate((e) => getComputedStyle(e).animationName)).toBe('cue-drift');
-  await page.mouse.wheel(0, 400);
+  await page.mouse.wheel(0, 400).catch(() => {}); // not supported in mobile WebKit; the scrollTo below does the scrolling
   await page.evaluate(() => window.scrollTo(0, 400));
   await expect(cue).toHaveClass(/is-off/);
   await expect(cue).not.toHaveClass(/is-on/);
@@ -200,7 +200,7 @@ test('desktop: the sheet is a popover beside the marker', async ({ page }) => {
   await m.click();
   const s = (await page.locator('#cite-sheet').boundingBox())!;
   const b = (await m.boundingBox())!;
-  expect(s.width).toBeLessThanOrEqual(340);
+  expect(s.width).toBeLessThanOrEqual(340.5); // Firefox reports 340.00001
   expect(Math.abs(s.y - (b.y + b.height)) < 40 || Math.abs(s.y + s.height - b.y) < 40).toBe(true);
 });
 

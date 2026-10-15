@@ -62,14 +62,13 @@ test('morph keeps the word spaces: every subject reads correctly once it lands',
   const subjects: string[] = JSON.parse((await page.locator('#rot').getAttribute('data-subjects')) ?? '[]');
   const seen: string[] = [];
   for (const expected of [...subjects, 'how anyone solves problems']) {
-    // textContent (not innerText) on purpose: ghosts are gone once the transition has finished
+    // textContent (not innerText) on purpose: ghosts are gone once the transition has landed. Don't also require "no running
+    // animations" in the poll: a tiny morph rests only briefly before the next starts, so a 50ms poll can miss the quiet moment.
     await expect
-      .poll(
-        async () =>
-          slot.evaluate((el) => el.getAnimations({ subtree: true }).length === 0 ? el.textContent : null),
-        { timeout: 15000, intervals: [50] },
-      )
+      .poll(async () => slot.evaluate((el) => el.textContent), { timeout: 15000, intervals: [50] })
       .toBe(expected);
+    // let the landing finish before measuring
+    await slot.evaluate((el) => Promise.allSettled(el.getAnimations({ subtree: true }).map((a) => a.finished)));
     seen.push(expected);
     // letters really are spaced: no two word boxes touch
     const gaps = await slot.evaluate((el) => {

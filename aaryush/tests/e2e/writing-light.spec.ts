@@ -217,7 +217,8 @@ test('objects stay matte with the light layer on (pixel variance of a clean patc
     const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();
     const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
     const g = c.getContext('2d')!; g.drawImage(img, 0, 0);
-    const d = g.getImageData(120, 150, 40, 40).data; const v: number[] = [];
+    const k = img.width / (document.querySelector('[data-slug="quiet-singularity"] .sheet.cover') as HTMLElement).getBoundingClientRect().width; // screenshots are in device pixels (WebKit desktop is 2x)
+    const d = g.getImageData(Math.round(120 * k), Math.round(150 * k), Math.round(40 * k), Math.round(40 * k)).data; const v: number[] = [];
     for (let i = 0; i < d.length; i += 4) v.push(d[i]);
     const m = v.reduce((a, b) => a + b, 0) / v.length;
     return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / v.length);
